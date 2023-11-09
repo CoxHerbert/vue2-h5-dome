@@ -2,7 +2,8 @@
     <div class="page">
         <navigation :title="title"></navigation>
         <transition>
-            <mine></mine>
+            <!-- <mine></mine> -->
+            <home></home>
         </transition>
         <tabber></tabber>
     </div>
@@ -12,6 +13,7 @@
 import navigation from '@/components/home/navigation';
 import tabber from '@/components/home/tabber';
 import mine from './mine';
+import home from './home';
 export default {
     data() {
         return {
@@ -24,6 +26,7 @@ export default {
         navigation,
         tabber,
         mine,
+        home,
     },
     computed: {
         title() {
@@ -42,5 +45,10 @@ export default {
     flex-direction: column;
     width: 100%;
     height: 100vh;
+    .content {
+        height: calc(100% -140px);
+        flex: 1;
+        overflow: scroll;
+    }
 }
 </style>
