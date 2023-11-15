@@ -5,7 +5,7 @@ import 'default-passive-events';
 
 import './static/style/index.less';
 
-// import 'swiper/swiper.min.css';
+import "@/utils/swiper/idangerous.swiper.css";
 
 Vue.config.productionTip = false;
 

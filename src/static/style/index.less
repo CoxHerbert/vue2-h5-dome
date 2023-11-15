@@ -1,121 +1,14 @@
 @import './public.less';
-@import './vant.less';
 
-section.page {
-    position: relative;
-    margin: auto;
-    height: 100%;
-    background: #F7F7F9;
-    @media screen and (min-width: 750px) {
-        width: 750px;
-    }
-
-    @media screen and (max-width: 750px) {
-        width: 100%;
-    }
-    section.container {
-        position: absolute;
-        top: 0;
-        bottom: 80px;
-        left: 0;
-        right: 0;
-    }
+::-webkit-scrollbar {
+  display: none; /* Chrome Safari */
 }
 
-ul.sub-list {
-    margin-bottom: 10px;
-    width: 100%;
-    display: flex;
-    .sub-item {
-        margin: 10px 8px 0 0;
-        padding: 4px 8px;
-        font-size: 11px;
-        color: #3c68fd;
-        background: rgba(60, 104, 253, 0.1);
-        border-radius: 35px;
-        white-space: nowrap;
-    }
+@font-face
+{
+    font-family: 'AlibabaPuHuiTi-Regular';
+    src: url('./../font/Alibaba-PuHuiTi-Regular.ttf');
+    font-weight: normal;  
+    font-style: normal;  
 }
 
-// 去除地图logo
-.amap-logo, .amap-copyright {
-	display: none !important;
-}
-
-.scroll-container, .tab-scroll-container {
-    overflow: scroll;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-        display: none; /* Chrome Safari */
-    }
-}
-
-// 地图标记点样式
-.custom-content-marker {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    max-width: 100px;
-    .marker-name {
-        text-align: center;
-        padding: 4px 6px;
-        background: linear-gradient(360deg, #668AFF 0%, #3B69FD 100%);
-        box-shadow: 0px 8px 24px 0px rgba(59,105,253,0.2), 0px 8px 24px 0px rgba(59,105,253,0.2);
-        border-radius: 20px;
-        font-size: 12px;
-        color: #FFFFFF;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .line-marker-name {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 16px;
-        height: 16px;
-        background: #ff9d1a;
-        color: #fff;
-        border-radius: 50%;
-        font-size: 14px;
-        border: 2px solid #fff;
-    }
-}
-.line-point-marker {
-    padding: 8px;
-    width: 112px;
-    background-color: #fff;
-    border-radius: 10px;
-    display: flex;
-    img.line-point-marker-img {
-        width: 38px;
-        height: 38px;
-    }
-    .line-point-marker-right  {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        flex: 1;
-        height: 100%;
-        .line-point-marker-name {
-            font-size: 12px;
-            color: #242629;
-            font-weight: 600;
-            transform : scale(0.8,0.8) ;
-        }
-        .line-point-marker-gopage {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            font-size: 9px;
-            color: #242629;
-            transform: scale(0.7,0.7);
-            .line-point-marker-gopage-icon {
-                margin-right: 5px;
-                width: 12px;
-                height: 12px;
-            }
-        }
-    }
-}

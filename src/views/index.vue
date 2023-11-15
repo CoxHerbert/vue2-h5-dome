@@ -1,54 +1,43 @@
 <template>
-    <div class="page">
-        <navigation :title="title"></navigation>
-        <transition>
-            <!-- <mine></mine> -->
-            <home></home>
-        </transition>
-        <tabber></tabber>
-    </div>
+  <div class="container">
+    <transition name="fade">
+      <router-view></router-view>
+    </transition>
+    <tabber></tabber>
+  </div>
 </template>
 
 <script>
-import navigation from '@/components/home/navigation';
-import tabber from '@/components/home/tabber';
-import mine from './mine';
-import home from './home';
+import tabber from "@/components/home/tabber";
 export default {
-    data() {
-        return {
-            dataList: [],
-            date: null,
-            timer: null,
-        };
-    },
-    components: {
-        navigation,
-        tabber,
-        mine,
-        home,
-    },
-    computed: {
-        title() {
-            return this.$route.meta.title;
-        },
-    },
-    created() {},
-    beforeDestroy() {},
-    methods: {},
+  data() {
+    return {
+      dataList: [],
+      date: null,
+      timer: null,
+    };
+  },
+  components: {
+    tabber,
+  },
+  created() {},
+  beforeDestroy() {},
+  methods: {},
 };
 </script>
 
-<style lang="less" scoped>
-.page {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100vh;
+<style lang="less">
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  .page-content {
+    height: calc(100% - 80px);
     .content {
-        height: calc(100% -140px);
-        flex: 1;
-        overflow: scroll;
+      height: calc(100% - 60px);
+      overflow-y: scroll;
     }
+  }
 }
 </style>

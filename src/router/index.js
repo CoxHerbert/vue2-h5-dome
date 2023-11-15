@@ -8,18 +8,22 @@ const routes = [
         path: '/',
         component: () => import('@/views/index'),
         name: 'index',
+        redirect: '/home',
         children: [
             {
                 path: 'home',
-                meta: { title: '流量充值' },
+                meta: { title: '首页' },
+                component: () => import('@/views/home'),
             },
             {
                 path: 'apply',
                 meta: { title: '待授权' },
+                component: () => import('@/views/apply'),
             },
             {
                 path: 'mine',
                 meta: { title: '个人中心' },
+                component: () => import('@/views/mine'),
             },
         ],
     },

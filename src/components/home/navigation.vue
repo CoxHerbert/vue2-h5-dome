@@ -9,15 +9,16 @@
 export default {
     name: 'navigation',
     props: {
-        title: {
-            type: String,
-            default: '',
-        },
         backIsShow: {
             type: Boolean,
             default: true,
         },
     },
+     computed: {
+    title() {
+      return this.$route.meta.title;
+    },
+  },
 };
 </script>
 
