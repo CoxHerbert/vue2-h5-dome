@@ -42,96 +42,22 @@
                       :rules="getColumnRules(col)"
                       :key="col.prop"
                     >
-                      <el-input
-                        v-if="col.type === 'input'"
-                        :placeholder="col.props?.placholder || `请输入${col.label}`"
-                        v-bind="col.props"
+                      <dc-widget
                         v-model="detailData[col.prop]"
-                        clearable
-                      />
-                      <el-select
-                        class="param-value"
-                        v-else-if="col.type === 'dict'"
-                        v-model="detailData[col.prop]"
-                        :placeholder="col.props?.placholder || `请选择${col.label}`"
-                        v-bind="col.props"
-                        clearable
+                        :data="{
+                          ...col,
+                          props: {
+                            ...col.props,
+                          },
+                        }"
+                        :dictMaps="dictMaps"
                         @change="
                           val => {
                             handleFormItemChange(val, {}, col);
                           }
                         "
                       >
-                        <!-- 配置里面有withGroup的情况 -->
-                        <template v-if="col.withGroup">
-                          <el-option-group
-                            v-for="(opGroup, i) in dictMaps?.[col.dictKey] || []"
-                            :key="i"
-                            :label="opGroup[col.labelKey]"
-                          >
-                            <el-option
-                              v-for="(option, j) in opGroup.children"
-                              :key="j"
-                              :label="option[col.labelKey]"
-                              :value="option[col.valueKey]"
-                            />
-                          </el-option-group>
-                        </template>
-                        <template v-else>
-                          <el-option
-                            v-for="(option, j) in dictMaps?.[col.dictKey] || []"
-                            :key="j"
-                            :label="option[col.labelKey]"
-                            :value="option[col.valueKey]"
-                          />
-                        </template>
-                      </el-select>
-                      <el-date-picker
-                        v-else-if="col.type === 'date'"
-                        v-model="detailData[col.prop]"
-                        :placeholder="col.props?.placholder || `请选择${col.label}`"
-                        v-bind="col.props"
-                        value-format="YYYY-MM-DD"
-                        format="YYYY-MM-DD"
-                        clearable
-                      ></el-date-picker>
-                      <el-input-number
-                        v-else-if="col.type === 'number'"
-                        v-model="detailData[col.prop]"
-                        v-bind="col.props"
-                        :placeholder="col.props?.placholder || `请输入${col.label}`"
-                      />
-                      <dc-select-user
-                        v-else-if="col.type === 'dc-select-user'"
-                        v-model="detailData[col.prop]"
-                        v-bind="col.props"
-                      />
-                      <dc-upload
-                        v-else-if="col.type === 'dc-upload'"
-                        v-model="detailData[col.prop]"
-                        v-bind="col.props"
-                        :limit="5"
-                      />
-                      <dc-select
-                        v-else-if="col.type === 'dc-select'"
-                        v-bind="col.props"
-                        v-model="detailData[col.prop]"
-                        @change="
-                          val => {
-                            handleFormItemChange(val, {}, col);
-                          }
-                        "
-                      />
-                      <el-switch
-                        v-else-if="col.type === 'switch'"
-                        v-bind="col.props"
-                        v-model="detailData[col.prop]"
-                        @change="
-                          val => {
-                            handleFormItemChange(val, {}, col);
-                          }
-                        "
-                      />
+                      </dc-widget>
                     </el-form-item>
                   </template>
                 </template>
@@ -158,6 +84,8 @@
                         {{ process.technologyName }}
                       </el-tag>
                     </div>
+                    <!-- <el-button @click="addRow">新增行</el-button>
+                      <el-button @click="copyRow">复制行</el-button> -->
                   </div>
                   <el-form-item
                     class="form-item-table"
@@ -165,7 +93,7 @@
                     :label-width="0"
                     :rules="getTableRule(group.items)"
                   >
-                    <div ref="prodDragableTableRef">
+                    <div ref="dragableTableRef">
                       <el-table
                         :data="detailData[group.prop] || []"
                         @row-click="handleRowClick"
@@ -281,17 +209,16 @@
         </div>
         <div class="footer">
           <el-button @click="doAction('cancel')">取消</el-button>
-          <el-button type="primary" @click="doAction('submit')" :disabled="allDisabled">
-            提交
-          </el-button>
+          <el-button type="primary" @click="doAction('submit')" :disabled="allDisabled"
+            >提交</el-button
+          >
           <el-button
             v-if="!detailData?.isUploadBom"
             type="primary"
             @click="doAction('submitERP')"
             :disabled="allDisabled"
+            >提交ERP</el-button
           >
-            提交ERP
-          </el-button>
         </div>
       </div>
     </div>
@@ -326,6 +253,10 @@ export default {
     return {
       detailKey: 'createdProcessDetail',
       columns: [],
+      apiFns: {
+        getDetail: 'getGenerateDetail',
+        postPlan: 'postGenerate',
+      },
     };
   },
   computed: {
@@ -345,9 +276,9 @@ export default {
     this.$nextTick(() => {
       if (this.allDisabled) return true;
       // 1. 从 $refs 数组里拿到真正的 DOM 容器
-      const wrapper = Array.isArray(this.$refs.prodDragableTableRef)
-        ? this.$refs.prodDragableTableRef[0]
-        : this.$refs.prodDragableTableRef;
+      const wrapper = Array.isArray(this.$refs.dragableTableRef)
+        ? this.$refs.dragableTableRef[0]
+        : this.$refs.dragableTableRef;
 
       if (!wrapper) {
         console.warn('没拿到 wrapper');
@@ -423,8 +354,9 @@ export default {
       }
       if (id) {
         this.loading = true;
+        /** 生产主计划生成工序 **/
         this.api.mes.mops
-          .getGenerateDetail({
+          [this.apiFns.getDetail]({
             entryId: this.detailId,
           })
           .then(res => {
@@ -597,7 +529,7 @@ export default {
                 }),
               };
               this.api.mes.mops
-                .postGenerate(formData)
+                [this.apiFns.postPlan](formData)
                 .then(res => {
                   const { code, data } = res.data;
                   if (code === 200) {
@@ -608,8 +540,8 @@ export default {
                   this.loading = false;
                 })
                 .catch(err => {
-                  reject();
                   this.loading = false;
+                  reject();
                 });
             }
           })
