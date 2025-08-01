@@ -110,7 +110,7 @@
 <script>
 import listPage from '@/mixins/list-page';
 import options from './list';
-import materialLabelDialog from './cpns/materialLabelDialog.vue';
+import materialLabelDialog from '../cpns/materialLabelDialog.vue';
 export default {
   mixins: [listPage],
   components: { materialLabelDialog },
