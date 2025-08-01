@@ -93,7 +93,7 @@
                     :label-width="0"
                     :rules="getTableRule(group.items)"
                   >
-                    <div ref="solutionDragableTableRef">
+                    <div ref="dragableTableRef">
                       <el-table
                         :data="detailData[group.prop] || []"
                         @row-click="handleRowClick"
@@ -253,6 +253,10 @@ export default {
     return {
       detailKey: 'createdProcessDetail',
       columns: [],
+      apiFns: {
+        getDetail: 'getModifDetail',
+        postPlan: 'postModifyMoPlan',
+      },
     };
   },
   computed: {
@@ -272,9 +276,9 @@ export default {
     this.$nextTick(() => {
       if (this.allDisabled) return true;
       // 1. 从 $refs 数组里拿到真正的 DOM 容器
-      const wrapper = Array.isArray(this.$refs.solutionDragableTableRef)
-        ? this.$refs.solutionDragableTableRef[0]
-        : this.$refs.solutionDragableTableRef;
+      const wrapper = Array.isArray(this.$refs.dragableTableRef)
+        ? this.$refs.dragableTableRef[0]
+        : this.$refs.dragableTableRef;
 
       if (!wrapper) {
         console.warn('没拿到 wrapper');
@@ -352,7 +356,7 @@ export default {
         this.loading = true;
         /** 生产主计划生成工序 **/
         this.api.mes.mops
-          .getModifDetail({
+          [this.apiFns.getDetail]({
             entryId: this.detailId,
           })
           .then(res => {
@@ -525,7 +529,7 @@ export default {
                 }),
               };
               this.api.mes.mops
-                .postModifyMoPlan(formData)
+                [this.apiFns.postPlan](formData)
                 .then(res => {
                   const { code, data } = res.data;
                   if (code === 200) {
