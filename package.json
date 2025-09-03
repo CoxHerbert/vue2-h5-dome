@@ -1,0 +1,46 @@
+{
+  "name": "vue3-enterprise-scaffold-js",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@10",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier -w .",
+    "prepare": "husky install",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@vant/area-data": "^2.1.0",
+    "axios": "^1.7.2",
+    "dayjs": "^1.11.18",
+    "nprogress": "^0.2.0",
+    "pinia": "^2.1.7",
+    "vant": "^4.9.0",
+    "vue": "^3.4.38",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "@vue/test-utils": "^2.4.6",
+    "axios-mock-adapter": "^2.1.0",
+    "eslint": "^9.11.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "husky": "^9.1.4",
+    "jsdom": "^26.1.0",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "sass": "^1.92.0",
+    "terser": "^5.43.1",
+    "vite": "^5.4.2",
+    "vitest": "^2.0.5"
+  },
+  "lint-staged": {
+    "*.{js,vue,json,md}": [
+      "prettier -w",
+      "eslint --fix"
+    ]
+  }
+}
