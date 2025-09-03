@@ -1,0 +1,13 @@
+@use "./_variables.scss" as *;
+
+html, body, #app { height: 100%; }
+
+body {
+  font-size: $font-size-base;
+  color: #222;
+  background: #fafafa;
+}
+
+.container {
+  padding: $sp-4;
+}

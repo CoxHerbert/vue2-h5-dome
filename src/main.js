@@ -19,6 +19,7 @@ const GlobalComponents = createGlobalComponents({
 
 // Vant (按需样式由 Vite plugin 或手动引入，这里简单全局样式引入）
 import 'vant/lib/index.css';
+import '@styles/index.scss';
 import vant from 'vant';
 
 import { setupDirectives } from './directives';

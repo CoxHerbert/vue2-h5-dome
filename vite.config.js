@@ -32,6 +32,13 @@ export default ({ mode }) => {
     define: {
       'import.meta.env.VITE_APP_VERSION': currentTimeVersion,
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: '@use "@styles/_variables.scss" as *;\n',
+        },
+      },
+    },
     resolve: {
       alias: {
         '~': pathResolve(__dirname, './'),
