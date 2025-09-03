@@ -1,192 +1,171 @@
 <!-- src/pages/recruit/campus/apply.vue -->
+<template>
+  <div>
+    <img class="banner" src="/images/recruit/campus/apply/banner.svg" alt="banner" />
+    {{ form }}
+    <RecruitForm
+      v-model="form"
+      :schema="schema"
+      submit-text="提交"
+      clear-text="清空"
+      cancel-text="取消"
+      :show-cancel="true"
+      :show-clear="true"
+      :compact="true"
+      :fixed-actions="true"
+      @submit="handleSubmit"
+      @clear="handleClear"
+      @cancel="handleCancel"
+      @change="handleChange"
+    />
+  </div>
+</template>
+
 <script setup>
 import { ref } from 'vue';
 import { showToast } from 'vant';
-import RecruitForm from '@/components/RecruitForm.vue';
-import { areaList } from '@vant/area-data';
-
-/** ====== mock: 远程院校搜索（示例） ====== */
-async function fetchColleges(q) {
-  const all = [
-    { id: 'zju', name: '浙江大学' },
-    { id: 'scut', name: '华南理工大学' },
-    { id: 'jxu', name: '嘉兴学院' },
-    { id: 'hfut', name: '合肥工业大学' },
-  ];
-  if (!q) return all;
-  await new Promise((r) => setTimeout(r, 200)); // 模拟网络延迟
-  return all.filter((i) => i.name.includes(q));
-}
-
-/** ====== mock: picker 列表（岗位类型） ====== */
-const jobTypes = [
-  { label: '软件工程师', value: 'SWE' },
-  { label: '算法工程师', value: 'ML' },
-  { label: '测试工程师', value: 'QA' },
-];
 
 /** ====== schema：只用 fields；可选全局 layout/labelWidth ====== */
 const schema = {
-  layout: 'vertical', // 全局上下布局；需要横排的字段可在字段级用 layout:'horizontal' 覆盖
-  labelWidth: 100, // 仅对 horizontal 生效
+  layout: 'vertical',
+  labelWidth: 100,
   fields: [
-    { name: 'fullName', label: '姓名', type: 'input', required: true },
     {
-      name: 'gender',
-      label: '性别',
-      type: 'radio',
-      required: true,
-      options: [
-        { label: '男', value: 'M' },
-        { label: '女', value: 'F' },
-      ],
-    },
-    {
-      name: 'phone',
-      label: '手机号',
       type: 'input',
+      name: 'name',
+      label: '您的姓名',
       required: true,
-      validate: { pattern: /^1[3-9]\d{9}$/, message: '请输入正确手机号' },
-      disabled: { when: 'fullName', equals: '' }, // 姓名为空时禁用
+      placeholder: '请输入姓名',
     },
-    { name: 'idCard', label: '身份证', type: 'input', placeholder: '只读示例' },
-
-    // 仅男生显示
     {
-      name: 'military',
-      label: '是否服兵役',
       type: 'radio',
-      visibleWhen: { when: 'gender', equals: 'M' },
+      name: 'sex',
+      label: '您的性别',
+      required: true,
       options: [
-        { label: '是', value: 'Y' },
-        { label: '否', value: 'N' },
+        { label: '男', value: 'male' },
+        { label: '女', value: 'female' },
       ],
     },
-
-    // picker（岗位类型）
     {
-      name: 'jobType',
-      label: '应聘岗位',
-      type: 'picker',
+      type: 'input',
+      name: 'phone',
+      label: '请输入您的手机号',
       required: true,
-      columns: jobTypes,
-      placeholder: '请选择岗位',
-    },
-
-    // date（可到岗日期）
-    {
-      name: 'availableDate',
-      label: '可到岗日期',
-      type: 'date',
-      required: true,
-      dateType: 'date',
-      minDate: new Date(),
-    },
-
-    // 地区选择
-    { name: 'currentArea', label: '当前地区', type: 'area', required: true, areaList },
-
-    // searchPicker（远程搜索学校）；把 label 写入额外字段 collegeName
-    {
-      name: 'collegeId',
-      label: '毕业院校',
-      type: 'searchPicker',
-      required: true,
-      search: {
-        fetch: fetchColleges,
-        labelKey: 'name',
-        valueKey: 'id',
-        attachLabelField: 'collegeName',
-        debounce: 200,
-        autoload: true,
+      placeholder: '请输入手机号',
+      inputType: 'tel',
+      validate: {
+        pattern: '^1\\d{10}$',
+        message: '手机号格式不正确',
       },
-      displayFormatter: (v, m) => m.collegeName || '',
     },
-
-    // 复选 + 选中后补充输入（extra）
     {
-      name: 'applyChannels',
-      label: '应聘渠道',
+      type: 'input',
+      name: 'schoolName',
+      label: '请填写您的毕业院校',
+      required: true,
+      placeholder: '请输入毕业院校',
+    },
+    {
+      type: 'input',
+      name: 'professionalName',
+      label: '请填写您的专业',
+      required: true,
+      placeholder: '请输入专业',
+    },
+    {
       type: 'checkbox',
+      name: 'channels',
+      label: '应聘渠道（多选）',
       required: true,
       options: [
-        { label: '校园招聘会', value: 'campus' },
+        { label: '校园招聘会', value: 'campus_fair' },
         { label: '网络招聘', value: 'online' },
         {
-          label: '同学推荐',
-          value: 'classmate',
+          label: '同学推荐（推荐人姓名）',
+          value: 'classmate_ref',
           extra: {
             key: 'classmateRefName',
-            label: '推荐人姓名',
+            placeholder: '姓名',
             required: true,
-            pattern: /^.{2,20}$/,
-            message: '2-20 字',
           },
         },
         {
-          label: '其他',
-          value: 'other',
+          label: '同事推荐（推荐人姓名）',
+          value: 'colleague_ref',
           extra: {
-            key: 'otherDetail',
-            label: '说明',
-            placeholder: '请填写渠道说明',
+            key: 'colleagueRefName',
+            placeholder: '姓名',
             required: true,
           },
         },
       ],
     },
-
-    // 简历上传
     {
-      name: 'resume',
-      label: '简历上传',
-      type: 'uploader',
+      type: 'checkbox',
+      name: 'joinPostIds',
+      label: '意向岗位（多选）',
       required: true,
-      upload: { maxCount: 1, accept: '.pdf,.doc,.docx', maxSize: 10 * 1024 * 1024 },
-      placeholder: '支持 .pdf/.doc/.docx，≤10MB',
+      max: 3,
+      desc: '最多选择3项',
+      options: [
+        { label: '机械工程师', value: 'mech' },
+        { label: '电器工程师', value: 'elec_hw' },
+        { label: '软件工程师', value: 'soft' },
+        { label: '电子工程师', value: 'elec' },
+        { label: 'PM（项目）', value: 'pm' },
+      ],
     },
-
-    // 自我介绍：演示字段级横向 + 自定义 label 宽度
     {
-      name: 'selfIntro',
-      label: '自我介绍',
-      type: 'textarea',
-      rows: 4,
-      maxlength: 400,
-      labelWidth: 80,
+      type: 'checkbox',
+      name: 'workLocations',
+      label: '意向工作地点（多选）',
+      required: true,
+      options: [
+        { label: '东莞市寮步镇', value: 'dongguan_liaobu' },
+        { label: '浙江省嘉善县', value: 'jiashan' },
+      ],
+    },
+    {
+      type: 'uploader',
+      name: 'resumeUrl',
+      label: '简历上传',
+      required: true,
+      placeholder: '文件命名方式：“学校+专业+应聘岗位+姓名”',
+      upload: {
+        maxCount: 1,
+        accept: '.pdf,.doc,.docx',
+        maxSize: 5242880,
+      },
     },
   ],
-  // 可选：提交前映射（示例）
-  mapSubmit(model) {
-    const file = model.resume?.[0];
-    return {
-      ...model,
-      resume: file ? { name: file.name, size: file.size } : null,
-    };
-  },
 };
 
 /** ====== v-model：表单数据 ====== */
 const form = ref({
-  fullName: '',
-  gender: '',
-  phone: '',
-  idCard: '310xxxxxxxxxxxxx',
-  jobType: '',
-  availableDate: '',
-  currentArea: '',
-  collegeId: '',
-  collegeName: '',
-  applyChannels: [],
-  classmateRefName: '',
-  otherDetail: '',
-  resume: [],
-  selfIntro: '',
+  name: '鲍泽楠',
+  sex: 'male',
+  phone: '15824223890',
+  schoolName: '宁波工程学院',
+  professionalName: '电气自动化',
+  channels: '',
+  joinPostIds: '',
+  workLocations: '',
+  resumeUrl: [
+    {
+      file: {},
+      status: '',
+      message: '',
+      objectUrl: 'blob:http://localhost:5174/0c5ac8d4-e6e8-48f6-8a2d-51e037676925',
+    },
+  ],
+  classmateRefName: '测试001',
+  colleagueRefName: '测试002',
 });
 
 /** ====== 组件事件 ====== */
 function handleSubmit(payload) {
-  console.log('✅ 校验通过，提交的数据：', payload);
+  console.log('✅ 校验通过，提交的数据：', JSON.stringify(payload));
   showToast('提交成功');
 }
 function handleClear() {
@@ -197,25 +176,14 @@ function handleCancel() {
   showToast('已取消');
   // 可按需求返回上一页：history.back()
 }
+function handleChange(evt) {
+  console.log(evt);
+}
 </script>
-
-<template>
-  <RecruitForm
-    v-model="form"
-    :schema="schema"
-    submit-text="提交"
-    clear-text="清空"
-    cancel-text="取消"
-    :show-cancel="true"
-    :show-clear="true"
-    :compact="true"
-    :fixed-actions="true"
-    @submit="handleSubmit"
-    @clear="handleClear"
-    @cancel="handleCancel"
-  />
-</template>
 
 <style scoped>
 /* 可选：页面级额外样式 */
+.banner {
+  width: 100%;
+}
 </style>

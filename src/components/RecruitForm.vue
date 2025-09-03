@@ -143,16 +143,15 @@
                 </div>
                 <div class="dc-pad-16">
                   <van-checkbox-group
-                    v-model="local[f.name]"
+                    v-model="checkboxModels[f.name]"
                     :disabled="isDisabled(f)"
-                    :max="f.max ?? Infinity"
-                    @change="(val) => onFieldUpdate(f, val)"
+                    :max="typeof f.max === 'number' ? f.max : undefined"
                   >
                     <div v-for="op in f.options || []" :key="op.value" class="dc-cb-row">
                       <van-checkbox :name="op.value">
                         {{ op.label }}
                       </van-checkbox>
-                      <template v-if="op.extra && local[f.name]?.includes(op.value)">
+                      <template v-if="op.extra && checkboxModels[f.name].includes(op.value)">
                         <div class="dc-extra-wrap">
                           <van-field
                             v-model="local[op.extra.key]"
@@ -185,16 +184,15 @@
                 />
                 <div class="dc-pad-16">
                   <van-checkbox-group
-                    v-model="local[f.name]"
+                    v-model="checkboxModels[f.name]"
                     :disabled="isDisabled(f)"
-                    :max="f.max ?? Infinity"
-                    @change="(val) => onFieldUpdate(f, val)"
+                    :max="typeof f.max === 'number' ? f.max : undefined"
                   >
                     <div v-for="op in f.options || []" :key="op.value" class="dc-cb-row">
                       <van-checkbox :name="op.value">
                         {{ op.label }}
                       </van-checkbox>
-                      <template v-if="op.extra && local[f.name]?.includes(op.value)">
+                      <template v-if="op.extra && checkboxModels[f.name].includes(op.value)">
                         <div class="dc-extra-wrap">
                           <van-field
                             v-model="local[op.extra.key]"
@@ -505,7 +503,6 @@
                       </div>
                     </template>
                   </van-search>
-
                   <div v-if="searchState[f.name].loading" class="dc-pad-16">
                     <van-loading size="24px"> 加载中... </van-loading>
                   </div>
@@ -580,7 +577,7 @@
         </template>
       </van-cell-group>
 
-      <div v-if="fixedActions" class="dc-actions-spacer" />
+      <div v-if="fixedActions" class="dc-actions-spacer"></div>
     </div>
 
     <!-- 底部固定操作栏 -->
@@ -620,11 +617,11 @@
       <van-button v-if="showCancel" block type="default" @click="onCancel">
         {{ cancelText }}
       </van-button>
-      <div v-if="showCancel" style="height: 8px" />
+      <div v-if="showCancel" style="height: 8px"></div>
       <van-button v-if="showClear" block type="warning" plain @click="onClear">
         {{ clearText }}
       </van-button>
-      <div v-if="showClear" style="height: 8px" />
+      <div v-if="showClear" style="height: 8px"></div>
       <van-button block type="primary" @click="onSubmit">
         {{ submitText }}
       </van-button>
@@ -633,7 +630,7 @@
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue';
+import { reactive, watch, computed } from 'vue';
 import { showToast } from 'vant';
 
 /** change 事件入参：
@@ -667,9 +664,28 @@ const emit = defineEmits([
   'cancel',
 ]);
 
+/* ---------------- checkbox 字符串 ↔ 数组 工具 ---------------- */
+function toArray(val) {
+  if (Array.isArray(val)) return val;
+  if (val === '' || val == null) return [];
+  return String(val)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+function toCSV(arr) {
+  if (!arr) return '';
+  return Array.isArray(arr) ? arr.join(',') : String(arr);
+}
+/* schema 辅助 */
+function findField(name) {
+  return props.schema.fields.find((x) => x.name === name);
+}
+
 /* ---------------- helpers ---------------- */
 function getDefaultByType(f) {
-  if (f.type === 'checkbox' || f.type === 'uploader') return [];
+  if (f.type === 'checkbox') return ''; // 多选对外字符串
+  if (f.type === 'uploader') return []; // 上传保持数组
   return f.defaultValue ?? '';
 }
 function buildWithDefaults(fields, incoming = {}) {
@@ -691,13 +707,11 @@ function cellTitleStyle(f) {
   const w = getLabelWidth(f);
   return w ? { flex: `0 0 ${w}`, maxWidth: w, whiteSpace: 'nowrap' } : {};
 }
-/** 字段描述：优先 f.desc / f.description；checkbox 若有 max 自动补“最多选X项” */
 function fieldDesc(f) {
   const base = f.desc ?? f.description ?? '';
   if (f.type === 'checkbox' && typeof f.max === 'number') {
     const auto = `最多选择${f.max}项`;
-    if (base) return `${base}（${auto}）`;
-    return auto;
+    return base ? `${base}（${auto}）` : auto;
   }
   return base || '';
 }
@@ -713,6 +727,23 @@ props.schema.fields.forEach((f) => {
     });
   }
 });
+
+/* ===== checkbox 计算代理（供 v-model 成员表达式使用） ===== */
+const checkboxModels = reactive({});
+function buildCheckboxModels() {
+  props.schema.fields.forEach((f) => {
+    if (f.type !== 'checkbox') return;
+    checkboxModels[f.name] = computed({
+      get() {
+        return toArray(local[f.name]);
+      },
+      set(arr) {
+        onFieldUpdate(f, toCSV(arr));
+      },
+    });
+  });
+}
+buildCheckboxModels();
 
 /* ----- date/time mirrors ----- */
 const dateModel = reactive({});
@@ -733,15 +764,30 @@ function ensureDateTimeModels() {
 }
 ensureDateTimeModels();
 
+/* 防递归：同步 props → local（差异复制） */
 watch(
   () => props.modelValue,
   (nv) => {
     const next = buildWithDefaults(props.schema.fields, nv || {});
+    let dirty = false;
     Object.keys(next).forEach((k) => {
-      local[k] = next[k];
+      if (!isShallowEqual(local[k], next[k])) {
+        local[k] = next[k];
+        dirty = true;
+      }
     });
-    ensureDateTimeModels();
+    if (dirty) {
+      ensureDateTimeModels();
+      buildCheckboxModels(); // 外部变更时，确保 computed 读的是最新 local
+    }
   },
+  { deep: true }
+);
+
+/* 如 schema 可能动态变更，同步 checkboxModels（可选） */
+watch(
+  () => props.schema.fields,
+  () => buildCheckboxModels(),
   { deep: true }
 );
 
@@ -769,21 +815,49 @@ function safeClone(value) {
     return walk(value);
   }
 }
+function isShallowEqual(a, b) {
+  if (a === b) return true;
+  if (Array.isArray(a) && Array.isArray(b))
+    return a.length === b.length && a.every((v, i) => a[i] === b[i]);
+  if (typeof a === 'object' && typeof b === 'object' && a && b) {
+    const ka = Object.keys(a),
+      kb = Object.keys(b);
+    if (ka.length !== kb.length) return false;
+    return ka.every((k) => a[k] === b[k]);
+  }
+  return false;
+}
+function deepEqual(a, b) {
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+}
 function syncUpstream(name, value) {
   const payload = safeClone(local);
-  emit('update:modelValue', payload);
+  if (!deepEqual(payload, props.modelValue)) {
+    emit('update:modelValue', payload);
+  }
   const field = props.schema.fields.find((x) => x.name === name) || null;
   const evt = { name, value, model: payload, field };
   emit('change', evt);
   emit('field-change', evt);
 }
 function onFieldUpdate(f, val) {
-  local[f.name] = val;
-  syncUpstream(f.name, val);
+  const next = f?.type === 'checkbox' ? toCSV(Array.isArray(val) ? val : toArray(val)) : val;
+  if (!isShallowEqual(local[f.name], next)) {
+    local[f.name] = next;
+    syncUpstream(f.name, next);
+  }
 }
 
 /* ----- visibility / required / disabled / readonly / validate ----- */
-const get = (k) => local[k];
+const get = (k) => {
+  const f = findField(k);
+  if (f?.type === 'checkbox') return toArray(local[k]);
+  return local[k];
+};
 const isVisible = (f) => {
   const cond = f.visibleWhen;
   if (!cond) return true;
@@ -822,44 +896,71 @@ function isReadonly(f) {
 
 function validateField(f) {
   if (!isVisible(f)) return true;
-  const val = get(f.name);
+  const logicVal = get(f.name);
+
   if (isRequired(f)) {
-    if (f.type === 'uploader' || f.type === 'checkbox') {
-      if (!val || !val.length)
-        return f.type === 'uploader' ? `${f.label}为必传项` : `请选择${f.label}`;
-    } else if (val === '' || val === null || val === undefined) {
+    if (f.type === 'uploader') {
+      if (!logicVal || !logicVal.length) return `${f.label}为必传项`;
+    } else if (f.type === 'checkbox') {
+      if (!toArray(local[f.name]).length) return `请选择${f.label}`;
+    } else if (logicVal === '' || logicVal === null || logicVal === undefined) {
       return (
         (f.placeholder && f.placeholder.replace(/^请输入|^请选择/, '请填写')) || `请输入${f.label}`
       );
     }
   }
-  // checkbox 上限兜底
-  if (
-    f.type === 'checkbox' &&
-    Array.isArray(val) &&
-    typeof f.max === 'number' &&
-    val.length > f.max
-  ) {
-    return `${f.label}最多选择${f.max}项`;
+  if (f.type === 'checkbox') {
+    const arr = toArray(local[f.name]);
+    if (typeof f.max === 'number' && arr.length > f.max) {
+      return `${f.label}最多选择${f.max}项`;
+    }
   }
-  if (f.validate?.pattern && typeof val === 'string' && !f.validate.pattern.test(val)) {
+  if (
+    f.validate?.pattern &&
+    typeof logicVal === 'string' &&
+    !new RegExp(f.validate.pattern).test(logicVal)
+  ) {
     return f.validate.message || `${f.label}格式不正确`;
   }
   if (typeof f.validate?.validator === 'function') {
-    const ret = f.validate.validator(val, local);
+    const ret = f.validate.validator(logicVal, local);
     if (ret !== true) return typeof ret === 'string' ? ret : `${f.label}不合法`;
   }
-  // checkbox extra 校验
+
+  // 上传校验
+  if (f.type === 'uploader' && Array.isArray(local[f.name]) && local[f.name].length) {
+    const files = local[f.name];
+    if (f.upload?.accept) {
+      const allow = f.upload.accept.split(',').map((s) => s.trim().toLowerCase().replace('.', ''));
+      const mismatch = files.some((fi) => {
+        const ext = (fi.name || '').split('.').pop()?.toLowerCase();
+        return ext && !allow.includes(ext);
+      });
+      if (mismatch) return `${f.label}仅支持：${f.upload.accept}`;
+    }
+    if (f.upload?.maxSize) {
+      const oversize = files.some((fi) => fi.size > f.upload.maxSize);
+      if (oversize)
+        return `${f.label}文件过大（≤ ${(f.upload.maxSize / 1024 / 1024).toFixed(1)}MB）`;
+    }
+  }
+
+  // checkbox extra
   if (f.type === 'checkbox' && Array.isArray(f.options)) {
+    const checked = toArray(local[f.name]);
     for (const op of f.options) {
-      if (op?.extra && local[f.name]?.includes(op.value)) {
+      if (op?.extra && checked.includes(op.value)) {
         const key = op.extra.key;
         const label = op.extra.label || '补充信息';
         const extraVal = local[key];
         if (op.extra.required && (extraVal === '' || extraVal === null || extraVal === undefined)) {
           return `请填写${label}`;
         }
-        if (op.extra.pattern && typeof extraVal === 'string' && !op.extra.pattern.test(extraVal)) {
+        if (
+          op.extra.pattern &&
+          typeof extraVal === 'string' &&
+          !new RegExp(op.extra.pattern).test(extraVal)
+        ) {
           return op.extra.message || `${label}格式不正确`;
         }
         if (typeof op.extra.validator === 'function') {
@@ -879,7 +980,7 @@ function validate() {
   return true;
 }
 
-/* ----- upload guard ----- */
+/* 选择文件前拦截 */
 function onBeforeRead(f, files) {
   if (!Array.isArray(files)) files = [files];
   if (f.upload?.maxSize) {
@@ -903,7 +1004,7 @@ function onBeforeRead(f, files) {
   return true;
 }
 
-/* ----- popups & caches ----- */
+/* 弹窗/缓存/搜索 */
 const popup = reactive({});
 const pickerColumnsCache = reactive({});
 const searchCache = reactive({});
@@ -947,20 +1048,15 @@ function onPickerConfirm(f, detail) {
   onFieldUpdate(f, typeof v === 'object' && v !== null ? (v[valueKey] ?? v) : v);
   popup[f.name] = false;
 }
-
-/* —— picker 展示辅助 —— */
-// 兼容静态/异步列
 function getPickerColumns(f) {
   if (Array.isArray(f.columns)) return f.columns;
   return pickerColumnsCache[f.name] || [];
 }
-// 将已选 value 映射到 label（支持 labelKey/valueKey）
 function getPickerLabel(f) {
   const valueKey = f.valueKey || 'value';
   const labelKey = f.labelKey || 'label';
   const v = local[f.name];
   if (typeof f.displayFormatter === 'function') return f.displayFormatter(v, local);
-
   const cols = getPickerColumns(f);
   const hit = cols.find((it) => (it && typeof it === 'object' ? it[valueKey] === v : it === v));
   if (!hit) return v ?? '';
@@ -969,9 +1065,7 @@ function getPickerLabel(f) {
 
 /* date/time */
 function openDate(f) {
-  guardOpen(f, () => {
-    popup[f.name] = true;
-  });
+  guardOpen(f, () => (popup[f.name] = true));
 }
 function mapColumnsType(dateType) {
   if (dateType === 'year-month') return ['year', 'month'];
@@ -1043,9 +1137,7 @@ function onDateTimeConfirmV4(f) {
 
 /* area/cascader */
 function openArea(f) {
-  guardOpen(f, () => {
-    popup[f.name] = true;
-  });
+  guardOpen(f, () => (popup[f.name] = true));
 }
 function onAreaConfirm(f, detail) {
   const sel = detail.selectedOptions || [];
@@ -1055,9 +1147,7 @@ function onAreaConfirm(f, detail) {
   popup[f.name] = false;
 }
 function openCascader(f) {
-  guardOpen(f, () => {
-    popup[f.name] = true;
-  });
+  guardOpen(f, () => (popup[f.name] = true));
 }
 function onCascaderFinish(f, { selectedOptions }) {
   const text = (selectedOptions || []).map((i) => i.text || i.label).join('/');
@@ -1137,8 +1227,12 @@ function onCancel() {
 /* expose */
 function clear() {
   const next = buildWithDefaults(props.schema.fields, {});
+  let dirty = false;
   Object.keys(next).forEach((k) => {
-    local[k] = next[k];
+    if (!isShallowEqual(local[k], next[k])) {
+      local[k] = next[k];
+      dirty = true;
+    }
   });
   props.schema.fields.forEach((f) => {
     if (f.type === 'checkbox' && Array.isArray(f.options)) {
@@ -1149,20 +1243,18 @@ function clear() {
       });
     }
   });
-  Object.keys(dateModel).forEach((k) => {
-    dateModel[k] = undefined;
-  });
-  Object.keys(timeModel).forEach((k) => {
-    timeModel[k] = undefined;
-  });
+  Object.keys(dateModel).forEach((k) => (dateModel[k] = undefined));
+  Object.keys(timeModel).forEach((k) => (timeModel[k] = undefined));
   ensureDateTimeModels();
-  syncUpstream('__clear__', safeClone(local));
+  buildCheckboxModels();
+  if (dirty) syncUpstream('__clear__', safeClone(local));
 }
 function setField(name, value) {
   const f = props.schema.fields.find((x) => x.name === name);
   if (!f) return;
-  onFieldUpdate(f, value);
+  onFieldUpdate(f, f.type === 'checkbox' ? toCSV(toArray(value)) : value);
 }
+
 defineExpose({ clear, validate, setField });
 </script>
 
@@ -1172,6 +1264,7 @@ $dc-radius: 6px;
 
 .dc-container {
   padding: 10px;
+  background: var(--van-cell-group-background);
 }
 
 .dc-recruit-form.dc-compact {
@@ -1309,7 +1402,7 @@ $dc-radius: 6px;
 }
 
 .dc-actions-spacer {
-  height: calc(40px + 8px + (8px) + env(safe-area-inset-bottom) + 32px);
+  height: calc(40px + 8px + 8px + env(safe-area-inset-bottom) + 32px);
 }
 
 .dc-form-actions-nonfixed {
