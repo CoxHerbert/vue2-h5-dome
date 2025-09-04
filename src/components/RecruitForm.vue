@@ -526,27 +526,33 @@
               </van-popup>
             </template>
 
-            <!-- ===================== UPLOADER ===================== -->
+            <!-- ===================== UPLOADER（已替换为 DcUploader） ===================== -->
             <div v-else-if="f.type === 'uploader'">
               <div v-if="getLayout(f) === 'vertical'" class="dc-field-vertical">
                 <div class="dc-field-label" :class="{ required: isRequired(f) }">
                   {{ f.label }}
                 </div>
                 <div class="dc-pad-16">
-                  <van-uploader
-                    v-model="local[f.name]"
+                  <Upload
+                    v-model="uploaderModels[f.name]"
+                    :multiple="(f.upload?.maxCount || 1) > 1"
                     :max-count="f.upload?.maxCount || 1"
-                    :before-read="(files) => onBeforeRead(f, files)"
+                    :accept="acceptFor(f)"
+                    :max-size-m-b="
+                      f.upload?.maxSize ? Math.round(f.upload.maxSize / 1024 / 1024) : null
+                    "
+                    :uploader="(file) => doUpload(f, file)"
                     :disabled="isDisabled(f)"
-                    @after-read="() => onFieldUpdate(f, local[f.name])"
-                    @delete="() => onFieldUpdate(f, local[f.name])"
+                    :placeholder="f.placeholder || '请上传文件'"
+                    :deletable="f.upload?.deletable ?? true"
+                    :show-type-hint="true"
                   />
-                  <div class="dc-tip">
+                  <!-- <div class="dc-tip">
                     {{ f.placeholder }}
                   </div>
                   <div v-if="fieldDesc(f)" class="dc-desc">
                     {{ fieldDesc(f) }}
-                  </div>
+                  </div> -->
                 </div>
               </div>
               <template v-else>
@@ -556,13 +562,19 @@
                   :title-style="cellTitleStyle(f)"
                 />
                 <div class="dc-pad-16">
-                  <van-uploader
-                    v-model="local[f.name]"
+                  <Upload
+                    v-model="uploaderModels[f.name]"
+                    :multiple="(f.upload?.maxCount || 1) > 1"
                     :max-count="f.upload?.maxCount || 1"
-                    :before-read="(files) => onBeforeRead(f, files)"
+                    :accept="acceptFor(f)"
+                    :max-size-m-b="
+                      f.upload?.maxSize ? Math.round(f.upload.maxSize / 1024 / 1024) : null
+                    "
+                    :uploader="(file) => doUpload(f, file)"
                     :disabled="isDisabled(f)"
-                    @after-read="() => onFieldUpdate(f, local[f.name])"
-                    @delete="() => onFieldUpdate(f, local[f.name])"
+                    :placeholder="f.placeholder || '请上传文件'"
+                    :deletable="f.upload?.deletable ?? true"
+                    :show-type-hint="true"
                   />
                   <div class="dc-tip">
                     {{ f.placeholder }}
@@ -573,6 +585,7 @@
                 </div>
               </template>
             </div>
+            <!-- =================== /UPLOADER =================== -->
           </template>
         </template>
       </van-cell-group>
@@ -635,10 +648,10 @@ import { showToast } from 'vant';
 
 /** change 事件入参：
  * {
- *   name: string;               // 字段名
- *   value: any;                 // 新值
- *   model: Record<string, any>; // 深拷贝后的当前表单数据
- *   field: any;                 // 字段 schema
+ *   name: string;
+ *   value: any;
+ *   model: Record<string, any>;
+ *   field: any;
  * }
  */
 
@@ -684,8 +697,8 @@ function findField(name) {
 
 /* ---------------- helpers ---------------- */
 function getDefaultByType(f) {
-  if (f.type === 'checkbox') return ''; // 多选对外字符串
-  if (f.type === 'uploader') return []; // 上传保持数组
+  if (f.type === 'checkbox') return '';
+  if (f.type === 'uploader') return []; // 维持原有：上传字段内部仍保存“URL数组”
   return f.defaultValue ?? '';
 }
 function buildWithDefaults(fields, incoming = {}) {
@@ -745,6 +758,25 @@ function buildCheckboxModels() {
 }
 buildCheckboxModels();
 
+/* ===== uploader 计算代理（将 URL 数组 ↔ 逗号字符串，供 DcUploader 使用） ===== */
+const uploaderModels = reactive({});
+function buildUploaderModels() {
+  props.schema.fields.forEach((f) => {
+    if (f.type !== 'uploader') return;
+    uploaderModels[f.name] = computed({
+      get() {
+        // DcUploader 需要字符串，内部展示/删除用；本地依旧保存数组
+        return toCSV(local[f.name]);
+      },
+      set(csv) {
+        const arr = toArray(csv); // URL[]
+        onFieldUpdate(f, arr);
+      },
+    });
+  });
+}
+buildUploaderModels();
+
 /* ----- date/time mirrors ----- */
 const dateModel = reactive({});
 const timeModel = reactive({});
@@ -778,16 +810,20 @@ watch(
     });
     if (dirty) {
       ensureDateTimeModels();
-      buildCheckboxModels(); // 外部变更时，确保 computed 读的是最新 local
+      buildCheckboxModels();
+      buildUploaderModels(); // <— 同步构建 uploader 代理
     }
   },
   { deep: true }
 );
 
-/* 如 schema 可能动态变更，同步 checkboxModels（可选） */
+/* 如 schema 可能动态变更，同步 models（可选） */
 watch(
   () => props.schema.fields,
-  () => buildCheckboxModels(),
+  () => {
+    buildCheckboxModels();
+    buildUploaderModels();
+  },
   { deep: true }
 );
 
@@ -927,7 +963,7 @@ function validateField(f) {
     if (ret !== true) return typeof ret === 'string' ? ret : `${f.label}不合法`;
   }
 
-  // 上传校验
+  // 上传校验（保持向后兼容：若本地是 URL 数组，则下列 size/扩展名检查自然跳过）
   if (f.type === 'uploader' && Array.isArray(local[f.name]) && local[f.name].length) {
     const files = local[f.name];
     if (f.upload?.accept) {
@@ -980,7 +1016,30 @@ function validate() {
   return true;
 }
 
-/* 选择文件前拦截 */
+/* ====== DcUploader 辅助 ====== */
+// 将 'png,jpg,application/pdf' 规范化为 '.png,.jpg,application/pdf'
+function acceptFor(f) {
+  const acc = f.upload?.accept;
+  if (!acc) return 'image/*';
+  const items = String(acc)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((x) => (x.includes('/') || x.startsWith('.') || x === '*/*' ? x : `.${x}`));
+  return items.join(',');
+}
+// 实际上传：schema.upload.uploader 必须返回 URL 字符串
+async function doUpload(f, file) {
+  if (typeof f.upload?.uploader !== 'function') {
+    showToast('未配置上传函数：upload.uploader(file) 应返回 URL');
+    throw new Error('Missing uploader');
+  }
+  const url = await f.upload.uploader(file);
+  if (!url) throw new Error('上传接口未返回 URL');
+  return url;
+}
+
+/* 选择文件前拦截（原逻辑仍保留给“非 DcUploader”场景，当前已用 DcUploader 的前置校验） */
 function onBeforeRead(f, files) {
   if (!Array.isArray(files)) files = [files];
   if (f.upload?.maxSize) {
@@ -1004,7 +1063,7 @@ function onBeforeRead(f, files) {
   return true;
 }
 
-/* 弹窗/缓存/搜索 */
+/* 弹窗/缓存/搜索（原样） */
 const popup = reactive({});
 const pickerColumnsCache = reactive({});
 const searchCache = reactive({});
@@ -1247,6 +1306,7 @@ function clear() {
   Object.keys(timeModel).forEach((k) => (timeModel[k] = undefined));
   ensureDateTimeModels();
   buildCheckboxModels();
+  buildUploaderModels();
   if (dirty) syncUpstream('__clear__', safeClone(local));
 }
 function setField(name, value) {

@@ -1,24 +1,21 @@
 <!-- src/pages/recruit/campus/apply.vue -->
 <template>
-  <div>
-    <img class="banner" src="/images/recruit/campus/apply/banner.svg" alt="banner" />
-    {{ form }}
-    <RecruitForm
-      v-model="form"
-      :schema="schema"
-      submit-text="提交"
-      clear-text="清空"
-      cancel-text="取消"
-      :show-cancel="true"
-      :show-clear="true"
-      :compact="true"
-      :fixed-actions="true"
-      @submit="handleSubmit"
-      @clear="handleClear"
-      @cancel="handleCancel"
-      @change="handleChange"
-    />
-  </div>
+  <img class="banner" src="/images/recruit/campus/apply/banner.svg" alt="banner" />
+  <RecruitForm
+    v-model="form"
+    :schema="schema"
+    submit-text="提交"
+    clear-text="清空"
+    cancel-text="取消"
+    :show-cancel="true"
+    :show-clear="true"
+    :compact="true"
+    :fixed-actions="true"
+    @submit="handleSubmit"
+    @clear="handleClear"
+    @cancel="handleCancel"
+    @change="handleChange"
+  />
 </template>
 
 <script setup>
