@@ -234,11 +234,10 @@ const handleAfterRead = async (fileOrFiles) => {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .dc-uploader {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 .dc-uploader__header {
   display: flex;
@@ -253,10 +252,17 @@ const handleAfterRead = async (fileOrFiles) => {
   color: var(--van-gray-6);
   font-size: 12px;
 }
-.dc-uploader__list :deep(.van-cell__title) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.dc-uploader__list {
+  :deep(.van-cell__title) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  :deep(.van-cell) {
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
 }
 .mr8 {
   margin-right: 8px;
