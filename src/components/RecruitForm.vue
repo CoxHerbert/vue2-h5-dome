@@ -1,4 +1,3 @@
-<!-- src/components/ConfigRecruitForm.vue -->
 <template>
   <div class="dc-recruit-form" :class="{ 'dc-compact': compact }">
     <div class="dc-container">
@@ -526,7 +525,7 @@
               </van-popup>
             </template>
 
-            <!-- ===================== UPLOADER（已替换为 DcUploader） ===================== -->
+            <!-- ===================== UPLOADER（DcUploader） ===================== -->
             <div v-else-if="f.type === 'uploader'">
               <div v-if="getLayout(f) === 'vertical'" class="dc-field-vertical">
                 <div class="dc-field-label" :class="{ required: isRequired(f) }">
@@ -547,12 +546,6 @@
                     :show-type-hint="true"
                     @change="(val) => onFieldUpdate(f, val)"
                   />
-                  <!-- <div class="dc-tip">
-                    {{ f.placeholder }}
-                  </div>
-                  <div v-if="fieldDesc(f)" class="dc-desc">
-                    {{ fieldDesc(f) }}
-                  </div> -->
                 </div>
               </div>
               <template v-else>
@@ -698,7 +691,11 @@ function findField(name) {
 /* ---------------- helpers ---------------- */
 function getDefaultByType(f) {
   if (f.type === 'checkbox') return '';
-  if (f.type === 'uploader') return []; // 维持原有：上传字段内部仍保存“URL数组”
+  if (f.type === 'uploader') {
+    // ✅ 与 DcUploader 的 v-model 对齐：单选 null，多选 []
+    const multiple = (f.upload?.maxCount || 1) > 1;
+    return multiple ? [] : null;
+  }
   return f.defaultValue ?? '';
 }
 function buildWithDefaults(fields, incoming = {}) {
@@ -758,19 +755,55 @@ function buildCheckboxModels() {
 }
 buildCheckboxModels();
 
-/* ===== uploader 计算代理（将 URL 数组 ↔ 逗号字符串，供 DcUploader 使用） ===== */
+/* ===== uploader 计算代理（对象直传，兼容旧数据） ===== */
 const uploaderModels = reactive({});
+
+// 兼容旧值：将字符串/数组字符串/对象数组 转换成 DcUploader 期望的形态
+function coerceToVmShape(val, multiple) {
+  if (multiple) {
+    if (Array.isArray(val)) {
+      return val
+        .map((x) =>
+          typeof x === 'string'
+            ? { path: x, attachId: '' }
+            : x && typeof x === 'object'
+              ? { path: x.path || x.name || '', attachId: x.attachId || x.id || '' }
+              : null
+        )
+        .filter((x) => x && x.path);
+    }
+    return [];
+  } else {
+    if (val && typeof val === 'object') {
+      const path = val.link || val.name || '';
+      const attachId = val.attachId || val.id || '';
+      return path ? { path, attachId } : null;
+    }
+    return null;
+  }
+}
+
 function buildUploaderModels() {
   props.schema.fields.forEach((f) => {
     if (f.type !== 'uploader') return;
+    const multiple = (f.upload?.maxCount || 1) > 1;
+
     uploaderModels[f.name] = computed({
       get() {
-        // DcUploader 需要字符串，内部展示/删除用；本地依旧保存数组
-        return toCSV(local[f.name]);
+        return coerceToVmShape(local[f.name], multiple);
       },
-      set(csv) {
-        const arr = toArray(csv); // URL[]
-        onFieldUpdate(f, arr);
+      set(vmVal) {
+        // 仅保留表单需要的瘦身数据：{path, attachId}
+        if (multiple) {
+          local[f.name] = (Array.isArray(vmVal) ? vmVal : [])
+            .filter((x) => x && x.path)
+            .map((x) => ({ path: x.path, attachId: x.attachId || '' }));
+        } else {
+          local[f.name] =
+            vmVal && vmVal.path ? { path: vmVal.path, attachId: vmVal.attachId || '' } : null;
+        }
+        // 同步到父层
+        syncUpstream(f.name, local[f.name]);
       },
     });
   });
@@ -811,7 +844,7 @@ watch(
     if (dirty) {
       ensureDateTimeModels();
       buildCheckboxModels();
-      buildUploaderModels(); // <— 同步构建 uploader 代理
+      buildUploaderModels();
     }
   },
   { deep: true }
@@ -933,10 +966,23 @@ function isReadonly(f) {
 function validateField(f) {
   if (!isVisible(f)) return true;
   const logicVal = get(f.name);
-
   if (isRequired(f)) {
     if (f.type === 'uploader') {
-      if (!logicVal || !logicVal.length) return `${f.label}为必传项`;
+      const multiple = (f.upload?.maxCount || 1) > 1;
+
+      // ⚡️强制标准化，避免 local 里是字符串 / 异构对象
+      const coerced = coerceToVmShape(logicVal, multiple);
+
+      let has = false;
+      if (multiple) {
+        has = Array.isArray(coerced) && coerced.some((it) => it && it.path);
+      } else {
+        has = coerced && coerced.path;
+      }
+
+      if (!has) {
+        return `${f.label}为必传项`;
+      }
     } else if (f.type === 'checkbox') {
       if (!toArray(local[f.name]).length) return `请选择${f.label}`;
     } else if (logicVal === '' || logicVal === null || logicVal === undefined) {
@@ -945,12 +991,14 @@ function validateField(f) {
       );
     }
   }
+
   if (f.type === 'checkbox') {
     const arr = toArray(local[f.name]);
     if (typeof f.max === 'number' && arr.length > f.max) {
       return `${f.label}最多选择${f.max}项`;
     }
   }
+
   if (
     f.validate?.pattern &&
     typeof logicVal === 'string' &&
@@ -963,23 +1011,8 @@ function validateField(f) {
     if (ret !== true) return typeof ret === 'string' ? ret : `${f.label}不合法`;
   }
 
-  // 上传校验（保持向后兼容：若本地是 URL 数组，则下列 size/扩展名检查自然跳过）
-  if (f.type === 'uploader' && Array.isArray(local[f.name]) && local[f.name].length) {
-    const files = local[f.name];
-    if (f.upload?.accept) {
-      const allow = f.upload.accept.split(',').map((s) => s.trim().toLowerCase().replace('.', ''));
-      const mismatch = files.some((fi) => {
-        const ext = (fi.name || '').split('.').pop()?.toLowerCase();
-        return ext && !allow.includes(ext);
-      });
-      if (mismatch) return `${f.label}仅支持：${f.upload.accept}`;
-    }
-    if (f.upload?.maxSize) {
-      const oversize = files.some((fi) => fi.size > f.upload.maxSize);
-      if (oversize)
-        return `${f.label}文件过大（≤ ${(f.upload.maxSize / 1024 / 1024).toFixed(1)}MB）`;
-    }
-  }
+  // 上传的扩展名/大小校验建议交给 DcUploader 选择前处理；这里仅做“是否有值”的业务校验
+  // 如需额外校验，可在 f.validate.validator 中自定义
 
   // checkbox extra
   if (f.type === 'checkbox' && Array.isArray(f.options)) {
@@ -1027,40 +1060,6 @@ function acceptFor(f) {
     .filter(Boolean)
     .map((x) => (x.includes('/') || x.startsWith('.') || x === '*/*' ? x : `.${x}`));
   return items.join(',');
-}
-// 实际上传：schema.upload.uploader 必须返回 URL 字符串
-async function doUpload(f, file) {
-  if (typeof f.upload?.uploader !== 'function') {
-    showToast('未配置上传函数：upload.uploader(file) 应返回 URL');
-    throw new Error('Missing uploader');
-  }
-  const url = await f.upload.uploader(file);
-  if (!url) throw new Error('上传接口未返回 URL');
-  return url;
-}
-
-/* 选择文件前拦截（原逻辑仍保留给“非 DcUploader”场景，当前已用 DcUploader 的前置校验） */
-function onBeforeRead(f, files) {
-  if (!Array.isArray(files)) files = [files];
-  if (f.upload?.maxSize) {
-    const oversize = files.some((fi) => fi.size > f.upload.maxSize);
-    if (oversize) {
-      showToast(`文件过大（≤ ${(f.upload.maxSize / 1024 / 1024).toFixed(1)}MB）`);
-      return false;
-    }
-  }
-  if (f.upload?.accept) {
-    const allow = f.upload.accept.split(',').map((s) => s.trim().toLowerCase().replace('.', ''));
-    const mismatch = files.some((fi) => {
-      const ext = (fi.name || '').split('.').pop()?.toLowerCase();
-      return ext && !allow.includes(ext);
-    });
-    if (mismatch) {
-      showToast(`仅支持：${f.upload.accept}`);
-      return false;
-    }
-  }
-  return true;
 }
 
 /* 弹窗/缓存/搜索（原样） */

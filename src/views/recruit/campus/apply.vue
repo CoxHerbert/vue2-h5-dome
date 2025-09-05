@@ -1,6 +1,7 @@
 <!-- src/views/recruit/campus/apply.vue -->
 <template>
   <img class="banner" src="/images/recruit/campus/apply/banner.svg" alt="banner" />
+  {{ form }}
   <RecruitForm
     v-model="form"
     :schema="schema"
@@ -127,7 +128,7 @@ const schema = {
     },
     {
       type: 'uploader',
-      name: 'resumeUrl',
+      name: 'file',
       label: '简历上传',
       required: true,
       placeholder: '文件命名方式：“学校+专业+应聘岗位+姓名”',
@@ -147,22 +148,16 @@ const form = ref({
   phone: '15824223890',
   graduateSchool: '麻省理工学院',
   professionalName: '金融学',
-  applyChannel: '',
-  joinPostIds: '',
-  desiredLocation: '',
-  resumeUrl: [
-    {
-      file: {},
-      status: '',
-      message: '',
-      objectUrl: 'blob:http://localhost:5174/0c5ac8d4-e6e8-48f6-8a2d-51e037676925',
-    },
-  ],
-  referrerName: '王芝林',
+  applyChannel: 'classmate_ref',
+  joinPostIds: 'mech',
+  desiredLocation: 'jiashan',
+  file: '',
+  referrerName: '1111111',
 });
 
 /** ====== 组件事件 ====== */
 function handleSubmit(payload) {
+  console.log(payload);
   Api.recruit.campus.apply
     .postTalentUser(payload)
     .then((res) => {
@@ -180,8 +175,11 @@ function handleCancel() {
   showToast('已取消');
   // 可按需求返回上一页：history.back()
 }
-function handleChange(evt) {
-  console.log(evt);
+function handleChange({ field, model, name, value }) {
+  // if (name === 'file') {
+  //   form.value.resumeUrl = value.resumeUrl;
+  //   form.value.resumeId = value.attachId;
+  // }
 }
 </script>
 

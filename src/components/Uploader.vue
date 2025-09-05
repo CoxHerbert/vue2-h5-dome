@@ -1,9 +1,8 @@
 <!-- src/components/DcUploader.vue -->
 <template>
   <div class="dc-uploader">
-    <!-- 选择前限制 -->
     <van-uploader
-      v-model:file-list="fileList"
+      v-model="fileList"
       :accept="acceptStr"
       :multiple="multiple"
       :max-count="maxCountAttr"
@@ -17,9 +16,8 @@
       @delete="onDelete"
     />
 
-    <!-- 顶部说明 -->
     <div class="dc-uploader__header">
-      <div v-if="placeholder && filePaths.length === 0" class="placeholder">
+      <div v-if="placeholder && simpleModels.length === 0" class="placeholder">
         {{ placeholder }}
       </div>
       <div v-if="showTypeHint && acceptDisplay" class="type-hint">
@@ -29,17 +27,15 @@
       </div>
     </div>
 
-    <!-- 列表（通用展示） -->
+    <!-- 列表（统一多文件样式 + 仅展示文件名称） -->
     <van-cell-group v-if="fileObjs.length" inset class="dc-uploader__list">
       <van-cell
         v-for="(obj, i) in fileObjs"
-        :key="(obj.attachId || obj.link || obj.name || '') + '_' + i"
+        :key="(obj.attachId || obj.name || '') + '_' + i"
         :title="displayName(obj)"
-        :label="obj.name"
+        is-link
+        @click="downloadAt(i)"
       >
-        <template #icon>
-          <van-icon :name="isImageObj(obj) ? 'photo-o' : 'description'" class="mr8" />
-        </template>
         <template #right-icon>
           <van-icon v-if="deletable && !disabled" name="delete-o" @click.stop="removeAt(i)" />
         </template>
@@ -52,52 +48,39 @@
 import { ref, computed, watch } from 'vue';
 import { showToast } from 'vant';
 import Api from '@/api/index';
+import { DownloadUtil } from '@/utils/download';
 
 /**
- * 期望：
- * - v-model （字符串）："upload/selfResume/a.docx,upload/selfResume/b.png"
- * - @change （数组）：[{ link, domain, name, originalName, attachId }, ...]
+ * v-model：
+ * - multiple=false: { path: string, attachId: string } | null
+ * - multiple=true : Array<{ path: string, attachId: string }>
+ *
+ * @change：返回 [{ link, name, originalName, attachId }]
  */
 const props = defineProps({
-  modelValue: { type: String, default: '' }, // 仅路径串（后端对象的 name）
+  modelValue: { type: [Object, Array, String, null], default: null },
   multiple: { type: Boolean, default: true },
   maxCount: { type: Number, default: Infinity },
   disabled: { type: Boolean, default: false },
-
-  // 字符串或数组：'.png,.jpg,application/pdf' | ['.png','.jpg','image/*']
   accept: { type: [String, Array], default: () => ['image/*'] },
-
-  // 单文件最大尺寸（MB）
   maxSizeMB: { type: Number, default: null },
-
-  // 上传函数：(formData, extraParams) => Promise<UploadObj | string | {data: UploadObj}>
-  // UploadObj 形如：{ link, domain, name, originalName, attachId }
   uploader: { type: Function, default: Api?.common?.upload?.postFile },
-
-  // 展示
   placeholder: { type: String, default: '请上传文件' },
   showTypeHint: { type: Boolean, default: true },
-  uploadText: { type: String, default: '' },
   deletable: { type: Boolean, default: true },
-
-  // v-model 分隔符
-  separator: { type: String, default: ',' },
-
-  // 当只有路径时（无 link/domain），用于拼出预览 url：`${previewBaseDomain}/${name}`
   previewBaseDomain: { type: String, default: '' },
-
-  // 服务端保存目录（作为上传额外参数）
   serverDir: { type: String, default: 'upload/selfResume' },
+  apiPrefix: { type: String, default: '/api' },
 });
 
 const emits = defineEmits(['update:modelValue', 'change']);
 
-// —— 内部状态 —— //
-const fileObjs = ref([]); // 完整对象数组：[{ link, domain, name, originalName, attachId }]
-const filePaths = ref([]); // 路径数组：['upload/selfResume/a.docx', ...] —— 来自 v-model
-const fileList = ref([]); // 供 Vant 展示：[{ url, status, isImage, message }, ...]
+/** 仅保存四字段 */
+const fileObjs = ref([]); // [{ link, name, originalName, attachId }]
+const simpleModels = ref([]); // [{ path, attachId }]
+const fileList = ref([]); // Vant 预览
 
-// —— accept / maxCount / 文案 —— //
+/* ============ accept / maxCount ============ */
 const acceptStr = computed(() =>
   Array.isArray(props.accept) ? props.accept.join(',') : props.accept || ''
 );
@@ -108,136 +91,182 @@ const acceptDisplay = computed(() =>
     .filter(Boolean)
     .join('、')
 );
-const maxCountAttr = computed(() => (props.maxCount === Infinity ? undefined : props.maxCount));
-const uploadTextAttr = computed(() => props.uploadText || props.placeholder);
+const maxCountAttr = computed(() =>
+  !props.multiple ? 1 : props.maxCount === Infinity ? undefined : props.maxCount
+);
 
-// —— 工具 —— //
-const parseModel = (val) =>
-  (val || '')
-    .split(props.separator)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-const stringifyModel = (arr) => (arr || []).filter(Boolean).join(props.separator);
-
+/* ============ 工具 ============ */
 const extname = (nameOrUrl = '') => {
-  const qIdx = nameOrUrl.indexOf('?');
-  const clean = qIdx >= 0 ? nameOrUrl.slice(0, qIdx) : nameOrUrl;
+  const clean = String(nameOrUrl || '').split('?')[0];
   const i = clean.lastIndexOf('.');
   return i >= 0 ? clean.slice(i).toLowerCase() : '';
 };
-
 const basename = (p = '') => {
-  const qIdx = p.indexOf('?');
-  const clean = qIdx >= 0 ? p.slice(0, qIdx) : p;
+  const clean = String(p || '').split('?')[0];
   const i = clean.lastIndexOf('/');
   return i >= 0 ? clean.slice(i + 1) : clean;
 };
-
 const isImageExt = (ex) => ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.svg'].includes(ex);
-
 const isImageObj = (obj) => {
   const hint = obj?.originalName || obj?.name || obj?.link || '';
   return isImageExt(extname(hint));
 };
-
 const displayName = (obj) => obj?.originalName || basename(obj?.name || obj?.link || '');
-
 const joinUrl = (a, b) => {
-  if (!a) return b || '';
-  if (!b) return a;
-  return `${a.replace(/\/+$/, '')}/${b.replace(/^\/+/, '')}`;
+  const A = String(a || ''),
+    B = String(b || '');
+  if (!A) return B;
+  if (!B) return A;
+  return `${A.replace(/\/+$/, '')}/${B.replace(/^\/+/, '')}`;
+};
+const composeLink = (obj) => {
+  const link = String(obj?.link || '');
+  const name = String(obj?.name || '');
+  if (link) return link;
+  if (props.previewBaseDomain && name) return joinUrl(props.previewBaseDomain, name);
+  return '';
 };
 
-// 兼容仅路径，拼出预览 url
-const composeUrl = (obj) => {
-  if (obj?.link) return obj.link;
-  if (obj?.domain && obj?.name) return joinUrl(obj.domain, obj.name);
-  if (props.previewBaseDomain && obj?.name) return joinUrl(props.previewBaseDomain, obj.name);
-  return ''; // 没有可预览的 URL，也能正常展示
+/* ============ 入口保险：深提取 path / attachId，强制字符串化 ============ */
+const getPathFromAny = (val) => {
+  // 字符串
+  if (typeof val === 'string') return val.trim();
+
+  // File
+  if (typeof File !== 'undefined' && val instanceof File) return val.name || '';
+
+  // 对象（含嵌套）
+  if (val && typeof val === 'object') {
+    const pick = (obj) => {
+      if (!obj || typeof obj !== 'object') return '';
+      if (typeof obj.path === 'string' && obj.path) return obj.path.trim();
+      if (typeof obj.name === 'string' && obj.name) return obj.name.trim();
+      if (typeof obj.url === 'string' && obj.url) return obj.url.trim();
+      if (typeof obj.link === 'string' && obj.link) return obj.link.trim();
+      return '';
+    };
+    let p = pick(val);
+    if (p) return p;
+    if (val.path && typeof val.path === 'object') {
+      p = pick(val.path);
+      if (p) return p;
+    }
+  }
+
+  return '';
 };
 
-// 统一归一化上传结果
-const normalizeUploadResult = (res, rawFile) => {
-  // 兼容 { data: {...} }
-  if (res && typeof res === 'object' && 'data' in res && res.data) res = res.data;
-  console.log(res, '-----+++++');
-  if (res && typeof res === 'object') {
-    return {
-      link: res.link || res.url || '',
-      domain: res.domain || '',
-      name: res.name || res.path || '',
-      originalName: res.originalName || rawFile?.name || basename(res.name || res.link || ''),
-      attachId: res.attachId || res.id || '',
-    };
+const getAttachIdFromAny = (val) => {
+  if (val && typeof val === 'object') {
+    if (typeof val.attachId === 'string') return val.attachId;
+    if (typeof val.id === 'string') return val.id;
   }
-  if (typeof res === 'string') {
-    const looksLikeHttp = /^https?:\/\//i.test(res);
-    return {
-      link: looksLikeHttp
-        ? res
-        : props.previewBaseDomain
-          ? joinUrl(props.previewBaseDomain, res)
-          : '',
-      domain: looksLikeHttp ? '' : props.previewBaseDomain || '',
-      name: looksLikeHttp ? '' : res,
-      originalName: rawFile?.name || basename(res),
-      attachId: '',
-    };
-  }
+  return '';
+};
+
+/* ============ 简化模型 <-> 展示对象（四字段），中间再强制字符串化 ============ */
+const toSimple = (full) => ({
+  path: String(full?.name || ''),
+  attachId: String(full?.attachId || ''),
+});
+
+const fromSimple = (simple) => {
+  const rawPath = getPathFromAny(simple?.path ?? simple);
+  const name = String(rawPath || '');
+  const attachId = String(getAttachIdFromAny(simple) || '');
+
+  // 若 name 是 URL 也能用，但我们仍把 link 作为最终预览入口
+  const tentative = { name, link: '', originalName: '' };
+  const link = composeLink(tentative); // 会用 previewBaseDomain + name 拼
+  const originalName = String(basename(name) || basename(link) || '');
+
   return {
-    link: '',
-    domain: '',
-    name: '',
-    originalName: rawFile?.name || '',
-    attachId: '',
+    link: String(link || ''),
+    name: String(name || ''),
+    originalName,
+    attachId,
   };
 };
 
-// —— emit 工具 —— //
+/* ============ emit：出口再保险，全部 String(...) ============ */
 const emitChange = () => {
-  const fullList = fileObjs.value.map((o) => ({ ...o }));
-  console.log(fullList);
-  emits('change', fullList);
+  const list = fileObjs.value.map((o) => ({
+    link: String(o.link || composeLink(o) || ''),
+    name: String(o.name || ''),
+    originalName: String(o.originalName || basename(o.name || o.link || '') || ''),
+    attachId: String(o.attachId || ''),
+  }));
+  emits('change', list);
 };
 
-const updateModelOnly = () => {
-  const joined = stringifyModel(fileObjs.value.map((o) => o.name).filter(Boolean));
-  emits('update:modelValue', joined);
+const emitModel = () => {
+  if (props.multiple) {
+    emits(
+      'update:modelValue',
+      simpleModels.value.map((x) => ({
+        path: String(x.path || ''),
+        attachId: String(x.attachId || ''),
+      }))
+    );
+  } else {
+    const first = simpleModels.value[0];
+    emits(
+      'update:modelValue',
+      first ? { path: String(first.path || ''), attachId: String(first.attachId || '') } : null
+    );
+  }
 };
 
-// —— 模型 <-> 视图 同步 —— //
+/* ============ 模型 <-> 视图 同步（入口加固） ============ */
 const rebuildFileListFromObjs = () => {
   fileList.value = fileObjs.value.map((obj) => ({
-    url: composeUrl(obj),
+    url: composeLink(obj),
     isImage: isImageObj(obj),
     status: 'done',
   }));
 };
 
 const syncFromModel = () => {
-  const paths = parseModel(props.modelValue);
-  filePaths.value = paths;
-  // 用路径构造最小对象，便于展示；外层若需要完整对象，可在下一次上传或回填时传入
-  fileObjs.value = paths.map((p) => ({
-    link: props.previewBaseDomain ? joinUrl(props.previewBaseDomain, p) : '',
-    domain: props.previewBaseDomain || '',
-    name: p,
-    originalName: basename(p),
-    attachId: '',
+  const mv = props.modelValue;
+  let simples = [];
+  if (Array.isArray(mv)) {
+    simples = mv
+      .map((x) => ({ path: getPathFromAny(x?.path ?? x), attachId: getAttachIdFromAny(x) }))
+      .filter((x) => x.path);
+  } else if (mv && typeof mv === 'object') {
+    const path = getPathFromAny(mv?.path ?? mv);
+    const attachId = getAttachIdFromAny(mv);
+    simples = path ? [{ path, attachId }] : [];
+  } else if (typeof mv === 'string') {
+    simples = mv
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .map((p) => ({ path: p, attachId: '' }));
+  } else {
+    simples = [];
+  }
+
+  // 统一字符串化
+  simples = simples.map((s) => ({
+    path: String(s.path || ''),
+    attachId: String(s.attachId || ''),
   }));
+
+  simpleModels.value = props.multiple ? simples : simples.slice(0, 1);
+  fileObjs.value = simpleModels.value.map(fromSimple);
   rebuildFileListFromObjs();
 };
 
 watch(() => props.modelValue, syncFromModel, { immediate: true });
 
-// —— 删除 —— //
+/* ============ 删除 ============ */
 const removeAt = (index) => {
   fileObjs.value.splice(index, 1);
-  filePaths.value.splice(index, 1);
+  simpleModels.value.splice(index, 1);
   fileList.value.splice(index, 1);
-  updateModelOnly();
-  emitChange(); // 立刻通知外层：完整对象数组
+  emitModel();
+  emitChange();
 };
 
 const onDelete = (item, detail) => {
@@ -246,7 +275,7 @@ const onDelete = (item, detail) => {
   if (idx >= 0) removeAt(idx);
 };
 
-// —— 选择前校验（类型 / 大小 / 数量） —— //
+/* ============ 选择前校验 ============ */
 const normalizeAcceptItems = computed(() =>
   acceptStr.value
     .split(',')
@@ -271,12 +300,14 @@ const matchAccept = (file) => {
 const handleBeforeRead = (fileOrFiles) => {
   const arr = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
 
-  // 数量限制
-  if (props.maxCount !== Infinity && fileObjs.value.length + arr.length > props.maxCount) {
-    showToast(`最多上传 ${props.maxCount} 个文件`);
-    return false;
+  if (props.maxCount !== Infinity) {
+    const current = simpleModels.value.length;
+    const will = current + arr.length;
+    if (will > (maxCountAttr.value ?? Infinity)) {
+      showToast(`最多上传 ${maxCountAttr.value} 个文件`);
+      return false;
+    }
   }
-  // 类型 / 大小
   for (const it of arr) {
     const f = it instanceof File ? it : it.file;
     if (!matchAccept(f)) {
@@ -291,7 +322,7 @@ const handleBeforeRead = (fileOrFiles) => {
   return true;
 };
 
-// —— 选择后上传 —— //
+/* ============ 选择后上传（固定 {code,success,data}） ============ */
 const handleAfterRead = async (fileOrFiles) => {
   const items = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles];
   const params = { filePath: props.serverDir };
@@ -301,28 +332,42 @@ const handleAfterRead = async (fileOrFiles) => {
     it.status = 'uploading';
     it.message = '上传中...';
 
-    const data = new FormData();
-    data.append('file', rawFile);
+    const formData = new FormData();
+    formData.append('file', rawFile);
 
     try {
-      const res = await props.uploader(data, params);
-      console.log(res.data.data, '-----');
-      const obj = normalizeUploadResult(res.data.data, rawFile);
-      console.log(obj, 'obj');
+      const { data: resp } = await props.uploader(formData, params);
+      if (!resp || resp.code !== 200 || !resp.data) throw new Error(resp?.msg || '上传失败');
 
-      if (!obj.originalName) {
-        throw new Error('上传接口未返回文件路径（originalName）');
-      }
+      // 出口强制字符串化
+      const full = {
+        link: String(
+          resp.data.link ||
+            (props.previewBaseDomain && resp.data.name
+              ? joinUrl(props.previewBaseDomain, resp.data.name)
+              : '') ||
+            ''
+        ),
+        name: String(resp.data.name || ''),
+        originalName: String(resp.data.originalName || rawFile.name || ''),
+        attachId: String(resp.data.attachId || ''),
+      };
+
+      if (!full.name) throw new Error('上传接口未返回文件路径（name）');
+
       it.status = 'done';
-      it.url = composeUrl(obj);
-      it.isImage = isImageObj(obj);
+      it.url = composeLink(full);
+      it.isImage = isImageObj(full);
 
-      // 同步内部状态
-      fileObjs.value.push(obj);
-      filePaths.value.push(obj.originalName);
+      if (props.multiple) {
+        fileObjs.value.push(full);
+        simpleModels.value.push(toSimple(full));
+      } else {
+        fileObjs.value = [full];
+        simpleModels.value = [toSimple(full)];
+      }
 
-      // 关键：**每个文件成功后**都立即通知外层（即使路径串无变化也会触发）
-      updateModelOnly();
+      emitModel();
       emitChange();
     } catch (e) {
       it.status = 'failed';
@@ -331,8 +376,29 @@ const handleAfterRead = async (fileOrFiles) => {
     }
   }
 
-  // 刷新预览列表
   rebuildFileListFromObjs();
+};
+
+const downloadAt = (index) => {
+  const obj = fileObjs.value[index];
+  if (!obj) return;
+
+  // 原始可访问地址：优先后端 link，否则用 previewBaseDomain + name
+  const raw = composeLink(obj);
+  if (!raw) {
+    showToast('暂无可下载地址');
+    return;
+  }
+
+  // 直接用工具类下载（会生成 /api/upload/... 并处理中文/空格）
+  DownloadUtil.download(
+    raw,
+    {
+      previewBaseDomain: props.previewBaseDomain,
+      apiPrefix: props.apiPrefix, // 可按页面传入覆盖
+    },
+    displayName(obj)
+  );
 };
 </script>
 
@@ -354,18 +420,30 @@ const handleAfterRead = async (fileOrFiles) => {
   color: var(--van-gray-6);
   font-size: 12px;
 }
-.dc-uploader__list {
-  :deep(.van-cell__title) {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+.dc-uploader__single {
   :deep(.van-cell) {
-    display: flex;
-    align-items: center;
     padding: 0;
   }
 }
+.dc-uploader__list {
+  :deep(.van-cell) {
+    padding: 0 !important; /* 无内边距 */
+    display: flex;
+    align-items: center; /* 垂直居中 */
+    min-height: 44px; /* 可选：行高更友好 */
+  }
+  :deep(.van-cell__title) {
+    display: flex;
+    align-items: center; /* 文本与右侧图标基线对齐更自然 */
+    gap: 0; /* 不需要额外间距 */
+  }
+  :deep(.van-cell__value) {
+    /* 防止 value 区域撑开布局（有右侧删除图标） */
+    display: flex;
+    align-items: center;
+  }
+}
+
 .mr8 {
   margin-right: 8px;
 }
