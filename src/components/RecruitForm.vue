@@ -544,7 +544,6 @@
                     :placeholder="f.placeholder || '请上传文件'"
                     :deletable="f.upload?.deletable ?? true"
                     :show-type-hint="true"
-                    @change="(val) => onFieldUpdate(f, val)"
                   />
                 </div>
               </div>
@@ -567,7 +566,6 @@
                     :placeholder="f.placeholder || '请上传文件'"
                     :deletable="f.upload?.deletable ?? true"
                     :show-type-hint="true"
-                    @change="(val) => onFieldUpdate(f, val)"
                   />
                   <div class="dc-tip">
                     {{ f.placeholder }}
