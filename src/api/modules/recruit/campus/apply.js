@@ -10,11 +10,10 @@ export default {
     });
   },
   // 获取招收岗位列表
-  getPositionList(params) {
+  getPositionLis() {
     return request({
       url: '/blade-rbac/TalentPosition/get-position-list',
       method: 'get',
-      params,
     });
   },
 };

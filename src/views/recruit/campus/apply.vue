@@ -1,7 +1,6 @@
 <!-- src/views/recruit/campus/apply.vue -->
 <template>
   <img class="banner" src="/images/recruit/campus/apply/banner.svg" alt="banner" />
-  {{ form }}
   <RecruitForm
     v-model="form"
     :schema="schema"
@@ -12,20 +11,46 @@
     :show-clear="true"
     :compact="true"
     :fixed-actions="true"
+    @change="handleChange"
     @submit="handleSubmit"
     @clear="handleClear"
     @cancel="handleCancel"
-    @change="handleChange"
   />
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted } from 'vue';
 import { showToast } from 'vant';
 import Api from '@/api/index';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const { proxy } = getCurrentInstance();
+const dictRefs = proxy.dicts(['DC_GENDER', 'DC_APPLY_CHANNEL', 'DC_WORK_LOCATION']);
+const positionList = ref([]);
+
+const channelExtra = {
+  DC_APPLY_CHANNEL_TSTJ: { key: 'referrerName', placeholder: '姓名', required: true },
+  DC_APPLY_CHANNEL_TXXTJ: { key: 'referrerName', placeholder: '姓名', required: true },
+};
+
+const genderOptions = computed(() =>
+  (dictRefs.DC_GENDER.value || []).map(({ label, value }) => ({ label, value }))
+);
+
+const applyChannelOptions = computed(() =>
+  (dictRefs.DC_APPLY_CHANNEL.value || []).map(({ label, value }) => {
+    const extra = channelExtra[value];
+    return extra ? { label, value, extra } : { label, value };
+  })
+);
+
+const workLocationOptions = computed(() =>
+  (dictRefs.DC_WORK_LOCATION.value || []).map(({ label, value }) => ({ label, value }))
+);
 
 /** ====== schema：只用 fields；可选全局 layout/labelWidth ====== */
-const schema = {
+const schema = computed(() => ({
   layout: 'vertical',
   labelWidth: 100,
   fields: [
@@ -41,10 +66,7 @@ const schema = {
       name: 'sex',
       label: '您的性别',
       required: true,
-      options: [
-        { label: '男', value: 'male' },
-        { label: '女', value: 'female' },
-      ],
+      options: genderOptions.value,
     },
     {
       type: 'input',
@@ -78,28 +100,7 @@ const schema = {
       label: '应聘渠道（单选）',
       required: true,
       max: 1,
-      options: [
-        { label: '校园招聘会', value: 'campus_fair' },
-        { label: '网络招聘', value: 'online' },
-        {
-          label: '同学推荐（推荐人姓名）',
-          value: 'classmate_ref',
-          extra: {
-            key: 'referrerName',
-            placeholder: '姓名',
-            required: true,
-          },
-        },
-        {
-          label: '同事推荐（推荐人姓名）',
-          value: 'colleague_ref',
-          extra: {
-            key: 'referrerName',
-            placeholder: '姓名',
-            required: true,
-          },
-        },
-      ],
+      options: applyChannelOptions.value,
     },
     {
       type: 'checkbox',
@@ -108,23 +109,14 @@ const schema = {
       required: true,
       max: 3,
       desc: '最多选择3项',
-      options: [
-        { label: '机械工程师', value: 'mech' },
-        { label: '电器工程师', value: 'elec_hw' },
-        { label: '软件工程师', value: 'soft' },
-        { label: '电子工程师', value: 'elec' },
-        { label: 'PM（项目）', value: 'pm' },
-      ],
+      options: positionList.value,
     },
     {
       type: 'checkbox',
       name: 'desiredLocation',
       label: '意向工作地点（多选）',
       required: true,
-      options: [
-        { label: '东莞市寮步镇', value: 'dongguan_liaobu' },
-        { label: '浙江省嘉善县', value: 'jiashan' },
-      ],
+      options: workLocationOptions.value,
     },
     {
       type: 'uploader',
@@ -139,21 +131,49 @@ const schema = {
       },
     },
   ],
-};
+}));
 
 /** ====== v-model：表单数据 ====== */
 const form = ref({
-  name: '王芝林',
-  sex: 'male',
-  phone: '15824223890',
-  graduateSchool: '麻省理工学院',
-  professionalName: '金融学',
-  applyChannel: 'classmate_ref',
-  joinPostIds: 'mech',
-  desiredLocation: 'jiashan',
+  name: '',
+  sex: '',
+  phone: '',
+  graduateSchool: '',
+  professionalName: '',
+  applyChannel: '',
+  joinPostIds: '',
+  desiredLocation: '',
   file: '',
-  referrerName: '1111111',
+  referrerName: '',
 });
+
+onMounted(() => {
+  getCampusPositionList();
+});
+
+const getCampusPositionList = () => {
+  Api.recruit.campus.apply
+    .getPositionLis()
+    .then((res) => {
+      // 如果有统一的返回格式，可以在这里做一次处理
+      const { code, data } = res.data;
+      if (code === 200) {
+        positionList.value = data.map((item) => {
+          const { id, postName } = item;
+          return {
+            ...item,
+            label: postName,
+            value: id,
+          };
+        });
+      }
+      return res;
+    })
+    .catch((err) => {
+      console.error('获取岗位列表失败:', err);
+      throw err;
+    });
+};
 
 /** ====== 组件事件 ====== */
 function handleSubmit(payload) {
@@ -163,9 +183,15 @@ function handleSubmit(payload) {
     .then((res) => {
       const { code, data } = res.data;
       if (code === 200) {
+        showToast('提交成功');
+        // 跳转到 apply-detail/:applyId
+        router.push({
+          name: 'recruit-campus-apply-detail',
+          params: { applyId: data.id }, // ✅ 使用 data.id
+        });
       }
     })
-    .catch((err) => {});
+    .catch(() => {});
 }
 function handleClear() {
   // 这里的 form 已被组件重置；如需额外处理可写在此
@@ -175,11 +201,11 @@ function handleCancel() {
   showToast('已取消');
   // 可按需求返回上一页：history.back()
 }
-function handleChange({ field, model, name, value }) {
-  // if (name === 'file') {
-  //   form.value.resumeUrl = value.resumeUrl;
-  //   form.value.resumeId = value.attachId;
-  // }
+function handleChange({ name, value }) {
+  if (name === 'file') {
+    form.value.resumeUrl = value?.path || '';
+    form.value.resumeId = value?.attachId || '';
+  }
 }
 </script>
 

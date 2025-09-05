@@ -544,7 +544,6 @@
                     :placeholder="f.placeholder || '请上传文件'"
                     :deletable="f.upload?.deletable ?? true"
                     :show-type-hint="true"
-                    @change="(val) => onFieldUpdate(f, val)"
                   />
                 </div>
               </div>
@@ -567,7 +566,6 @@
                     :placeholder="f.placeholder || '请上传文件'"
                     :deletable="f.upload?.deletable ?? true"
                     :show-type-hint="true"
-                    @change="(val) => onFieldUpdate(f, val)"
                   />
                   <div class="dc-tip">
                     {{ f.placeholder }}
@@ -702,6 +700,16 @@ function buildWithDefaults(fields, incoming = {}) {
   const base = {};
   fields.forEach((f) => {
     base[f.name] = incoming[f.name] !== undefined ? incoming[f.name] : getDefaultByType(f);
+
+    // 补充 checkbox extra 字段
+    if (f.type === 'checkbox' && Array.isArray(f.options)) {
+      f.options.forEach((op) => {
+        if (op.extra?.key) {
+          const k = op.extra.key;
+          base[k] = incoming[k] !== undefined ? incoming[k] : op.extra.defaultValue ?? '';
+        }
+      });
+    }
   });
   return base;
 }
@@ -728,15 +736,6 @@ function fieldDesc(f) {
 
 /* ---------------- local model ---------------- */
 const local = reactive(buildWithDefaults(props.schema.fields, props.modelValue));
-props.schema.fields.forEach((f) => {
-  if (f.type === 'checkbox' && Array.isArray(f.options)) {
-    f.options.forEach((op) => {
-      if (op.extra?.key && local[op.extra.key] === undefined) {
-        local[op.extra.key] = op.extra.defaultValue ?? '';
-      }
-    });
-  }
-});
 
 /* ===== checkbox 计算代理（供 v-model 成员表达式使用） ===== */
 const checkboxModels = reactive({});
@@ -775,7 +774,7 @@ function coerceToVmShape(val, multiple) {
     return [];
   } else {
     if (val && typeof val === 'object') {
-      const path = val.link || val.name || '';
+      const path = val.path || val.link || val.name || '';
       const attachId = val.attachId || val.id || '';
       return path ? { path, attachId } : null;
     }
