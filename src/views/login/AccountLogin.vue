@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { showToast } from 'vant';
@@ -83,9 +83,12 @@ async function onSubmit() {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .form {
   padding: 6px;
+  :deep(.van-cell-group) {
+    margin: 0;
+  }
 }
 .actions {
   margin: 16px 0 6px;

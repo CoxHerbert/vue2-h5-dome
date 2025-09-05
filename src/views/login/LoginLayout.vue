@@ -145,7 +145,6 @@ onMounted(() => {
   overflow: hidden;
 }
 .body {
-  padding: 16px 14px 6px;
   min-height: 260px;
 }
 .footer {

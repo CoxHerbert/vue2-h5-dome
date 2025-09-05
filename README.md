@@ -2,7 +2,7 @@
 
 > 生成时间：2025-09-02 06:44:14
 
-本脚手架以**纯 JS**为准，内置：Vant4、Pinia、Vue Router4、Axios 网络层（重试/幂等/去重/取消/刷新 Token/节流防抖/上传）、权限指令、NProgress、Vitest、Husky+lint-staged。
+本脚手架以**纯 JS**为准，内置：Vant4、Pinia、Vue Router4、Axios 网络层（重试/幂等/去重/取消/刷新 Token/节流防抖/上传）、权限指令、NProgress、Vitest。
 
 ## 快速开始
 

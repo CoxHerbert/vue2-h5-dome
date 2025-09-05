@@ -31,7 +31,6 @@
 
     <!-- 列表（通用展示） -->
     <van-cell-group v-if="fileObjs.length" inset class="dc-uploader__list">
-      {{ fileObjs }}
       <van-cell
         v-for="(obj, i) in fileObjs"
         :key="(obj.attachId || obj.link || obj.name || '') + '_' + i"

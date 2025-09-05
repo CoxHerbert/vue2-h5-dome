@@ -533,7 +533,7 @@
                   {{ f.label }}
                 </div>
                 <div class="dc-pad-16">
-                  <Upload
+                  <Uploader
                     v-model="uploaderModels[f.name]"
                     :multiple="(f.upload?.maxCount || 1) > 1"
                     :max-count="f.upload?.maxCount || 1"
@@ -562,7 +562,7 @@
                   :title-style="cellTitleStyle(f)"
                 />
                 <div class="dc-pad-16">
-                  <Upload
+                  <Uploader
                     v-model="uploaderModels[f.name]"
                     :multiple="(f.upload?.maxCount || 1) > 1"
                     :max-count="f.upload?.maxCount || 1"
