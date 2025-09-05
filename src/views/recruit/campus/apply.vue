@@ -11,6 +11,7 @@
     :show-clear="true"
     :compact="true"
     :fixed-actions="true"
+    @change="handleChange"
     @submit="handleSubmit"
     @clear="handleClear"
     @cancel="handleCancel"
@@ -18,16 +19,19 @@
 </template>
 
 <script setup>
-import { ref, computed, getCurrentInstance } from 'vue';
+import { ref, computed, getCurrentInstance, onMounted } from 'vue';
 import { showToast } from 'vant';
 import Api from '@/api/index';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const { proxy } = getCurrentInstance();
 const dictRefs = proxy.dicts(['DC_GENDER', 'DC_APPLY_CHANNEL', 'DC_WORK_LOCATION']);
+const positionList = ref([]);
 
 const channelExtra = {
-  classmate_ref: { key: 'referrerName', placeholder: '姓名', required: true },
-  colleague_ref: { key: 'referrerName', placeholder: '姓名', required: true },
+  DC_APPLY_CHANNEL_TSTJ: { key: 'referrerName', placeholder: '姓名', required: true },
+  DC_APPLY_CHANNEL_TXXTJ: { key: 'referrerName', placeholder: '姓名', required: true },
 };
 
 const genderOptions = computed(() =>
@@ -105,13 +109,7 @@ const schema = computed(() => ({
       required: true,
       max: 3,
       desc: '最多选择3项',
-      options: [
-        { label: '机械工程师', value: 'mech' },
-        { label: '电器工程师', value: 'elec_hw' },
-        { label: '软件工程师', value: 'soft' },
-        { label: '电子工程师', value: 'elec' },
-        { label: 'PM（项目）', value: 'pm' },
-      ],
+      options: positionList.value,
     },
     {
       type: 'checkbox',
@@ -149,14 +147,49 @@ const form = ref({
   referrerName: '',
 });
 
+onMounted(() => {
+  getCampusPositionList();
+});
+
+const getCampusPositionList = () => {
+  Api.recruit.campus.apply
+    .getPositionLis()
+    .then((res) => {
+      // 如果有统一的返回格式，可以在这里做一次处理
+      const { code, data } = res.data;
+      if (code === 200) {
+        positionList.value = data.map((item) => {
+          const { id, postName } = item;
+          return {
+            ...item,
+            label: postName,
+            value: id,
+          };
+        });
+      }
+      return res;
+    })
+    .catch((err) => {
+      console.error('获取岗位列表失败:', err);
+      throw err;
+    });
+};
+
 /** ====== 组件事件 ====== */
 function handleSubmit(payload) {
   console.log(payload);
   Api.recruit.campus.apply
     .postTalentUser(payload)
     .then((res) => {
-      const { code } = res.data;
-      if (code === 200) showToast('提交成功');
+      const { code, data } = res.data;
+      if (code === 200) {
+        showToast('提交成功');
+        // 跳转到 apply-detail/:applyId
+        router.push({
+          name: 'recruit-campus-apply-detail',
+          params: { applyId: data.id }, // ✅ 使用 data.id
+        });
+      }
     })
     .catch(() => {});
 }
@@ -167,6 +200,12 @@ function handleClear() {
 function handleCancel() {
   showToast('已取消');
   // 可按需求返回上一页：history.back()
+}
+function handleChange({ name, value }) {
+  if (name === 'file') {
+    form.value.resumeUrl = value?.path || '';
+    form.value.resumeId = value?.attachId || '';
+  }
 }
 </script>
 
