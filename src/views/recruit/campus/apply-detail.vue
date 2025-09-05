@@ -58,12 +58,12 @@ const route = useRoute();
 // 1) 状态：pending | retest | pass | reject
 const status = computed(() => route.query.status || 'pending');
 
-// 2) 图标（放 public/images/recruit/ 下）
+// 2) 图标（放 public/images/recruit/campus/apply/ 下）
 const icons = reactive({
-  pending: '/images/recruit/status-pending.png',
-  retest: '/images/recruit/status-retest.png',
-  pass: '/images/recruit/status-pass.png',
-  reject: '/images/recruit/status-reject.png',
+  pending: '/images/recruit/campus/apply/status-pending.svg',
+  retest: '/images/recruit/campus/apply/status-retest.svg',
+  pass: '/images/recruit/campus/apply/status-pass.svg',
+  reject: '/images/recruit/campus/apply/status-reject.svg',
 });
 
 const STATUS_MAP = {
