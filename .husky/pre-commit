@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-# 不再 source _/husky.sh，直接执行你的命令
-npx --no-install lint-staged
