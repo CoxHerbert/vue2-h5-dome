@@ -1,4 +1,3 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-pnpm lint-staged
+# 不再 source _/husky.sh，直接执行你的命令
+npx --no-install lint-staged

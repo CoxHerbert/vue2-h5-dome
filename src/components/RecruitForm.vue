@@ -541,11 +541,11 @@
                     :max-size-m-b="
                       f.upload?.maxSize ? Math.round(f.upload.maxSize / 1024 / 1024) : null
                     "
-                    :uploader="(file) => doUpload(f, file)"
                     :disabled="isDisabled(f)"
                     :placeholder="f.placeholder || '请上传文件'"
                     :deletable="f.upload?.deletable ?? true"
                     :show-type-hint="true"
+                    @change="(val) => onFieldUpdate(f, val)"
                   />
                   <!-- <div class="dc-tip">
                     {{ f.placeholder }}
@@ -570,11 +570,11 @@
                     :max-size-m-b="
                       f.upload?.maxSize ? Math.round(f.upload.maxSize / 1024 / 1024) : null
                     "
-                    :uploader="(file) => doUpload(f, file)"
                     :disabled="isDisabled(f)"
                     :placeholder="f.placeholder || '请上传文件'"
                     :deletable="f.upload?.deletable ?? true"
                     :show-type-hint="true"
+                    @change="(val) => onFieldUpdate(f, val)"
                   />
                   <div class="dc-tip">
                     {{ f.placeholder }}

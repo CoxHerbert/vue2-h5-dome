@@ -1,4 +1,4 @@
-<!-- src/pages/recruit/campus/apply.vue -->
+<!-- src/views/recruit/campus/apply.vue -->
 <template>
   <img class="banner" src="/images/recruit/campus/apply/banner.svg" alt="banner" />
   <RecruitForm
@@ -21,6 +21,7 @@
 <script setup>
 import { ref } from 'vue';
 import { showToast } from 'vant';
+import Api from '@/api/index';
 
 /** ====== schema：只用 fields；可选全局 layout/labelWidth ====== */
 const schema = {
@@ -58,7 +59,7 @@ const schema = {
     },
     {
       type: 'input',
-      name: 'schoolName',
+      name: 'graduateSchool',
       label: '请填写您的毕业院校',
       required: true,
       placeholder: '请输入毕业院校',
@@ -72,9 +73,10 @@ const schema = {
     },
     {
       type: 'checkbox',
-      name: 'channels',
-      label: '应聘渠道（多选）',
+      name: 'applyChannel',
+      label: '应聘渠道（单选）',
       required: true,
+      max: 1,
       options: [
         { label: '校园招聘会', value: 'campus_fair' },
         { label: '网络招聘', value: 'online' },
@@ -82,7 +84,7 @@ const schema = {
           label: '同学推荐（推荐人姓名）',
           value: 'classmate_ref',
           extra: {
-            key: 'classmateRefName',
+            key: 'referrerName',
             placeholder: '姓名',
             required: true,
           },
@@ -91,7 +93,7 @@ const schema = {
           label: '同事推荐（推荐人姓名）',
           value: 'colleague_ref',
           extra: {
-            key: 'colleagueRefName',
+            key: 'referrerName',
             placeholder: '姓名',
             required: true,
           },
@@ -115,7 +117,7 @@ const schema = {
     },
     {
       type: 'checkbox',
-      name: 'workLocations',
+      name: 'desiredLocation',
       label: '意向工作地点（多选）',
       required: true,
       options: [
@@ -140,14 +142,14 @@ const schema = {
 
 /** ====== v-model：表单数据 ====== */
 const form = ref({
-  name: '鲍泽楠',
+  name: '王芝林',
   sex: 'male',
   phone: '15824223890',
-  schoolName: '宁波工程学院',
-  professionalName: '电气自动化',
-  channels: '',
+  graduateSchool: '麻省理工学院',
+  professionalName: '金融学',
+  applyChannel: '',
   joinPostIds: '',
-  workLocations: '',
+  desiredLocation: '',
   resumeUrl: [
     {
       file: {},
@@ -156,14 +158,19 @@ const form = ref({
       objectUrl: 'blob:http://localhost:5174/0c5ac8d4-e6e8-48f6-8a2d-51e037676925',
     },
   ],
-  classmateRefName: '测试001',
-  colleagueRefName: '测试002',
+  referrerName: '王芝林',
 });
 
 /** ====== 组件事件 ====== */
 function handleSubmit(payload) {
-  console.log('✅ 校验通过，提交的数据：', JSON.stringify(payload));
-  showToast('提交成功');
+  Api.recruit.campus.apply
+    .postTalentUser(payload)
+    .then((res) => {
+      const { code, data } = res.data;
+      if (code === 200) {
+      }
+    })
+    .catch((err) => {});
 }
 function handleClear() {
   // 这里的 form 已被组件重置；如需额外处理可写在此

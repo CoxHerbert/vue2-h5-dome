@@ -24,7 +24,7 @@ export default function createGlobalComponents(options = {}) {
         ...import.meta.glob('/src/layouts/**/components/**/*.vue', { eager: true }),
         ...import.meta.glob('/src/modules/**/components/**/*.vue', { eager: true }),
         ...import.meta.glob('/src/features/**/components/**/*.vue', { eager: true }),
-        ...import.meta.glob('/src/pages/**/components/**/*.vue', { eager: true }),
+        ...import.meta.glob('/src/views/**/components/**/*.vue', { eager: true }),
       }
     : {
         ...import.meta.glob('/src/components/**/*.vue'),
@@ -34,7 +34,7 @@ export default function createGlobalComponents(options = {}) {
         ...import.meta.glob('/src/layouts/**/components/**/*.vue'),
         ...import.meta.glob('/src/modules/**/components/**/*.vue'),
         ...import.meta.glob('/src/features/**/components/**/*.vue'),
-        ...import.meta.glob('/src/pages/**/components/**/*.vue'),
+        ...import.meta.glob('/src/views/**/components/**/*.vue'),
       };
 
   // ---------- utils ----------

@@ -22,20 +22,29 @@ const sanitize = (s) => s.replace(/[@/\\]+/g, '_').replace(/[^\w-]/g, '_');
 
 export default ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const { VITE_APP_ENV, VITE_APP_API, VITE_UPLOAD_API } = env;
+  const { VITE_APP_ENV, VITE_APP_BASE_URL, VITE_APP_API } = env;
 
   const isProd = VITE_APP_ENV === 'production';
   const currentTimeVersion = Date.now();
 
   return defineConfig({
-    plugins: [vue()],
+    plugins: [
+      vue({
+        template: {
+          transformAssetUrls: {
+            // 关键：不要转换以 / 开头的绝对路径
+            includeAbsolute: false,
+          },
+        },
+      }),
+    ],
     define: {
       'import.meta.env.VITE_APP_VERSION': currentTimeVersion,
     },
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: '@use "@styles/_variables.scss" as *;\n',
+          additionalData: '@use "@/styles/_variables.scss" as *;\n',
         },
       },
     },
@@ -45,26 +54,26 @@ export default ({ mode }) => {
         '@': pathResolve(__dirname, './src'),
         '~@': pathResolve(__dirname, './src'),
         '@public': pathResolve(__dirname, './public'),
-        '@components': pathResolve(__dirname, './src/components'),
-        '@store': pathResolve(__dirname, './src/store'),
-        '@utils': pathResolve(__dirname, './src/utils'),
-        '@styles': pathResolve(__dirname, './src/styles'),
-        '@pages': pathResolve(__dirname, './src/pages'),
       },
     },
     server: {
       port: 5174,
+      open: true,
       proxy: {
-        '/api': {
-          target: VITE_APP_API,
+        // 业务接口
+        [VITE_APP_API]: {
+          target: VITE_APP_BASE_URL,
           changeOrigin: true,
-          rewrite: (p) => p.replace(/^\/api/, ''),
+          rewrite: (p) => p.replace(VITE_APP_API, ''),
         },
-        '/upload': {
-          target: VITE_UPLOAD_API,
-          changeOrigin: true,
-          rewrite: (p) => p.replace(/^\/upload/, ''),
-        },
+        // 稳一点的超时设置
+        // timeout: 300000,
+        // proxyTimeout: 300000,
+        // configure(proxy) {
+        //   proxy.on('error', (err, req) => {
+        //     console.error('[proxy error:/api]', req.url, err?.code, err?.message);
+        //   });
+        // },
       },
     },
     // ✅ outDir 正确位置
