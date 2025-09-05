@@ -3,6 +3,7 @@ node_modules
 dist/
 *-*-dist/
 public/version.json
+.vite
 
 
 /tests/e2e/videos/
