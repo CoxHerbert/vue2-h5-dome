@@ -2,29 +2,33 @@
   <van-nav-bar title="投递详情" fixed placeholder />
 
   <div class="page">
+    <div class="page-top-bg"></div>
     <!-- 基本信息 -->
     <section class="card candidate">
       <div class="row top">
         <div class="left">
           <div class="name">
             {{ detail.name }}
-            <van-tag v-if="detail.gender" round type="primary" class="ml8">
-              {{ detail.gender === 'F' ? '女' : '男' }}
-            </van-tag>
+            <img height="18" src="/images/recruit/campus/apply/female.svg" alt="female" />
+            <img height="17" src="/images/recruit/campus/apply/male.svg" alt="female" />
           </div>
-          <div class="sub">{{ detail.school }} · {{ detail.major }}</div>
         </div>
         <div class="right">
-          <van-button size="mini" round plain type="primary" @click="onPreviewResume">
+          <div class="resume-download" @click="onPreviewResume">
+            <img height="18" src="/images/recruit/campus/apply/CV.svg" alt="CV" />
             简历附件
-          </van-button>
+          </div>
         </div>
       </div>
-
+      <div class="row">
+        <van-tag plain type="primary">标签</van-tag>
+        <van-tag plain type="primary">标签</van-tag>
+      </div>
       <van-cell-group inset>
         <van-cell title="应聘渠道" :value="detail.channel" />
         <van-cell title="推荐人" :value="detail.referrer" />
-        <van-cell title="求职期望" :value="detail.expect" />
+      </van-cell-group>
+      <van-cell-group title="求职期望">
         <van-cell title="意向岗位" :value="detail.position" />
         <van-cell title="意向地点" :value="detail.city" />
       </van-cell-group>
@@ -58,12 +62,12 @@ const route = useRoute();
 // 1) 状态：pending | retest | pass | reject
 const status = computed(() => route.query.status || 'pending');
 
-// 2) 图标（放 public/images/recruit/ 下）
+// 2) 图标（放 public/images/recruit/campus/apply/ 下）
 const icons = reactive({
-  pending: '/images/recruit/status-pending.png',
-  retest: '/images/recruit/status-retest.png',
-  pass: '/images/recruit/status-pass.png',
-  reject: '/images/recruit/status-reject.png',
+  pending: '/images/recruit/campus/apply/status-pending.svg',
+  retest: '/images/recruit/campus/apply/status-retest.svg',
+  pass: '/images/recruit/campus/apply/status-pass.svg',
+  reject: '/images/recruit/campus/apply/status-reject.svg',
 });
 
 const STATUS_MAP = {
@@ -85,7 +89,7 @@ const iconSrc = computed(() => icons[status.value] || '');
 
 // 3) 详情（这里演示静态，实际可根据 route.params.applyId 请求接口）
 const detail = reactive({
-  name: '张**',
+  name: '王大锤',
   gender: 'F',
   school: 'XXXX大学',
   major: 'XXXX专业',
@@ -113,79 +117,186 @@ function onPreviewResume() {
 }
 </script>
 
-<style scoped>
-.page {
-  min-height: 100vh;
-  background: #f7f8fa;
-  padding: 12px 12px max(env(safe-area-inset-bottom), 12px);
-}
-.card {
+<style lang="scss" scoped>
+// ========== Tokens ==========
+$brand: #3060ed;
+$brand-weak: rgba(48, 96, 237, 0.3);
+$bg-page: #f7f8fa;
+$text-strong: #333333;
+$text-weak: #8c8c8c;
+$radius-lg: 12px;
+$shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.04);
+$gap: 12px;
+
+// 状态色（自动生成 .status-text.s--xxx）
+$statuses: (
+  pending: #3478f6,
+  retest: #ff8a00,
+  pass: #00c07f,
+  reject: #ff3b30,
+);
+
+// ========== Mixins / Utils ==========
+@mixin card {
+  position: relative;
+  margin: 0 $gap $gap;
+  padding: $gap;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-  padding: 12px;
-  margin-bottom: 12px;
-}
-.candidate .row.top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 4px 8px;
-}
-.candidate .name {
-  font-size: 18px;
-  font-weight: 600;
-}
-.ml8 {
-  margin-left: 8px;
-}
-.candidate .sub {
-  margin-top: 4px;
-  color: #8c8c8c;
-  font-size: 13px;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-soft;
 }
 
-.result .title {
-  font-weight: 600;
-  margin: 4px 4px 12px;
+@function safe-bottom($fallback: 12px) {
+  @return max(env(safe-area-inset-bottom), $fallback);
 }
+
+// 统一标题样式（复用 :deep 覆盖 Vant）
+@mixin group-title {
+  padding: 10px 0;
+  color: $text-strong;
+  font-weight: 600;
+}
+
+// ========== Page ==========
+.page {
+  min-height: 100vh;
+  background: $bg-page;
+  padding: $gap 0 safe-bottom(12px);
+  position: relative;
+
+  .page-top-bg {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 196px;
+    background: linear-gradient(180deg, $brand 0%, $brand-weak 64%, rgba(48, 96, 237, 0) 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .resume-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #1d65f3;
+    cursor: pointer;
+
+    img {
+      display: block;
+    }
+  }
+
+  // 卡片
+  .card {
+    @include card;
+  }
+}
+
+// ========= Vant overrides =========
+:deep(.van-cell-group__title) {
+  @include group-title;
+}
+
+:deep(.van-cell-group) {
+  margin: 0;
+
+  .van-cell {
+    // 让每组更紧凑点
+    padding: var(--van-cell-vertical-padding) 0;
+  }
+}
+
+// ========== Candidate ==========
+.candidate {
+  .row.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0 8px;
+  }
+
+  .name {
+    font-size: 18px;
+    font-weight: 600;
+
+    img {
+      vertical-align: middle;
+      margin-left: 4px;
+    }
+  }
+
+  .sub {
+    margin-top: 4px;
+    color: $text-weak;
+    font-size: 13px;
+  }
+}
+
+// ========== Tag（描边浅底） ==========
+.van-tag--plain {
+  margin-right: 5px;
+  padding: 4px 8px;
+  color: $brand;
+  background-color: rgba($brand, 0.3);
+  border-radius: 4px;
+  border-color: #fff;
+}
+
+// ========== Result Box ==========
+.result {
+  .title {
+    font-weight: 600;
+    margin: 4px 4px 12px;
+  }
+}
+
 .result-box {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 16px 8px 8px;
   text-align: center;
+
+  .status-img {
+    width: 128px;
+    height: 128px;
+    object-fit: contain;
+    margin-bottom: 8px;
+  }
+
+  .status-text {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 6px 0 4px;
+
+    // 根据 $statuses 自动生成颜色类
+    @each $key, $color in $statuses {
+      &.s--#{$key} {
+        color: $color;
+      }
+    }
+  }
+
+  .status-desc {
+    color: $text-weak;
+    font-size: 13px;
+    line-height: 1.4;
+    padding: 0 8px 4px;
+  }
 }
-.status-img {
-  width: 128px;
-  height: 128px;
-  object-fit: contain;
-  margin-bottom: 8px;
-}
-.status-text {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 6px 0 4px;
-}
-.status-text.s--pending {
-  color: #3478f6;
-}
-.status-text.s--retest {
-  color: #ff8a00;
-}
-.status-text.s--pass {
-  color: #00c07f;
-}
-.status-text.s--reject {
-  color: #ff3b30;
-}
-.status-desc {
-  color: #8c8c8c;
-  font-size: 13px;
-  line-height: 1.4;
-  padding: 0 8px 4px;
-}
+
+// ========== Safe bottom ==========
 .safe-bottom {
   height: env(safe-area-inset-bottom);
+}
+
+// ========== 小屏微调 ==========
+@media (max-width: 360px) {
+  .candidate .name {
+    font-size: 16px;
+  }
+  .result-box .status-img {
+    width: 112px;
+    height: 112px;
+  }
 }
 </style>
