@@ -1,6 +1,11 @@
-@use "./_variables.scss" as *;
+@use './_variables.scss' as *;
+@use './theme.scss' as *;
 
-html, body, #app { height: 100%; }
+html,
+body,
+#app {
+  height: 100%;
+}
 
 body {
   font-size: $font-size-base;
