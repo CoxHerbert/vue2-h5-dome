@@ -9,8 +9,18 @@
         <div class="left">
           <div class="name">
             {{ detail.name }}
-            <img height="18" src="/images/recruit/campus/apply/female.svg" alt="female" />
-            <img height="17" src="/images/recruit/campus/apply/male.svg" alt="female" />
+            <img
+              v-if="detail.sex === 'DC_GENDER_MAN'"
+              height="17"
+              src="/images/recruit/campus/apply/male.svg"
+              alt="male"
+            />
+            <img
+              v-else-if="detail.sex === 'DC_GENDER_WOMAN'"
+              height="18"
+              src="/images/recruit/campus/apply/female.svg"
+              alt="female"
+            />
           </div>
         </div>
         <div class="right">
@@ -21,16 +31,16 @@
         </div>
       </div>
       <div class="row">
-        <van-tag plain type="primary">标签</van-tag>
-        <van-tag plain type="primary">标签</van-tag>
+        <van-tag plain type="primary">{{ detail.graduateSchool }}</van-tag>
+        <van-tag plain type="primary">{{ detail.professionalName }}</van-tag>
       </div>
       <van-cell-group inset>
-        <van-cell title="应聘渠道" :value="detail.channel" />
-        <van-cell title="推荐人" :value="detail.referrer" />
+        <van-cell title="应聘渠道" :value="detail.applyChannel" />
+        <van-cell title="推荐人" :value="detail.referrerName" />
       </van-cell-group>
       <van-cell-group title="求职期望">
-        <van-cell title="意向岗位" :value="detail.position" />
-        <van-cell title="意向地点" :value="detail.city" />
+        <van-cell title="意向岗位" :value="detail.joinPosts" />
+        <van-cell title="意向地点" :value="detail.desiredLocation" />
       </van-cell-group>
     </section>
 
@@ -53,9 +63,10 @@
 </template>
 
 <script setup>
-import { computed, reactive, onMounted } from 'vue';
+import { computed, reactive, onMounted, toRefs } from 'vue';
 import { useRoute } from 'vue-router';
 import { showToast } from 'vant';
+import Api from '@/api/index';
 
 const route = useRoute();
 
@@ -73,7 +84,7 @@ const icons = reactive({
 const STATUS_MAP = {
   pending: { text: '评估中', color: '#3478F6', desc: '请耐心等待评估结果' },
   retest: {
-    text: '需要复试（一面）',
+    text: '需要复试',
     color: '#FF8A00',
     desc: '简历初筛通过，但需复试；请注意接听 HR 来电',
   },
@@ -88,32 +99,34 @@ const finalDesc = computed(() => statusCfg.value.desc);
 const iconSrc = computed(() => icons[status.value] || '');
 
 // 3) 详情（这里演示静态，实际可根据 route.params.applyId 请求接口）
-const detail = reactive({
-  name: '王大锤',
-  gender: 'F',
-  school: 'XXXX大学',
-  major: 'XXXX专业',
-  channel: '同学推荐',
-  referrer: '张三（推荐方在此行内容）',
-  expect: '机械工程师',
-  position: '机械工程师',
-  city: '浙江台州黄岩区',
-  resumeUrl: '',
+const pageData = reactive({
+  detail: {},
 });
+
+const { detail } = toRefs(pageData);
 
 onMounted(async () => {
   const id = route.params.applyId;
   if (id) {
-    // TODO: 根据 id 请求真实数据并覆盖 detail/status
-    // const res = await api.getApplyDetail(id)
-    // Object.assign(detail, res.data.detail)
-    // status.value = res.data.status
+    getDetail(id);
   }
 });
 
+function getDetail(id) {
+  Api.recruit.campus.apply.getDetail({ id }).then((res) => {
+    const { code, data } = res.data;
+    if (code === 200) {
+      detail.value = {
+        ...data,
+      };
+      console.log(detail);
+    }
+  });
+}
+
 function onPreviewResume() {
-  if (!detail.resumeUrl) return showToast('暂无简历附件');
-  window.open(detail.resumeUrl, '_blank');
+  if (!detail.value.resumeUrl) return showToast('暂无简历附件');
+  window.open(detail.value.resumeUrl, '_blank');
 }
 </script>
 

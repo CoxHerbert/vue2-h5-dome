@@ -166,7 +166,7 @@ const getAttachIdFromAny = (val) => {
 
 /* ============ 简化模型 <-> 展示对象（四字段），中间再强制字符串化 ============ */
 const toSimple = (full) => ({
-  path: String(full?.name || ''),
+  path: String(full?.link || ''),
   attachId: String(full?.attachId || ''),
 });
 
@@ -343,17 +343,17 @@ const handleAfterRead = async (fileOrFiles) => {
       const full = {
         link: String(
           resp.data.link ||
-            (props.previewBaseDomain && resp.data.name
-              ? joinUrl(props.previewBaseDomain, resp.data.name)
+            (props.previewBaseDomain && resp.data.link
+              ? joinUrl(props.previewBaseDomain, resp.data.link)
               : '') ||
             ''
         ),
-        name: String(resp.data.name || ''),
-        originalName: String(resp.data.originalName || rawFile.name || ''),
+        name: String(resp.data.link || ''),
+        originalName: String(resp.data.originalName || rawFile.link || ''),
         attachId: String(resp.data.attachId || ''),
       };
 
-      if (!full.name) throw new Error('上传接口未返回文件路径（name）');
+      if (!full.link) throw new Error('上传接口未返回文件路径（link）');
 
       it.status = 'done';
       it.url = composeLink(full);

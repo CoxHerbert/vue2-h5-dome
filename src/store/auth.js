@@ -9,6 +9,7 @@ import {
   removeRefreshToken,
 } from '@/utils/auth';
 import Api from '@/api';
+import { encrypt } from '@/utils/sm2';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -55,12 +56,13 @@ export const useAuthStore = defineStore('auth', {
 
     async loginByUsername(form) {
       // 这里按你的 Api.auth.loginByUsername 入参顺序提交
+      var password = encrypt(form.password);
       const res = await Api.auth.loginByUsername(
         form.tenantId,
         form.deptId,
         form.roleId,
         form.username,
-        form.password, // 若需要 SM2，加密放到调用处
+        password, // 若需要 SM2，加密放到调用处
         form.type,
         form.key,
         form.code

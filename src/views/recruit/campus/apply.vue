@@ -1,6 +1,7 @@
 <!-- src/views/recruit/campus/apply.vue -->
 <template>
   <img class="banner" src="/images/recruit/campus/apply/banner.svg" alt="banner" />
+  {{ form }}
   <RecruitForm
     v-model="form"
     :schema="schema"
@@ -176,10 +177,9 @@ const getCampusPositionList = () => {
 };
 
 /** ====== 组件事件 ====== */
-function handleSubmit(payload) {
-  console.log(payload);
+function handleSubmit() {
   Api.recruit.campus.apply
-    .postTalentUser(payload)
+    .postTalentUser(form.value)
     .then((res) => {
       const { code, data } = res.data;
       if (code === 200) {
@@ -203,6 +203,7 @@ function handleCancel() {
 }
 function handleChange({ name, value }) {
   if (name === 'file') {
+    console.log(value);
     form.value.resumeUrl = value?.path || '';
     form.value.resumeId = value?.attachId || '';
   }

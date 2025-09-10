@@ -4,7 +4,7 @@ export default {
   // 提交入职信息
   postTalentUser(data) {
     return request({
-      url: '/blade-rbac/TalentUser/skip-url/submmit',
+      url: '/blade-rbac/TalentUser/submit',
       method: 'post',
       data,
     });
@@ -14,6 +14,14 @@ export default {
     return request({
       url: '/blade-rbac/TalentPosition/get-position-list',
       method: 'get',
+    });
+  },
+  // 投递详情
+  getDetail(params) {
+    return request({
+      url: '/blade-rbac/TalentUser/get-assessment-result',
+      method: 'get',
+      params,
     });
   },
 };
