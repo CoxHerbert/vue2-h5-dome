@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted } from 'vue';
+import { reactive, ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { showToast } from 'vant';
@@ -118,7 +118,6 @@ async function doLogin() {
     router.replace(String(redirect));
   } catch (err) {
     const msg = err?.message || '登录失败，请重试';
-    console.log(msg);
     showToast({ type: 'fail', message: msg });
   } finally {
     loading.value = false;

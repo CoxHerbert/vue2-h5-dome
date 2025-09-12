@@ -3,7 +3,10 @@
   <div class="sso">
     <div class="brand-wecom">
       <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 6a2 2 0 0 1 2-2h4v2H6v4H4V6zM14 4h4a2 2 0 0 1 2 2v4h-2V6h-4V4zM4 14h2v4h4v2H6a2 2 0 0 1-2-2v-4zM18 14h2v4a2 2 0 0 1-2 2h-4v-2h4v-4z" fill="#1777FF"/>
+        <path
+          d="M4 6a2 2 0 0 1 2-2h4v2H6v4H4V6zM14 4h4a2 2 0 0 1 2 2v4h-2V6h-4V4zM4 14h2v4h4v2H6a2 2 0 0 1-2-2v-4zM18 14h2v4a2 2 0 0 1-2 2h-4v-2h4v-4z"
+          fill="#1777FF"
+        />
       </svg>
       <span>企业微信登录</span>
     </div>
@@ -43,13 +46,30 @@ async function copyAuthUrl() {
 </script>
 
 <style scoped>
-.sso { padding: 12px; text-align: center; }
-.brand-wecom {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 12px; border-radius: 12px; background: #eef4ff; color: #1677ff;
-  font-weight: 600; margin-bottom: 12px;
+.sso {
+  padding: 12px;
+  text-align: center;
 }
-.hint { margin-top: 10px; }
-.action { margin-top: 6px; }
-.muted { color: #94a3b8; font-size: 12px; margin-top: 8px; }
+.brand-wecom {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #eef4ff;
+  color: #1677ff;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.hint {
+  margin-top: 10px;
+}
+.action {
+  margin-top: 6px;
+}
+.muted {
+  color: #94a3b8;
+  font-size: 12px;
+  margin-top: 8px;
+}
 </style>

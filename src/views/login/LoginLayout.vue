@@ -9,10 +9,10 @@
           <p class="sub">为你提供统一、便捷、安全的登录体验</p>
         </div>
       </div>
-      <van-tag v-if="envTip" round type="primary" class="env-tip">
-        {{ envTip }}
-      </van-tag>
     </div>
+    <van-tag v-if="envTip" round type="primary" class="env-tip">
+      {{ envTip }}
+    </van-tag>
 
     <div class="card">
       <van-tabs v-model:active="active" shrink animated @change="onTabChange">
@@ -21,12 +21,12 @@
       <div class="body">
         <router-view />
       </div>
-      <div class="footer">
+      <!-- <div class="footer">
         <span class="muted">登录即代表同意</span>
         <a href="javascript:void(0)" class="link">《用户协议》</a>
         <span class="muted">和</span>
         <a href="javascript:void(0)" class="link">《隐私政策》</a>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -42,8 +42,8 @@ const route = useRoute();
 
 const env = getLoginEnv();
 const envTip = computed(() => {
-  if (env === 'wechat') return '已检测到微信环境，推荐使用微信免密登录';
-  if (env === 'wecom') return '已检测到企业微信环境，推荐使用企业微信快速登录';
+  if (env === 'wechat_open') return '已检测到微信环境，推荐使用微信免密登录';
+  if (env === 'wechat_enterprise') return '已检测到企业微信环境，推荐使用企业微信快速登录';
   return '';
 });
 
@@ -52,8 +52,9 @@ const tabs = computed(() => {
     { name: ROUTE_NAME.LOGIN_ACCOUNT, label: '账号密码' },
     { name: ROUTE_NAME.LOGIN_PHONE, label: '短信登录' },
   ];
-  if (env === 'wechat') base.push({ name: ROUTE_NAME.LOGIN_WECHAT, label: '微信登录' });
-  if (env === 'wecom') base.push({ name: ROUTE_NAME.LOGIN_WECOM, label: '企业微信登录' });
+  if (env === 'wechat_open') base.push({ name: ROUTE_NAME.LOGIN_WECHAT, label: '微信登录' });
+  if (env === 'wechat_enterprise')
+    base.push({ name: ROUTE_NAME.LOGIN_WECOM, label: '企业微信登录' });
   return base;
 });
 
@@ -77,9 +78,9 @@ const AUTO_REDIRECT_SSO = false;
 
 onMounted(() => {
   if (!AUTO_REDIRECT_SSO) return;
-  if (env === 'wechat' && route.name === ROUTE_NAME.LOGIN_ACCOUNT) {
+  if (env === 'wechat_open' && route.name === ROUTE_NAME.LOGIN_ACCOUNT) {
     router.replace({ name: ROUTE_NAME.LOGIN_WECHAT });
-  } else if (env === 'wecom' && route.name === ROUTE_NAME.LOGIN_ACCOUNT) {
+  } else if (env === 'wechat_enterprise' && route.name === ROUTE_NAME.LOGIN_ACCOUNT) {
     router.replace({ name: ROUTE_NAME.LOGIN_WECOM });
   }
 });
@@ -104,7 +105,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 12px 0 20px;
+  margin: 12px 0 8px;
 }
 
 .brand {
@@ -132,6 +133,7 @@ onMounted(() => {
   font-size: 13px;
 }
 .env-tip {
+  margin-bottom: 12px;
   border: none;
   background: #e6f2ff;
   color: #1677ff;

@@ -1,27 +1,29 @@
 // src/utils/env.js
+function getUA(ua) {
+  if (ua) return String(ua);
+  if (typeof navigator === 'undefined') return '';
+  return navigator.userAgent || '';
+}
+
+export function isWeCom(ua) {
+  return /(wxwork|WeCom)/i.test(getUA(ua));
+}
+
+export function isWeChat(ua) {
+  const u = getUA(ua);
+  // 识别微信但排除企业微信
+  return /MicroMessenger/i.test(u) && !isWeCom(u);
+}
+
 /**
- * 运行环境探测（基于 UA）
+ * 同步环境识别
+ * 返回值：'wechat_enterprise' | 'wechat_open' | 'h5'
  */
-export function isWeCom() {
-  if (typeof navigator === 'undefined') return false;
-  const ua = navigator.userAgent || '';
-  return /wxwork/i.test(ua) || /WeCom/i.test(ua);
-}
-
-export function isWeChat() {
-  if (typeof navigator === 'undefined') return false;
-  const ua = navigator.userAgent || '';
-  // 企业微信也包含 MicroMessenger，需排除
-  return /MicroMessenger/i.test(ua) && !isWeCom();
-}
-
-export function isMobile() {
-  if (typeof navigator === 'undefined') return false;
-  return /Mobile|Android|iP(ad|hone|od)/i.test(navigator.userAgent || '');
-}
-
-export function getLoginEnv() {
-  if (isWeCom()) return 'wecom';
-  if (isWeChat()) return 'wechat';
+export function getLoginEnv(ua) {
+  if (isWeCom(ua)) return 'wechat_enterprise';
+  if (isWeChat(ua)) return 'wechat_open';
   return 'h5';
 }
+
+// 若项目里曾用过 getLoginEnvSync，这里做个别名兼容
+export const getLoginEnvSync = getLoginEnv;

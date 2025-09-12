@@ -3,6 +3,30 @@ import request from '@/utils/http';
 import website from '@/config/website';
 
 export default {
+  // 微信授权
+  authorize(params) {
+    return http.request({
+      url: '/api/blade-bip/wechat/public-account/authorize',
+      method: 'GET',
+      params,
+    });
+  },
+  // 微信登录
+  loginBySocial(data) {
+    return http.request({
+      url: '/api/blade-auth/oauth/token',
+      method: 'post',
+      headers: {
+        'Tenant-Id': '000000',
+      },
+      params: {
+        tenantId: '000000',
+        ...data,
+        grant_type: 'social',
+        scope: 'all',
+      },
+    });
+  },
   loginByUsername(tenantId, deptId, roleId, username, password, type, key, code) {
     return request({
       url: '/blade-auth/oauth/token',

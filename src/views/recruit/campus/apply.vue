@@ -1,7 +1,6 @@
 <!-- src/views/recruit/campus/apply.vue -->
 <template>
   <img class="banner" src="/images/recruit/campus/apply/banner.svg" alt="banner" />
-  {{ form }}
   <RecruitForm
     v-model="form"
     :schema="schema"
@@ -203,7 +202,6 @@ function handleCancel() {
 }
 function handleChange({ name, value }) {
   if (name === 'file') {
-    console.log(value);
     form.value.resumeUrl = value?.path || '';
     form.value.resumeId = value?.attachId || '';
   }

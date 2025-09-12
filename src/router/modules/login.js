@@ -8,6 +8,7 @@ const LoginWeChat = () => import('@/views/login/WeChatLogin.vue');
 const LoginWeCom = () => import('@/views/login/WeComLogin.vue');
 const WeChatCallback = () => import('@/views/login/WeChatCallback.vue');
 const WeComCallback = () => import('@/views/login/WeComCallback.vue');
+const LoginSocial = () => import('@/views/login/Social.vue');
 
 export default {
   path: '/login',
@@ -16,6 +17,12 @@ export default {
   meta: { public: true, layout: 'blank', title: '登录' },
   redirect: { name: ROUTE_NAME.LOGIN_ACCOUNT },
   children: [
+    // {
+    //   path: 'social',
+    //   name: ROUTE_NAME.LOGIN_ACCOUNT,
+    //   component: LoginSocial,
+    //   meta: { public: true, title: '授权登录' },
+    // },
     {
       path: 'account',
       name: ROUTE_NAME.LOGIN_ACCOUNT,

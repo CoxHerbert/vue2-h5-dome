@@ -1,6 +1,7 @@
 // src/router/route-names.js
 const ROUTE_NAME = {
   LOGIN: 'Login',
+  LOGIN_SOCIAL: 'LoginSocial',
   LOGIN_ACCOUNT: 'LoginAccount',
   LOGIN_PHONE: 'LoginPhone',
   LOGIN_WECHAT: 'LoginWeChat',

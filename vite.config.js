@@ -27,6 +27,9 @@ export default ({ mode }) => {
   const isProd = VITE_APP_ENV === 'production';
   const currentTimeVersion = Date.now();
 
+  // 生产默认用 /new-h5/，也可用 VITE_BASE 覆盖
+  const base = env.VITE_BASE || (mode === 'production' ? '/new-h5/' : '/');
+
   return defineConfig({
     plugins: [
       vue({
@@ -38,6 +41,7 @@ export default ({ mode }) => {
         },
       }),
     ],
+    base,
     define: {
       'import.meta.env.VITE_APP_VERSION': currentTimeVersion,
     },
@@ -57,8 +61,13 @@ export default ({ mode }) => {
       },
     },
     server: {
+      host: true,
       port: 5174,
       open: true,
+      allowedHosts: ['test.eastwinbip.com', '.eastwinbip.com'],
+      hmr: {
+        host: 'test.eastwinbip.com',
+      },
       proxy: {
         // 业务接口
         [VITE_APP_API]: {
