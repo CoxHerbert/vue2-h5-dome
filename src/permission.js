@@ -1,76 +1,106 @@
-// // src/permission.js
-// import router from './router';
-// import { useAuthStore } from '@/store/auth';
-// import NProgress from 'nprogress';
-// import { setTitle } from '@/utils/set-title';
+// src/permission.js
+import router from './router';
+import { useAuthStore } from '@/store/auth';
+import NProgress from 'nprogress';
+import { setTitle } from '@/utils/set-title';
 
-// NProgress.configure({ showSpinner: false });
+// ✅ 与 axios 401 拦截器共享的一套工具
+import {
+  INTENDED_URL_KEY,
+  isLoginPath,
+  resolveTypeByPath,
+  getIntendedFullPathForGuard,
+} from '@/router/auth-helpers';
 
-// /** 无需登录可访问的路由 */
-// const publicviews = new Set(['/login', '/404', '/about']);
+NProgress.configure({ showSpinner: false });
 
-// /** 允许通过 ?token=xxx 放行（如 SSO 回跳） */
-// const urlTokenWhiteList = new Set(['/sso/callback', '/magic-login']);
+/** 无需登录可访问的路由（不要把 /login 放进来，否则已登录用户会停留在登录页） */
+const publicviews = new Set(['/404', '/about']);
 
-// /** 设置 token 并延迟 300ms（保留兼容逻辑） */
-// const syncSetToken = (token) =>
-//   new Promise((resolve) => {
-//     if (token) {
-//       const auth = useAuthStore();
-//       auth.setToken?.(token);
-//     }
-//     setTimeout(resolve, 300);
-//   });
+/** URL token 白名单（SSO 回跳等） */
+const urlTokenWhiteList = new Set(['/sso/callback', '/magic-login']);
 
-// /** 是否公开页面 */
-// const isPublic = (path) => publicviews.has(path);
+/** 是否公开页面 */
+const isPublic = (path) => publicviews.has(path);
 
-// router.beforeEach(async (to, from, next) => {
-//   NProgress.start();
+/** 写 token（兼容老逻辑的“慢写入”场景） */
+const syncSetToken = (token) =>
+  new Promise((resolve) => {
+    if (token) {
+      const auth = useAuthStore();
+      auth.setTokenPair?.({ accessToken: token });
+    }
+    setTimeout(resolve, 150);
+  });
 
-//   setTitle(to.meta?.title);
+router.beforeEach(async (to, from, next) => {
+  if (!(to.path === '/login' || to.path.startsWith('/login/'))) {
+    const full = to.fullPath || location.pathname + location.search + location.hash;
+    sessionStorage.setItem('INTENDED_URL', full || '/');
+  }
 
-//   const auth = useAuthStore();
-//   const token = auth.token;
+  // ⭐ 记录“期望回跳页”，供 axios 401 拦截器兜底使用
+  if (!isLoginPath(to.path)) {
+    const full =
+      to.fullPath || window.location.pathname + window.location.search + window.location.hash;
+    sessionStorage.setItem(INTENDED_URL_KEY, full || '/');
+  }
 
-//   // 1) URL token 白名单
-//   if (urlTokenWhiteList.has(to.path)) {
-//     if (to.query?.token) await syncSetToken(to.query.token);
-//     return next();
-//   }
+  NProgress.start();
+  setTitle(to.meta?.title);
 
-//   // 2) 判断是否需要鉴权
-//   const noAuth = to.meta?.requiresAuth === false || isPublic(to.path);
+  const auth = useAuthStore();
+  const token = auth.token;
 
-//   if (noAuth) {
-//     // 不需要鉴权的页面，直接放行
-//     return next();
-//   }
+  // 1) URL token 白名单：写入后直接放行
+  if (urlTokenWhiteList.has(to.path)) {
+    if (to.query?.token) {
+      await syncSetToken(to.query.token);
+    }
+    NProgress.done();
+    return next();
+  }
 
-//   if (!token) {
-//     // 需要鉴权但未登录
-//     return next({ path: '/login', query: { redirect: to.fullPath } });
-//   }
+  // 2) 显式公开页面
+  const noAuth = to.meta?.requiresAuth === false || isPublic(to.path);
+  if (noAuth) {
+    NProgress.done();
+    return next();
+  }
 
-//   // 3) 已登录：target 外开
-//   if (to.meta?.target) {
-//     const url = String(to.query?.url || '').replace(/#/g, '&');
-//     if (url) window.open(url);
-//     NProgress.done(); // ⭐ 注意这里要手动收尾
-//     return next(false);
-//   }
+  // 3) 需要鉴权但未登录 ⇒ 静默 or 普通登录
+  if (!token) {
+    // 避免已经在登录页时再次重定向导致循环
+    if (!isLoginPath(to.path)) {
+      const detectedType = resolveTypeByPath(to.path); // 统一“类型匹配”
+      const redirectFull = getIntendedFullPathForGuard(to, from); // 统一“回跳计算”（to 是 /login* 时优先用 from）
+      NProgress.done();
 
-//   // 4) 已登录访问 /login ⇒ 回首页
-//   if (to.path === '/login') return next('/');
+      if (detectedType) {
+        // 命中类型（如 /recruit/campus/*）→ 静默登录
+        return next({
+          path: '/login/social',
+          query: { type: detectedType, redirect: redirectFull },
+          replace: true,
+        });
+      }
+      // 其它 → 账号密码登录（/login 的函数重定向会把 query 透传到 /login/account）
+      return next({ path: '/login', query: { redirect: redirectFull } });
+    }
+    NProgress.done();
+    return next();
+  }
 
-//   // 5) 正常放行
-//   next();
-// });
+  // 4) 已登录访问 /login* ⇒ 回首页（避免登录页死循环）
+  if (isLoginPath(to.path)) {
+    NProgress.done();
+    return next('/');
+  }
 
-// router.afterEach(() => {
-//   NProgress.done();
-// });
+  // 5) 正常放行
+  NProgress.done();
+  next();
+});
 
-// router.onError(() => {
-//   NProgress.done();
-// });
+router.afterEach(() => NProgress.done());
+router.onError(() => NProgress.done());

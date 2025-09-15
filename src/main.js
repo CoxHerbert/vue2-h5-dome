@@ -16,7 +16,6 @@ import { registerComponents } from './components/index';
 import { setupDirectives } from './directives';
 import { setupPlugins } from '@/plugins';
 import { attachNProgress } from '@/router/nprogress';
-import { ensureWechatSilentLogin } from '@/utils/wechat-auth.js';
 
 // —— 启动函数（推荐异步引导）——
 async function bootstrap() {
@@ -37,7 +36,6 @@ async function bootstrap() {
   // 3) 权限守卫（放在 router、pinia 注册之后）
   //    注意：若 permission.js 内部会使用 pinia，请确保它在 app.use(pinia) 之后执行
   await import('./permission.js');
-  ensureWechatSilentLogin();
 
   // 4) 启动前兜底：如果已登录但本地没有用户资料，则拉一次用户信息
   const { useAuthStore } = await import('@/store/auth');

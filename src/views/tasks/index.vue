@@ -1,1 +1,3 @@
-<template><div class='page'><h2>任务</h2></div></template>
+<template>
+  <div class="page"><van-nav-bar title="任务" fixed /></div>
+</template>

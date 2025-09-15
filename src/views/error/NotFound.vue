@@ -1,0 +1,119 @@
+<template>
+  <div class="notfound-page">
+    <van-empty class="nf-empty" image="error" description="页面走丢了 (404)">
+      <template #image>
+        <!-- 自定义插画：大图标 + 404 文案 -->
+        <div class="nf-hero">
+          <van-icon name="warning-o" class="nf-icon" />
+          <div class="nf-code">404</div>
+        </div>
+      </template>
+
+      <div class="nf-actions">
+        <van-button type="primary" block round @click="goBack">返回上一页</van-button>
+        <van-space :size="8" direction="horizontal" class="nf-row">
+          <van-button plain type="primary" round @click="goHome">回到首页</van-button>
+          <van-button plain type="default" round @click="reload">刷新重试</van-button>
+        </van-space>
+      </div>
+
+      <div class="nf-tip">可能的原因：链接过期 / 地址拼写错误 / 页面已被移动</div>
+    </van-empty>
+  </div>
+</template>
+
+<script setup>
+import { onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { showToast } from 'vant';
+
+const router = useRouter();
+const route = useRoute();
+
+function goBack() {
+  // 如果没有历史记录，就回首页
+  if (window.history.length <= 1) {
+    goHome();
+  } else {
+    router.back();
+  }
+}
+
+function goHome() {
+  // 根据你的首页路由名调整
+  router.replace({ name: 'Home' }).catch(() => {});
+}
+
+function reload() {
+  // 对外部直链或弱网场景友好
+  showToast('正在刷新…');
+  setTimeout(() => location.reload(), 200);
+}
+
+onMounted(() => {
+  // 你也可以在这里上报 404（埋点）
+  // report('page_404', { path: route.fullPath })
+  console.warn('[404] Not Found:', route.fullPath);
+});
+</script>
+
+<style scoped>
+.notfound-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, var(--nf-bg1, #f7f8fa), var(--nf-bg2, #ffffff));
+  padding: 24px 16px env(safe-area-inset-bottom);
+}
+
+.nf-empty {
+  width: 100%;
+  max-width: 520px;
+}
+
+.nf-hero {
+  display: grid;
+  place-items: center;
+  margin-bottom: 8px;
+}
+
+.nf-icon {
+  font-size: 64px;
+  opacity: 0.85;
+}
+
+.nf-code {
+  margin-top: 8px;
+  font-weight: 700;
+  font-size: 40px;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+.nf-actions {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.nf-row {
+  margin-top: 8px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.nf-tip {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--nf-tip, #999);
+  text-align: center;
+}
+
+/* 暗色模式适配（如果你的站有 dark class） */
+:global(.dark) .notfound-page {
+  --nf-bg1: #121212;
+  --nf-bg2: #0b0b0b;
+  --nf-tip: #bbb;
+  background: linear-gradient(180deg, var(--nf-bg1), var(--nf-bg2));
+}
+</style>

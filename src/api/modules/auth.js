@@ -5,7 +5,7 @@ import website from '@/config/website';
 export default {
   // 微信授权
   authorize(params) {
-    return http.request({
+    return request({
       url: '/api/blade-bip/wechat/public-account/authorize',
       method: 'GET',
       params,
@@ -13,7 +13,7 @@ export default {
   },
   // 微信登录
   loginBySocial(data) {
-    return http.request({
+    return request({
       url: '/api/blade-auth/oauth/token',
       method: 'post',
       headers: {
@@ -49,7 +49,7 @@ export default {
     });
   },
   // 刷新token
-  refreshToken(refresh_token, tenantId, deptId, roleId) {
+  refreshToken(refresh_token, tenantId = '000000', deptId, roleId) {
     return request({
       url: '/blade-auth/oauth/token',
       method: 'post',

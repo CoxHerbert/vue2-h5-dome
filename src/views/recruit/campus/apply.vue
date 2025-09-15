@@ -23,6 +23,7 @@ import { ref, computed, getCurrentInstance, onMounted } from 'vue';
 import { showToast } from 'vant';
 import Api from '@/api/index';
 import { useRouter } from 'vue-router';
+import { ensureAuthOnEnter } from '@/router/ensure-auth';
 
 const router = useRouter();
 const { proxy } = getCurrentInstance();
@@ -147,7 +148,13 @@ const form = ref({
   referrerName: '',
 });
 
-onMounted(() => {
+onMounted(async () => {
+  // 进入页面第一行就做，避免还没鉴权就先发请求导致 401 抢跳
+  const ok = await ensureAuthOnEnter({
+    type: 'campus_applicant', // 明确类型（也可以不传，自动按 path 匹配）
+    mode: 'social', // 强制静默登录
+  });
+  if (!ok) return; // 已重定向去登录，后续不再执行
   getCampusPositionList();
 });
 
@@ -176,9 +183,9 @@ const getCampusPositionList = () => {
 };
 
 /** ====== 组件事件 ====== */
-function handleSubmit() {
+function handleSubmit(payload) {
   Api.recruit.campus.apply
-    .postTalentUser(form.value)
+    .postTalentUser(payload)
     .then((res) => {
       const { code, data } = res.data;
       if (code === 200) {

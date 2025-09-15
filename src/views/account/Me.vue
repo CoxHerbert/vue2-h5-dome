@@ -179,9 +179,11 @@ async function confirmLogout() {
     await doLogout();
   } catch {}
 }
+
+// 你的页面里
 async function doLogout(force = false) {
-  auth.logout();
-  router.replace(force ? { path: '/login', query: { relogin: 1 } } : '/login');
+  auth.logout(); // 清 token/refreshToken/用户信息:contentReference[oaicite:5]{index=5}
+  router.replace(force ? { path: '/login', query: { relogin: 1 } } : { path: '/login' });
 }
 
 // 若进入页面时本地无资料，则拉一次

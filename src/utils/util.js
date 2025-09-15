@@ -639,3 +639,15 @@ export const isExternalUrl = (url) => {
   const currentHost = window.location.hostname;
   return link.hostname !== currentHost;
 };
+
+// 根据name获取地址拦参数值
+export function getUrlCode(name) {
+  return (
+    decodeURIComponent(
+      (new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(new URL(location.href)) || [
+        ,
+        '',
+      ])[1].replace(/\+/g, '%20')
+    ) || null
+  );
+}

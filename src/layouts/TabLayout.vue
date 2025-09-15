@@ -1,6 +1,5 @@
 <template>
   <div class="tab-layout">
-    ----
     <router-view class="tab-content" />
 
     <!-- 交给路由控制选中，无需 v-model -->

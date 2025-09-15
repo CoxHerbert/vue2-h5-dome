@@ -15,7 +15,13 @@ const routes = [
     redirect: '/home',
     children: [homeModule, tasksModule, meModule],
   },
-  { path: '/:pathMatch(.*)*', redirect: '/home' },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/error/NotFound.vue'),
+    meta: { title: '404 - 页面不存在' },
+  },
+  // { path: '/:pathMatch(.*)*', redirect: '/home' },
 ];
 
 const router = createRouter({

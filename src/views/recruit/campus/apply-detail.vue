@@ -3,6 +3,7 @@
 
   <div class="page">
     <div class="page-top-bg"></div>
+
     <!-- 基本信息 -->
     <section class="card candidate">
       <div class="row top">
@@ -30,17 +31,35 @@
           </div>
         </div>
       </div>
+
       <div class="row">
         <van-tag plain type="primary">{{ detail.graduateSchool }}</van-tag>
         <van-tag plain type="primary">{{ detail.professionalName }}</van-tag>
       </div>
+
       <van-cell-group inset>
-        <van-cell title="应聘渠道" :value="detail.applyChannel" />
-        <van-cell title="推荐人" :value="detail.referrerName" />
+        <van-cell title="应聘渠道">
+          <template #default>
+            <Dict :options="dictRefs.DC_APPLY_CHANNEL" :value="detail.applyChannel" />
+          </template>
+        </van-cell>
+        <van-cell title="推荐人">
+          <template #default>{{ detail.referrerName || '-' }}</template>
+        </van-cell>
       </van-cell-group>
+
       <van-cell-group title="求职期望">
-        <van-cell title="意向岗位" :value="detail.joinPosts" />
-        <van-cell title="意向地点" :value="detail.desiredLocation" />
+        <van-cell title="意向岗位">
+          <template #default>
+            {{ postNames }}
+          </template>
+        </van-cell>
+
+        <van-cell title="意向地点">
+          <template #default>
+            <Dict :options="dictRefs.DC_WORK_LOCATION" :value="detail.desiredLocation" />
+          </template>
+        </van-cell>
       </van-cell-group>
     </section>
 
@@ -50,12 +69,28 @@
       <div class="result-box">
         <img v-if="iconSrc" class="status-img" :src="iconSrc" :alt="statusText" />
         <div class="status-text" :class="statusClass">
-          {{ statusText }}
+          {{ statusText || '-' }}
         </div>
         <div class="status-desc">
-          {{ finalDesc }}
+          {{ finalDesc || '-' }}
         </div>
       </div>
+    </section>
+
+    <!-- 评估说明（有就显示） -->
+    <section v-if="detail.result?.post || detail.result?.message" class="card">
+      <van-cell-group title="评估说明">
+        <van-cell v-if="detail.result?.post" title="目标岗位">
+          <template #default>
+            <pre class="message">{{ detail.result?.post || '-' }}</pre>
+          </template>
+        </van-cell>
+        <van-cell v-if="detail.result?.message" title="备注">
+          <template #default>
+            <pre class="message">{{ detail.result.message }}</pre>
+          </template>
+        </van-cell>
+      </van-cell-group>
     </section>
 
     <div class="safe-bottom"></div>
@@ -63,17 +98,29 @@
 </template>
 
 <script setup>
-import { computed, reactive, onMounted, toRefs } from 'vue';
+import { computed, reactive, onMounted, toRefs, getCurrentInstance } from 'vue';
 import { useRoute } from 'vue-router';
 import { showToast } from 'vant';
 import Api from '@/api/index';
 
 const route = useRoute();
+const { proxy } = getCurrentInstance();
+const dictRefs = proxy.dicts([
+  'DC_GENDER',
+  'DC_APPLY_CHANNEL',
+  'DC_WORK_LOCATION',
+  'DC_EVALUATION_STATUS',
+]);
 
-// 1) 状态：pending | retest | pass | reject
-const status = computed(() => route.query.status || 'pending');
+// 后端状态码 -> 页面四态 映射
+const STATUS_CODE_TO_KEY = {
+  DC_EVALUATION_STATUS_PGZ: 'pending',
+  DC_EVALUATION_STATUS_XYFS: 'retest',
+  DC_EVALUATION_STATUS_YTG: 'pass',
+  DC_EVALUATION_STATUS_WTG: 'reject',
+};
 
-// 2) 图标（放 public/images/recruit/campus/apply/ 下）
+// 图标
 const icons = reactive({
   pending: '/images/recruit/campus/apply/status-pending.svg',
   retest: '/images/recruit/campus/apply/status-retest.svg',
@@ -81,6 +128,7 @@ const icons = reactive({
   reject: '/images/recruit/campus/apply/status-reject.svg',
 });
 
+// 文案配置
 const STATUS_MAP = {
   pending: { text: '评估中', color: '#3478F6', desc: '请耐心等待评估结果' },
   retest: {
@@ -92,45 +140,103 @@ const STATUS_MAP = {
   reject: { text: '未通过', color: '#FF3B30', desc: '很遗憾，未通过本轮；期待未来再次合作' },
 };
 
-const statusCfg = computed(() => STATUS_MAP[status.value] || STATUS_MAP.pending);
-const statusText = computed(() => statusCfg.value.text);
-const statusClass = computed(() => `s--${status.value}`);
-const finalDesc = computed(() => statusCfg.value.desc);
-const iconSrc = computed(() => icons[status.value] || '');
+const pageData = reactive({ detail: {}, positionList: [] });
+const { detail, positionList } = toRefs(pageData);
 
-// 3) 详情（这里演示静态，实际可根据 route.params.applyId 请求接口）
-const pageData = reactive({
-  detail: {},
+// ===== 计算字段 =====
+
+// 真实状态：优先使用后端 result.status（字典码）映射为页面四态
+const statusKey = computed(() => {
+  const code = detail.value?.result?.status;
+  return STATUS_CODE_TO_KEY[code] || 'pending';
 });
 
-const { detail } = toRefs(pageData);
+const statusCfg = computed(() => STATUS_MAP[statusKey.value] || STATUS_MAP.pending);
+const statusText = computed(() => statusCfg.value.text);
+const statusClass = computed(() => `s--${statusKey.value}`);
+const finalDesc = computed(() => statusCfg.value.desc);
+const iconSrc = computed(() => icons[statusKey.value] || '');
+const postNames = computed(() => {
+  const raw = detail.value.joinPostIds;
+  const ids = String(raw).split(',');
+  const posts = pageData.positionList
+    .filter((post) => ids.includes(post.id))
+    .map((post) => post.postName)
+    .join(',');
+  return posts;
+});
 
+// ===== 行为 =====
 onMounted(async () => {
+  await getCampusPositionList();
   const id = route.params.applyId;
-  if (id) {
-    getDetail(id);
-  }
+  if (id) getDetail(id);
 });
 
 function getDetail(id) {
   Api.recruit.campus.apply.getDetail({ id }).then((res) => {
-    const { code, data } = res.data;
-    if (code === 200) {
-      detail.value = {
-        ...data,
-      };
-      console.log(detail);
+    const { code, data } = res.data || {};
+    if (code === 200 && data) {
+      pageData.detail = normalizeDetail(data);
     }
   });
 }
 
+const getCampusPositionList = () => {
+  Api.recruit.campus.apply
+    .getPositionLis()
+    .then((res) => {
+      // 如果有统一的返回格式，可以在这里做一次处理
+      const { code, data } = res.data;
+      if (code === 200) {
+        positionList.value = data.map((item) => {
+          const { id, postName } = item;
+          return {
+            ...item,
+            label: postName,
+            value: id,
+          };
+        });
+      }
+      return res;
+    })
+    .catch((err) => {
+      console.error('获取岗位列表失败:', err);
+      throw err;
+    });
+};
+
+// 规范化字段（把字符串多值转成数组，防止组件难以回显）
+function normalizeDetail(data) {
+  const toArr = (v) => (Array.isArray(v) ? v : v ? String(v).split(',').filter(Boolean) : []);
+  return {
+    ...data,
+    // 供 <dict> 多选回显
+    _desiredLocationArr: toArr(data.desiredLocation),
+    // 供“意向岗位”计数/占位
+    _joinPostIdsArr: toArr(data.joinPostIds),
+  };
+}
+
 function onPreviewResume() {
-  if (!detail.value.resumeUrl) return showToast('暂无简历附件');
+  if (!detail.value?.resumeUrl) return showToast('暂无简历附件');
   window.open(detail.value.resumeUrl, '_blank');
+}
+
+function onClickLeft() {
+  history.length > 1 ? history.back() : (location.href = '/');
 }
 </script>
 
 <style lang="scss" scoped>
+/* 仅新增：多行备注更友好显示 */
+pre.message {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
 // ========== Tokens ==========
 $brand: #3060ed;
 $brand-weak: rgba(48, 96, 237, 0.3);
