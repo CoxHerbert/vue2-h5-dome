@@ -31,6 +31,11 @@
       <div class="body">
         <router-view />
       </div>
+
+      <!-- ===== 新增：卡片底部行动区 ===== -->
+      <!-- <div class="footer">
+        <van-button block round type="primary" @click="goCampus"> 校园招聘 </van-button>
+      </div> -->
     </div>
   </div>
 </template>
@@ -41,7 +46,9 @@ import { useRoute, useRouter } from 'vue-router';
 
 // —— 常量（用路径，不再依赖路由常量）——
 const LOGIN_ACCOUNT_PATH = '/login/account';
-const LOGIN_SOCIAL_PATH = '/login/social';
+
+// —— 新增：底部两个按钮的目标路径（按你项目路由改）——
+const CAMPUS_HOME_PATH = '/recruit/campus/apply'; // 校园招聘首页/入口
 
 // ==== 类型文案（新增类型在此加一行即可） ====
 const TYPE_LABELS = {
@@ -98,7 +105,6 @@ function pushWithLoginQuery(target) {
     redirect: redirect.value || '/',
   };
 
-  // 构造待跳转的 location
   const nextLoc =
     typeof target === 'string'
       ? { path: target, query: mergedQuery }
@@ -106,11 +112,15 @@ function pushWithLoginQuery(target) {
         ? { name: target.name, query: { ...(target.query || {}), ...mergedQuery } }
         : { path: target.path, query: { ...(target.query || {}), ...mergedQuery } };
 
-  // 若目标等于当前，不再跳
   const resolved = router.resolve(nextLoc);
   if (resolved.fullPath === route.fullPath) return;
 
   router.push(nextLoc);
+}
+
+/** 底部按钮跳转（会保留 type/redirect） */
+function goCampus() {
+  pushWithLoginQuery({ path: CAMPUS_HOME_PATH });
 }
 
 /** 切换 Tab 时不丢 query（这里只有一个 Tab，兜底写死跳 account） */
@@ -126,14 +136,13 @@ onMounted(() => {
   if (hydrated) return;
   hydrated = true;
 
-  // if (!route.query?.type && route.meta?.userType) {
-  //   router.replace({
-  //     // 用当前路由（名或路径都兼容）
-  //     name: route.name,
-  //     path: route.name ? undefined : route.path,
-  //     query: { ...route.query, type: String(route.meta.userType), redirect: redirect.value || '/' },
-  //   });
-  // }
+  if (!route.query?.type && route.meta?.userType) {
+    router.replace({
+      name: route.name,
+      path: route.name ? undefined : route.path,
+      query: { ...route.query, type: String(route.meta.userType), redirect: redirect.value || '/' },
+    });
+  }
 });
 </script>
 
@@ -196,6 +205,16 @@ onMounted(() => {
 }
 .body {
   min-height: 260px;
+}
+
+/* ===== 新增：底部按钮样式 ===== */
+.footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid #f1f5f9;
+  background: #fff;
 }
 .quick :deep(.van-button) {
   box-shadow: 0 6px 20px rgba(22, 119, 255, 0.18);
