@@ -163,23 +163,45 @@ async function loginBySocial(data) {
     console.warn('[social] fetchUserInfo failed:', e);
   }
 
-  // 4) 普通回跳：按 callbackUrl → redirect → /home
-  const url = window.location.href;
-  const params = new URL(url).searchParams;
+  // 4) 回跳逻辑：先外层 redirect，再 callbackUrl 内层 redirect，最后兜底 /home
+  const OUTER = new URL(window.location.href);
+  const outerRedirect = OUTER.searchParams.get('redirect') || ''; // 有些场景直接挂在外层
+  const callbackUrlRaw = OUTER.searchParams.get('callbackUrl') || '';
 
-  const callbackUrl = params.get('callbackUrl');
-  const decoded = callbackUrl ? decodeURIComponent(callbackUrl) : '';
-  let redirect = '';
-
-  try {
-    if (decoded) {
-      const u2 = new URL(decoded, window.location.origin);
-      redirect = u2.searchParams.get('redirect') || '';
-      // 禁止跳回 /login*
-      if (u2.pathname.startsWith('/login')) redirect = '';
+  function sanitizeRedirect(p) {
+    if (!p) return '';
+    // 绝对 URL：只允许同源
+    if (/^https?:\/\//i.test(p)) {
+      try {
+        const u = new URL(p);
+        if (u.origin !== window.location.origin) return '';
+        p = u.pathname + u.search + u.hash;
+      } catch {
+        return '';
+      }
     }
-  } catch {
-    // ignore
+    // 相对路径：必须是站内
+    if (!p.startsWith('/')) return '';
+    // 禁止回到登录页
+    if (p === '/login' || p.startsWith('/login/')) return '';
+    return p || '';
+  }
+
+  let redirect = sanitizeRedirect(outerRedirect);
+
+  if (!redirect && callbackUrlRaw) {
+    // callbackUrl 里再解析一层 redirect
+    let decoded = callbackUrlRaw;
+    try {
+      decoded = decodeURIComponent(callbackUrlRaw); // 如果外层 encode 过，这里解一次
+    } catch {}
+    try {
+      const innerURL = new URL(decoded, window.location.origin); // 注意：加 base
+      const innerRedirect = innerURL.searchParams.get('redirect') || '';
+      redirect = sanitizeRedirect(innerRedirect);
+    } catch (e) {
+      console.warn('[social] invalid callbackUrl:', callbackUrlRaw, e);
+    }
   }
 
   if (redirect) {

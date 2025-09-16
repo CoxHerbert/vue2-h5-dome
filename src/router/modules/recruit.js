@@ -25,7 +25,7 @@ export default {
         {
           path: 'apply-detail/:applyId?', // 可带投递ID；没有ID也可通过query传status
           name: 'recruit-campus-apply-detail',
-          meta: { title: '投递详情', requiresAuth: true },
+          meta: { title: '投递详情', requiresAuth: false },
           component: () => import('@/views/recruit/campus/apply-detail.vue'),
         },
       ],
