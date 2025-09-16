@@ -22,13 +22,13 @@ const sanitize = (s) => s.replace(/[@/\\]+/g, '_').replace(/[^\w-]/g, '_');
 
 export default ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const { VITE_APP_ENV, VITE_APP_BASE_URL, VITE_APP_API } = env;
+  const { VITE_APP_ENV, VITE_APP_BASE_URL, VITE_APP_API, BASE_URL } = env;
 
   const isProd = VITE_APP_ENV === 'production';
   const currentTimeVersion = Date.now();
 
   // 生产默认用 /mobile/，也可用 VITE_BASE 覆盖
-  const base = env.VITE_BASE || (mode === 'production' ? '/mobile/' : '/');
+  const base = env.VITE_BASE || (mode === 'production' ? BASE_URL : '/');
 
   return defineConfig({
     plugins: [

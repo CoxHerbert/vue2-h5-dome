@@ -66,7 +66,7 @@ async function authorize() {
   const href = window.location.href;
 
   // 授权回跳地址：当前页 + callbackUrl=当前完整地址
-  const redirectUrl = `${origin}/login/social?callbackUrl=${encodeURIComponent(href)}`;
+  const redirectUrl = `${origin}${import.meta.env.BASE_URL}login/social?callbackUrl=${encodeURIComponent(href)}`;
 
   const res = await Api.auth.authorize({
     redirectUrl,
@@ -138,7 +138,7 @@ async function loginBySocial(data) {
     });
   } else {
     router.push({
-      path: '/me',
+      path: '/home',
     });
   }
 }

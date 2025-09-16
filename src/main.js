@@ -10,11 +10,10 @@ import 'vant/lib/index.css';
 import '@/styles/index.scss';
 
 // 插件 & 工具
-import './plugins/index';
+import plugins from './plugins/index';
 import vant from 'vant';
 import { registerComponents } from './components/index';
 import { setupDirectives } from './directives';
-import { setupPlugins } from '@/plugins';
 import { attachNProgress } from '@/router/nprogress';
 import { setupRouterGuard } from './router/guard';
 
@@ -27,14 +26,13 @@ async function bootstrap() {
   app.use(pinia);
   app.use(vant);
   app.use(router);
+  app.use(plugins);
   setupRouterGuard(router);
 
   // 2) 全局注册（组件/指令/插件）
   registerComponents(app);
   setupDirectives(app);
   attachNProgress(router);
-  await setupPlugins(app); // 若你的 plugins 里有异步初始化
-
   // 3) 权限守卫（放在 router、pinia 注册之后）
   //    注意：若 permission.js 内部会使用 pinia，请确保它在 app.use(pinia) 之后执行
   await import('./permission.js');

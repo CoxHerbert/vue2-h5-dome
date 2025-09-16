@@ -90,7 +90,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, onMounted } from 'vue';
+import { computed, reactive, ref, onMounted, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import { useAuthStore } from '@/store/auth';
@@ -98,6 +98,7 @@ import { useUserStore } from '@/store/user';
 import Api from '@/api';
 import { encrypt } from '@/utils/sm2';
 
+const { proxy } = getCurrentInstance();
 const router = useRouter();
 const auth = useAuthStore();
 const userStore = useUserStore();
@@ -130,7 +131,7 @@ const joinedDateText = computed(() => {
 });
 
 // 默认头像：/public/images/logo.png
-const defaultAvatar = '/images/logo.png';
+const defaultAvatar = proxy.$assetUrl('/images/logo.png');
 const onAvatarError = (e) => {
   e.target.src = defaultAvatar;
 };

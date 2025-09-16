@@ -1,6 +1,6 @@
 <!-- src/views/recruit/campus/apply.vue -->
 <template>
-  <img class="banner" src="/images/recruit/campus/apply/banner.svg" alt="banner" />
+  <img class="banner" :src="$assetUrl('/images/recruit/campus/apply/banner.svg')" alt="banner" />
   <RecruitForm
     v-model="form"
     :schema="schema"

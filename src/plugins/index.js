@@ -1,8 +1,18 @@
 // src/plugins/index.js
 import { createDictPlugin } from './dict-plugin';
+import * as utils from '@/plugins/utils.js';
 
-export async function setupPlugins(app) {
-  app.use(createDictPlugin()); // 依赖 useDictStore
+// ✅ 保持同步，避免顺序/Promise 混淆
+function setupPlugins(app) {
+  app.use(createDictPlugin()); // 如果它本身需要异步，内部自行处理
 }
 
-export default { install: (app) => setupPlugins(app) };
+export default {
+  install(app) {
+    setupPlugins(app);
+    const utilKeys = Object.keys(utils);
+    utilKeys.forEach((key) => {
+      if (utils[key]) app.config.globalProperties[`$${key}`] = utils[key];
+    });
+  },
+};

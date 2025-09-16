@@ -13,20 +13,20 @@
             <img
               v-if="detail.sex === 'DC_GENDER_MAN'"
               height="17"
-              src="/images/recruit/campus/apply/male.svg"
+              :src="$assetUrl('/images/recruit/campus/apply/male.svg')"
               alt="male"
             />
             <img
               v-else-if="detail.sex === 'DC_GENDER_WOMAN'"
               height="18"
-              src="/images/recruit/campus/apply/female.svg"
+              :src="$assetUrl('/images/recruit/campus/apply/female.svg')"
               alt="female"
             />
           </div>
         </div>
         <div class="right">
           <div class="resume-download" @click="onPreviewResume">
-            <img height="18" src="/images/recruit/campus/apply/CV.svg" alt="CV" />
+            <img height="18" :src="$assetUrl('/images/recruit/campus/apply/CV.svg')" alt="CV" />
             简历附件
           </div>
         </div>
@@ -100,7 +100,6 @@
 <script setup>
 import { computed, reactive, onMounted, toRefs, getCurrentInstance } from 'vue';
 import { useRoute } from 'vue-router';
-import { showToast } from 'vant';
 import Api from '@/api/index';
 
 const route = useRoute();
@@ -122,10 +121,10 @@ const STATUS_CODE_TO_KEY = {
 
 // 图标
 const icons = reactive({
-  pending: '/images/recruit/campus/apply/status-pending.svg',
-  retest: '/images/recruit/campus/apply/status-retest.svg',
-  pass: '/images/recruit/campus/apply/status-pass.svg',
-  reject: '/images/recruit/campus/apply/status-reject.svg',
+  pending: proxy.$assetUrl('/images/recruit/campus/apply/status-pending.svg'),
+  retest: proxy.$assetUrl('/images/recruit/campus/apply/status-retest.svg'),
+  pass: proxy.$assetUrl('/images/recruit/campus/apply/status-pass.svg'),
+  reject: proxy.$assetUrl('/images/recruit/campus/apply/status-reject.svg'),
 });
 
 // 文案配置
@@ -216,11 +215,6 @@ function normalizeDetail(data) {
     // 供“意向岗位”计数/占位
     _joinPostIdsArr: toArr(data.joinPostIds),
   };
-}
-
-function onPreviewResume() {
-  if (!detail.value?.resumeUrl) return showToast('暂无简历附件');
-  window.open(detail.value.resumeUrl, '_blank');
 }
 
 function onClickLeft() {

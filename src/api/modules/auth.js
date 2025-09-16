@@ -6,7 +6,7 @@ export default {
   // 微信授权
   authorize(params) {
     return request({
-      url: '/api/blade-bip/wechat/public-account/authorize',
+      url: '/blade-bip/wechat/public-account/authorize',
       method: 'GET',
       params,
     });
@@ -14,7 +14,7 @@ export default {
   // 微信登录
   loginBySocial(data) {
     return request({
-      url: '/api/blade-auth/oauth/token',
+      url: '/blade-auth/oauth/token',
       method: 'post',
       headers: {
         'Tenant-Id': '000000',
