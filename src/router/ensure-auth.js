@@ -1,13 +1,7 @@
 // src/router/ensure-auth.js
 import router from '@/router';
 import { useAuthStore } from '@/store/auth';
-import {
-  INTENDED_URL_KEY,
-  isLoginPath,
-  resolveTypeByPath,
-  normalizeFullPath,
-  saveIntended,
-} from './auth-helpers';
+import { isLoginPath, resolveTypeByPath, normalizeFullPath, saveIntended } from './auth-helpers';
 
 let _redirecting = false;
 

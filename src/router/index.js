@@ -12,7 +12,6 @@ const routes = [
   {
     path: '/',
     component: () => import('@/layouts/TabLayout.vue'),
-    redirect: '/home',
     children: [homeModule, tasksModule, meModule],
   },
   {

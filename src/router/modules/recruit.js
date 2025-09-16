@@ -17,7 +17,7 @@ export default {
         {
           path: 'apply', // 校招投递表单
           name: 'recruit-campus-apply',
-          meta: { title: '校招投递表单', requiresAuth: true },
+          meta: { title: '校招投递表单', requiresAuth: false },
           beforeEnter: ensureAuthRouteGuard({ type: 'campus_applicant', mode: 'social' }),
           component: () => import('@/views/recruit/campus/apply.vue'),
         },

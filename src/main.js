@@ -16,6 +16,7 @@ import { registerComponents } from './components/index';
 import { setupDirectives } from './directives';
 import { setupPlugins } from '@/plugins';
 import { attachNProgress } from '@/router/nprogress';
+import { setupRouterGuard } from './router/guard';
 
 // —— 启动函数（推荐异步引导）——
 async function bootstrap() {
@@ -26,6 +27,7 @@ async function bootstrap() {
   app.use(pinia);
   app.use(vant);
   app.use(router);
+  setupRouterGuard(router);
 
   // 2) 全局注册（组件/指令/插件）
   registerComponents(app);
