@@ -220,6 +220,10 @@ function normalizeDetail(data) {
 function onClickLeft() {
   history.length > 1 ? history.back() : (location.href = '/');
 }
+
+function onPreviewResume() {
+  window.open(proxy.$previewUrl(detail.value?.resumeUrl), '_blank');
+}
 </script>
 
 <style lang="scss" scoped>

@@ -184,8 +184,9 @@ const getCampusPositionList = () => {
 
 /** ====== 组件事件 ====== */
 function handleSubmit(payload) {
+  const data = Object.assign({}, form.value, payload);
   Api.recruit.campus.apply
-    .postTalentUser(payload)
+    .postTalentUser(data)
     .then((res) => {
       const { code, data } = res.data;
       if (code === 200) {
