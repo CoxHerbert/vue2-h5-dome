@@ -27,8 +27,8 @@ export default ({ mode }) => {
   const isProd = VITE_APP_ENV === 'production';
   const currentTimeVersion = Date.now();
 
-  // 生产默认用 /new-h5/，也可用 VITE_BASE 覆盖
-  const base = env.VITE_BASE || (mode === 'production' ? '/new-h5/' : '/');
+  // 生产默认用 /mobile/，也可用 VITE_BASE 覆盖
+  const base = env.VITE_BASE || (mode === 'production' ? '/mobile/' : '/');
 
   return defineConfig({
     plugins: [
@@ -90,7 +90,7 @@ export default ({ mode }) => {
       target: 'esnext',
       minify: isProd ? 'terser' : 'esbuild',
       cssCodeSplit: true, // 确保每个 chunk 的 CSS 独立产出
-      outDir: `${dayjs().format('YYYY-MM-DD-HH-mm')}-${VITE_APP_ENV}-dist`,
+      outDir: `${dayjs().format('YYYY-MM-DD-HH-mm')}-${VITE_APP_ENV}-mobile`,
       rollupOptions: {
         // 如果你要走 CDN，这里再配 external/paths；本例本地打包，所以注释
         // external: Object.keys(esmCdnMap),
