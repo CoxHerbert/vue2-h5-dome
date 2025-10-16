@@ -1,8 +1,9 @@
 // src/main.js
 import { createApp } from 'vue';
-import { createPinia } from 'pinia';
+import { createPinia, setActivePinia } from 'pinia';
 import App from './App.vue';
 import router from '@/router';
+import i18n from './locales';
 
 // 样式
 import 'nprogress/nprogress.css';
@@ -24,7 +25,9 @@ async function bootstrap() {
   // 1) 状态 & 路由
   const pinia = createPinia();
   app.use(pinia);
+  setActivePinia(pinia);
   app.use(vant);
+  app.use(i18n);
   app.use(router);
   app.use(plugins);
   setupRouterGuard(router);

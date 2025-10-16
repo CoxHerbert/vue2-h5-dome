@@ -2,10 +2,31 @@
 import router from './router';
 import { useAuthStore } from '@/store/auth';
 import NProgress from 'nprogress';
+import { watch } from 'vue';
+import i18n, { translate } from './locales';
 
-function setTitle(title) {
-  if (title) document.title = `联合东创-${title}`;
+function setTitle(meta) {
+  const baseTitle = '联合东创';
+  if (!meta) {
+    document.title = baseTitle;
+    return;
+  }
+
+  const isString = typeof meta === 'string';
+  const titleKey = isString ? meta : meta.title;
+  const fallback = isString ? meta : meta.titleFallback ?? meta.title;
+  const resolved = translate(titleKey, fallback);
+
+  document.title = resolved ? `${baseTitle}-${resolved}` : baseTitle;
 }
+
+watch(
+  () => i18n.global.locale.value,
+  () => {
+    const { meta } = router.currentRoute.value || {};
+    setTitle(meta);
+  }
+);
 
 // ✅ 与 axios 401 拦截器共享的一套工具
 import {
@@ -50,7 +71,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   NProgress.start();
-  setTitle(to.meta?.title);
+  setTitle(to.meta);
 
   const auth = useAuthStore();
   const token = auth.token;

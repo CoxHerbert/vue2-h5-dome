@@ -10,7 +10,7 @@
         :to="{ name: r.name }"
         :icon="r.meta.icon"
       >
-        {{ r.meta.title }}
+        {{ t(r.meta.title) }}
       </van-tabbar-item>
     </van-tabbar>
   </div>
@@ -18,12 +18,15 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import router from '@/router';
 
 // 只拿需要出现在底部的叶子路由
 const tabRoutes = computed(() =>
   router.getRoutes().filter((r) => r.meta?.tabbar && r.name && !r.children?.length)
 );
+
+const { t } = useI18n();
 </script>
 
 <style scoped>

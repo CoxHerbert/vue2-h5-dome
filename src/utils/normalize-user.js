@@ -8,6 +8,29 @@ const csv = (s) =>
         .filter(Boolean)
     : [];
 
+const toNumber = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const toArray = (value) => {
+  if (Array.isArray(value)) return value.map((item) => String(item));
+  if (value == null || value === '') return [];
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.map((item) => String(item));
+    } catch (err) {
+      // fall through to comma split handling
+    }
+    return value
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [String(value)];
+};
+
 export function normalizeUser(data = {}) {
   // 你的后端字段（原始）
   // 例如：id、tenantId、account、name、realName、roleId、roleName、postId、postName、deptId、deptName 等
@@ -82,5 +105,13 @@ export function normalizeUser(data = {}) {
     userId: data.id, // 常见别名
     username: data.account, // 你们账号形态
     real_name: data.realName, // 某些老代码习惯
+
+    // 扩展：个人工作台统计
+    points: toNumber(data.points),
+    leaveDateCount: toNumber(data.leaveDateCount),
+    travelDateCount: toNumber(data.travelDateCount),
+    overDateCount: toNumber(data.overDateCount),
+    joinDateCount: toNumber(data.joinDateCount),
+    punchCardDetail: toArray(data.punchCardDetail),
   };
 }

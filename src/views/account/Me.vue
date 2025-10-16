@@ -1,45 +1,125 @@
 <template>
-  <div class="me-page">
-    <van-nav-bar title="我的" fixed />
+  <div class="mine-page">
+    <div class="top-bg"></div>
+    <van-nav-bar
+      :title="t('me.navTitle')"
+      fixed
+      :border="false"
+      class="mine-nav"
+      safe-area-inset-top
+    />
 
-    <div class="me-header" :style="{ paddingTop: '54px' }">
-      <div class="me-profile">
-        <img
-          class="avatar"
-          :src="user.avatar || defaultAvatar"
-          alt="avatar"
-          @error="onAvatarError"
-        />
-        <div class="meta">
-          <div class="name">
-            {{ user.realName || user.name || user.username || '未命名用户' }}
-            <van-tag v-if="user.deptName" plain type="primary" class="ml8">{{
-              user.deptName
-            }}</van-tag>
+    <section class="profile-card">
+      <div class="bg-index bg-index-2"></div>
+      <div class="bg-index bg-index-1"></div>
+
+      <div class="profile-top">
+        <div class="userinfo-wrap">
+          <div class="userinfo-wrap-left">
+            <div class="avatar-and-userinfo">
+              <img
+                class="avatar"
+                :src="user.avatar || defaultAvatar"
+                alt="avatar"
+                @error="onAvatarError"
+              />
+              <div class="col">
+                <span class="name"
+                  >{{ user.realName || user.name || user.username || t('me.profile.unnamed') }}</span
+                >
+                <span class="uid">{{ user.account || '-' }}</span>
+              </div>
+            </div>
+            <div v-if="roleTags.length" class="tags">
+              <span class="tag" v-for="(tag, idx) in roleTags" :key="idx">{{ tag }}</span>
+            </div>
           </div>
-          <div class="sub">
-            <span v-if="user.account">账号：{{ user.account }}</span>
-            <span v-if="user.phone" class="dot">·</span>
-            <span v-if="user.phone">{{ user.phone }}</span>
+          <div class="points-card" @click="navigateToRoute('mePoints')">
+            <span class="points-label">{{ t('me.dashboard.pointsLabel') }}</span>
+            <span class="points-val">{{ stats.pointsDisplay }}</span>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- 只展示：职位、角色、入职时间、邮箱 -->
+      <div class="stats">
+        <button
+          v-for="metric in metrics"
+          :key="metric.key"
+          type="button"
+          class="stat"
+          @click="navigateToRoute(metric.routeName)"
+        >
+          <span class="stat-label">{{ metric.label }}</span>
+          <span class="stat-num">{{ metric.display }}</span>
+        </button>
+      </div>
+
+      <div class="join-strip" :style="joinStripStyle">{{ joinDaysText }}</div>
+    </section>
+
+    <section class="card punch-card" @click="navigateToRoute('mePunch')">
+      <div class="card-title-row">
+        <span class="card-title">{{ t('me.dashboard.todayPunch.title') }}</span>
+        <van-icon name="arrow" class="arrow" />
+      </div>
+      <div class="timeline" v-if="punchRecords.length">
+        <div class="tl-item" v-for="(time, index) in punchRecords" :key="index">
+          <div class="tl-left">
+            <span class="dot done"></span>
+            <span v-if="index !== punchRecords.length - 1" class="line"></span>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">{{ t('me.dashboard.todayPunch.timeLabel') }}</div>
+            <div class="tl-time">{{ time }}</div>
+          </div>
+        </div>
+      </div>
+      <div v-else class="timeline-empty">{{ t('me.dashboard.todayPunch.empty') }}</div>
+    </section>
+
+    <section class="card func-card">
+      <div class="card-title-row">
+        <span class="card-title">{{ t('me.dashboard.functions.title') }}</span>
+      </div>
+      <div class="func-grid">
+        <button
+          v-for="item in functionItems"
+          :key="item.key"
+          type="button"
+          class="func-item"
+          @click="handleFunction(item)"
+        >
+          <span class="func-icon">
+            <van-icon :name="item.icon" />
+          </span>
+          <span class="func-text">{{ item.label }}</span>
+        </button>
+      </div>
+    </section>
+
     <van-cell-group inset class="mt12">
-      <van-cell title="职位" :value="postText" />
-      <van-cell title="角色" :value="roleText" />
-      <van-cell title="入职时间" :value="joinedDateText" />
-      <van-cell title="邮箱" :value="user.email || '-'" />
+      <van-cell :title="t('me.language.title')">
+        <template #right-icon>
+          <van-radio-group v-model="selectedLocale" direction="horizontal">
+            <van-radio name="zh-CN">{{ t('me.language.zhCN') }}</van-radio>
+            <van-radio name="en-US">{{ t('me.language.enUS') }}</van-radio>
+          </van-radio-group>
+        </template>
+      </van-cell>
     </van-cell-group>
 
     <van-cell-group inset class="mt12">
-      <van-cell title="修改密码" is-link @click="openPwdPopup" />
-      <van-cell title="退出登录" is-link @click="confirmLogout" />
+      <van-cell :title="t('me.cells.position')" :value="postText" />
+      <van-cell :title="t('me.cells.role')" :value="roleText" />
+      <van-cell :title="t('me.cells.joinedDate')" :value="joinedDateText" />
+      <van-cell :title="t('me.cells.email')" :value="user.email || '-'" />
     </van-cell-group>
 
-    <!-- 修改密码 -->
+    <van-cell-group inset class="mt12">
+      <van-cell :title="t('me.actions.changePassword')" is-link @click="openPwdPopup" />
+      <van-cell :title="t('me.actions.logout')" is-link @click="confirmLogout" />
+    </van-cell-group>
+
     <van-popup
       v-model:show="pwd.show"
       position="bottom"
@@ -48,39 +128,41 @@
       :style="{ height: 'auto' }"
     >
       <div class="sheet">
-        <div class="sheet-title">修改密码</div>
+        <div class="sheet-title">{{ t('me.form.title') }}</div>
         <van-form ref="pwdFormRef" @submit="submitChangePwd">
           <van-field
             v-model="pwd.oldPassword"
             type="password"
-            label="旧密码"
-            placeholder="请输入旧密码"
-            :rules="[{ required: true, message: '请输入旧密码' }]"
+            :label="t('me.form.oldPassword.label')"
+            :placeholder="t('me.form.oldPassword.placeholder')"
+            :rules="[{ required: true, message: t('me.form.oldPassword.placeholder') }]"
             clearable
           />
           <van-field
             v-model="pwd.newPassword"
             type="password"
-            label="新密码"
-            placeholder="请输入新密码"
+            :label="t('me.form.newPassword.label')"
+            :placeholder="t('me.form.newPassword.placeholder')"
             :rules="[
-              { required: true, message: '请输入新密码' },
-              { validator: validateNewPwd, message: '密码至少6位' },
+              { required: true, message: t('me.form.newPassword.placeholder') },
+              { validator: validateNewPwd, message: t('me.validation.newPassword') },
             ]"
             clearable
           />
           <van-field
             v-model="pwd.confirmPassword"
             type="password"
-            label="确认密码"
-            placeholder="请再次输入新密码"
-            :rules="[{ validator: validateConfirmPwd, message: '两次输入不一致' }]"
+            :label="t('me.form.confirmPassword.label')"
+            :placeholder="t('me.form.confirmPassword.placeholder')"
+            :rules="[{ validator: validateConfirmPwd, message: t('me.validation.confirmPassword') }]"
             clearable
           />
           <div class="action">
-            <van-button type="default" block class="mr8" @click="pwd.show = false">取消</van-button>
+            <van-button type="default" block class="mr8" @click="pwd.show = false"
+              >{{ t('me.form.cancel') }}</van-button
+            >
             <van-button type="primary" block native-type="submit" :loading="pwd.loading"
-              >确定</van-button
+              >{{ t('me.form.confirm') }}</van-button
             >
           </div>
         </van-form>
@@ -90,34 +172,141 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, onMounted, getCurrentInstance } from 'vue';
+import { computed, reactive, ref, onMounted, getCurrentInstance, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
 import Api from '@/api';
-import { encrypt } from '@/utils/sm2';
+import { changeLocale } from '@/locales';
 
 const { proxy } = getCurrentInstance();
 const router = useRouter();
 const auth = useAuthStore();
 const userStore = useUserStore();
+const { t, locale } = useI18n();
+
+const selectedLocale = ref(locale.value);
+
+watch(locale, (val) => {
+  if (val && val !== selectedLocale.value) {
+    selectedLocale.value = val;
+  }
+});
+
+watch(
+  selectedLocale,
+  (val, oldVal) => {
+    if (val && val !== oldVal && val !== locale.value) {
+      changeLocale(val);
+    }
+  },
+  { flush: 'sync' }
+);
 
 // 页面取用户信息：来自 user 仓库
 const user = computed(() => userStore.userInfo || {});
 
-// 工具：数组/逗号字符串 → 文本
-const toNiceText = (v) => {
-  if (!v) return '';
-  if (Array.isArray(v)) return v.filter(Boolean).join('、') || '';
-  return (
-    String(v)
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .join('、') || ''
-  );
+const stats = computed(() => {
+  const info = user.value || {};
+  const toNumber = (val) => {
+    const num = Number(val);
+    return Number.isFinite(num) ? num : 0;
+  };
+  const rawPunches = Array.isArray(info.punchCardDetail) ? info.punchCardDetail : [];
+  const punches = rawPunches.map((item) => String(item));
+  const points = toNumber(info.points);
+
+  return {
+    points,
+    pointsDisplay: points.toLocaleString(),
+    leaveDays: toNumber(info.leaveDateCount),
+    travelDays: toNumber(info.travelDateCount),
+    overtimeHours: toNumber(info.overDateCount),
+    joinDays: toNumber(info.joinDateCount),
+    punchRecords: punches,
+  };
+});
+
+const joinDaysText = computed(() =>
+  t('me.dashboard.joinDays', { days: stats.value.joinDays || 0 })
+);
+
+const metrics = computed(() => [
+  {
+    key: 'leave',
+    label: t('me.dashboard.metrics.leave'),
+    value: stats.value.leaveDays,
+    display: stats.value.leaveDays.toLocaleString(),
+    routeName: 'meLeave',
+  },
+  {
+    key: 'travel',
+    label: t('me.dashboard.metrics.travel'),
+    value: stats.value.travelDays,
+    display: stats.value.travelDays.toLocaleString(),
+    routeName: 'meTravel',
+  },
+  {
+    key: 'overtime',
+    label: t('me.dashboard.metrics.overtime'),
+    value: stats.value.overtimeHours,
+    display: stats.value.overtimeHours.toLocaleString(),
+    routeName: 'meOvertime',
+  },
+]);
+
+const punchRecords = computed(() => stats.value.punchRecords || []);
+
+const functionItems = computed(() => [
+  {
+    key: 'workTime',
+    label: t('me.dashboard.functions.items.workTime'),
+    icon: 'clock-o',
+    routeName: 'meWorkTime',
+  },
+  {
+    key: 'punchRecord',
+    label: t('me.dashboard.functions.items.punchRecord'),
+    icon: 'underway-o',
+    routeName: 'mePunchRecord',
+  },
+]);
+
+function navigateToRoute(name) {
+  if (!name) return;
+  if (typeof router.hasRoute === 'function' && !router.hasRoute(name)) return;
+  router.push({ name });
+}
+
+function handleFunction(item) {
+  if (!item) return;
+  navigateToRoute(item.routeName);
+}
+
+// 工具：数组/逗号字符串 → 数组
+const toArrayValue = (v) => {
+  if (!v) return [];
+  if (Array.isArray(v)) {
+    return v
+      .map((item) => String(item).trim())
+      .filter(Boolean);
+  }
+  return String(v)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 };
+
+// 展示文本
+const toNiceText = (v) => toArrayValue(v).join('、') || '';
+
+const roleTags = computed(() => {
+  const tags = toArrayValue(user.value.roleNames);
+  if (tags.length) return tags;
+  return toArrayValue(user.value.roleName);
+});
 
 const roleText = computed(
   () => toNiceText(user.value.roleNames) || toNiceText(user.value.roleName) || '-'
@@ -135,6 +324,14 @@ const defaultAvatar = proxy.$assetUrl('/images/logo.png');
 const onAvatarError = (e) => {
   e.target.src = defaultAvatar;
 };
+
+const joinStripUrl = proxy.$assetUrl('/images/me/join-strip.svg');
+const joinStripStyle = computed(() => ({
+  backgroundImage: `url(${joinStripUrl})`,
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  backgroundSize: 'cover',
+}));
 
 // 修改密码
 const pwd = reactive({
@@ -156,22 +353,23 @@ function validateConfirmPwd(v) {
 }
 
 async function submitChangePwd() {
-  if (!validateNewPwd(pwd.newPassword)) return showToast('密码至少6位');
-  if (!validateConfirmPwd(pwd.confirmPassword)) return showToast('两次输入不一致');
+  if (!validateNewPwd(pwd.newPassword)) return showToast(t('me.validation.newPassword'));
+  if (!validateConfirmPwd(pwd.confirmPassword))
+    return showToast(t('me.validation.confirmPassword'));
   try {
     pwd.loading = true;
     await Api.user.updatePassword({
       oldPassword: pwd.oldPassword,
       newPassword: pwd.newPassword,
     });
-    showToast('修改成功');
+    showToast(t('me.toast.changePasswordSuccess'));
     pwd.show = false;
     pwd.oldPassword = '';
     pwd.newPassword = '';
     pwd.confirmPassword = '';
     // await doLogout(true);
   } catch (err) {
-    showToast(err?.message || '修改失败');
+    showToast(err?.message || t('me.toast.changePasswordFail'));
   } finally {
     pwd.loading = false;
   }
@@ -179,7 +377,10 @@ async function submitChangePwd() {
 
 async function confirmLogout() {
   try {
-    await showConfirmDialog({ title: '确认退出', message: '确定要退出登录吗？' });
+    await showConfirmDialog({
+      title: t('me.dialog.logoutTitle'),
+      message: t('me.dialog.logoutMessage'),
+    });
     await doLogout();
   } catch {}
 }
@@ -199,70 +400,349 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.me-page {
+.mine-page {
+  position: relative;
+  margin: 0 auto;
   min-height: 100vh;
-  background: #f7f8fa;
+  max-width: 750px;
+  padding: 56px 0 120px;
+  background: #f6f7fb;
 }
-.me-header {
+
+.top-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 240px;
+  background: linear-gradient(180deg, #3060ed 0%, rgba(48, 96, 237, 0.3) 64%, rgba(48, 96, 237, 0) 100%);
+  z-index: 0;
+}
+
+.mine-nav {
+  background: transparent;
+  color: #fff;
+  --van-nav-bar-title-text-color: #fff;
+  --van-nav-bar-icon-color: #fff;
+  --van-nav-bar-text-color: #fff;
+}
+
+.profile-card {
+  position: relative;
+  margin: 40px 16px 0;
+  padding: 24px;
   background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 12px 36px rgba(25, 81, 230, 0.08);
+  z-index: 1;
 }
-.me-profile {
+
+.bg-index {
+  position: absolute;
+  top: -12px;
+  left: 0;
+  width: calc(100% - 16px);
+  height: 260px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 24px;
+  transform-origin: center;
+}
+
+.bg-index-1 {
+  z-index: -1;
+  transform: rotate(-4deg);
+}
+
+.bg-index-2 {
+  z-index: -2;
+  transform: rotate(-8deg);
+}
+
+.profile-top {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.userinfo-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.userinfo-wrap-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.avatar-and-userinfo {
   display: flex;
   align-items: center;
-  padding: 16px;
+  gap: 12px;
 }
+
 .avatar {
   width: 64px;
   height: 64px;
-  border-radius: 50%;
+  border-radius: 16px;
   object-fit: cover;
+  border: 1px solid #dadbe0;
   background: #f2f3f5;
-  border: 1px solid #eee;
 }
-.meta {
-  margin-left: 12px;
-  flex: 1;
-  min-width: 0;
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
+
 .name {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2b3d;
+}
+
+.uid {
+  font-size: 13px;
+  color: #8c9aaf;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: #baccff;
+  color: #3060ed;
+  font-size: 12px;
+}
+
+.points-card {
+  width: 132px;
+  min-width: 132px;
+  height: 132px;
+  border-radius: 24px;
+  background: #3060ed;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+.points-label {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.points-val {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: #f7f8ff;
+  border-radius: 16px;
+  border: none;
+  color: #1f2b3d;
+  cursor: pointer;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #8c9aaf;
+  text-align: center;
+}
+
+.stat-num {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.join-strip {
+  margin-top: 20px;
+  padding: 16px 24px;
+  border-radius: 20px;
+  background-color: #3060ed;
+  color: #fff;
+  font-size: 14px;
   font-weight: 600;
+}
+
+.card {
+  position: relative;
+  margin: 16px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 12px 36px rgba(25, 81, 230, 0.08);
+  padding: 20px 24px;
+}
+
+.punch-card {
+  cursor: pointer;
+}
+
+.card-title-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
 }
-.sub {
-  margin-top: 6px;
-  color: #888;
-  font-size: 13px;
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2b3d;
+}
+
+.arrow {
+  color: #c5ccda;
+}
+
+.timeline {
+  margin-top: 16px;
+}
+
+.tl-item {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 12px;
 }
-.dot::before {
-  content: '•';
-  margin-right: 6px;
-  color: #ccc;
-}
-.mt12 {
+
+.tl-item + .tl-item {
   margin-top: 12px;
 }
-.ml8 {
-  margin-left: 8px;
+
+.tl-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1d65f3;
+  border: 4px solid #b4cdff;
+  box-sizing: border-box;
+}
+
+.line {
+  flex: 1;
+  width: 2px;
+  margin-top: 6px;
+  border-left: 1px dashed #bbbbbb;
+}
+
+.tl-content {
+  flex: 1;
+}
+
+.tl-title {
+  font-size: 13px;
+  color: #5f6b7a;
+}
+
+.tl-time {
+  margin-top: 4px;
+  font-size: 16px;
+  color: #1f2b3d;
+  font-weight: 500;
+}
+
+.timeline-empty {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #9aa2b1;
+}
+
+.func-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.func-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 12px;
+  border-radius: 16px;
+  background: #f7f8fb;
+  border: none;
+  cursor: pointer;
+}
+
+.func-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: #e4ebff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3060ed;
+  font-size: 24px;
+}
+
+.func-text {
+  font-size: 14px;
+  color: #353638;
+}
+
+.mt12 {
+  margin: 12px 16px 0;
+}
+
 .sheet {
   padding: 16px;
 }
+
 .sheet-title {
   text-align: center;
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 8px;
 }
+
 .action {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin: 16px 0 8px;
+}
+
+.mr8 {
+  margin-right: 0;
+}
+
+button {
+  font: inherit;
+  border: none;
+  padding: 0;
 }
 </style>

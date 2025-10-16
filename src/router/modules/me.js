@@ -1,6 +1,78 @@
 export default {
   path: 'me',
   name: 'me',
-  meta: { title: '我的', icon: 'user-o', tabbar: true, requiresAuth: true },
+  meta: { title: 'routes.me', icon: 'user-o', tabbar: true, requiresAuth: true },
   component: () => import('@/views/account/Me.vue'),
-}
+  children: [
+    {
+      path: 'points',
+      name: 'mePoints',
+      meta: {
+        title: 'routes.meChildren.points',
+        requiresAuth: true,
+        placeholderKey: 'me.placeholder.default',
+      },
+      component: () => import('@/views/account/me/Placeholder.vue'),
+    },
+    {
+      path: 'leave',
+      name: 'meLeave',
+      meta: {
+        title: 'routes.meChildren.leave',
+        requiresAuth: true,
+        placeholderKey: 'me.placeholder.default',
+      },
+      component: () => import('@/views/account/me/Placeholder.vue'),
+    },
+    {
+      path: 'travel',
+      name: 'meTravel',
+      meta: {
+        title: 'routes.meChildren.travel',
+        requiresAuth: true,
+        placeholderKey: 'me.placeholder.default',
+      },
+      component: () => import('@/views/account/me/Placeholder.vue'),
+    },
+    {
+      path: 'overtime',
+      name: 'meOvertime',
+      meta: {
+        title: 'routes.meChildren.overtime',
+        requiresAuth: true,
+        placeholderKey: 'me.placeholder.default',
+      },
+      component: () => import('@/views/account/me/Placeholder.vue'),
+    },
+    {
+      path: 'punch',
+      name: 'mePunch',
+      meta: {
+        title: 'routes.meChildren.punch',
+        requiresAuth: true,
+        placeholderKey: 'me.placeholder.default',
+      },
+      component: () => import('@/views/account/me/Placeholder.vue'),
+    },
+    {
+      path: 'work-time',
+      name: 'meWorkTime',
+      meta: {
+        title: 'routes.meChildren.workTime',
+        requiresAuth: true,
+        placeholderKey: 'me.placeholder.default',
+      },
+      component: () => import('@/views/account/me/Placeholder.vue'),
+    },
+    {
+      path: 'punch-record',
+      name: 'mePunchRecord',
+      meta: {
+        title: 'routes.meChildren.punchRecord',
+        requiresAuth: true,
+        placeholderKey: 'me.placeholder.default',
+      },
+      component: () => import('@/views/account/me/Placeholder.vue'),
+    },
+  ],
+};
