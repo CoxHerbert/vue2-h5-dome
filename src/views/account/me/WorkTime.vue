@@ -1,6 +1,6 @@
 <template>
   <div class="me-work-time">
-    <van-nav-bar
+    <ScrollAwareNavBar
       class="me-work-time__nav"
       :title="t('me.workTime.title')"
       left-arrow
@@ -73,6 +73,7 @@ import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
 import { showToast } from 'vant';
 import Api from '@/api/index';
+import ScrollAwareNavBar from '@/components/ScrollAwareNavBar.vue';
 
 const router = useRouter();
 const { t } = useI18n();
