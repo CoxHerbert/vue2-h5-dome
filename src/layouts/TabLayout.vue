@@ -22,9 +22,7 @@ import { useI18n } from 'vue-i18n';
 import router from '@/router';
 
 // 只拿需要出现在底部的叶子路由
-const tabRoutes = computed(() =>
-  router.getRoutes().filter((r) => r.meta?.tabbar && r.name && !r.children?.length)
-);
+const tabRoutes = computed(() => router.getRoutes().filter((r) => r.meta?.tabbar && r.name));
 
 const { t } = useI18n();
 </script>

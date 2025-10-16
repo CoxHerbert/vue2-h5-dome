@@ -24,14 +24,14 @@
                 @error="onAvatarError"
               />
               <div class="col">
-                <span class="name"
-                  >{{ user.realName || user.name || user.username || t('me.profile.unnamed') }}</span
-                >
+                <span class="name">{{
+                  user.realName || user.name || user.username || t('me.profile.unnamed')
+                }}</span>
                 <span class="uid">{{ user.account || '-' }}</span>
               </div>
             </div>
             <div v-if="roleTags.length" class="tags">
-              <span class="tag" v-for="(tag, idx) in roleTags" :key="idx">{{ tag }}</span>
+              <span v-for="(tag, idx) in roleTags" :key="idx" class="tag">{{ tag }}</span>
             </div>
           </div>
           <div class="points-card" @click="navigateToRoute('mePoints')">
@@ -60,10 +60,10 @@
     <section class="card punch-card" @click="navigateToRoute('mePunch')">
       <div class="card-title-row">
         <span class="card-title">{{ t('me.dashboard.todayPunch.title') }}</span>
-        <van-icon name="arrow" class="arrow" />
+        <!-- <van-icon name="arrow" class="arrow" /> -->
       </div>
-      <div class="timeline" v-if="punchRecords.length">
-        <div class="tl-item" v-for="(time, index) in punchRecords" :key="index">
+      <div v-if="punchRecords.length" class="timeline">
+        <div v-for="(time, index) in punchRecords" :key="index" class="tl-item">
           <div class="tl-left">
             <span class="dot done"></span>
             <span v-if="index !== punchRecords.length - 1" class="line"></span>
@@ -82,10 +82,9 @@
         <span class="card-title">{{ t('me.dashboard.functions.title') }}</span>
       </div>
       <div class="func-grid">
-        <button
+        <div
           v-for="item in functionItems"
           :key="item.key"
-          type="button"
           class="func-item"
           @click="handleFunction(item)"
         >
@@ -93,7 +92,7 @@
             <van-icon :name="item.icon" />
           </span>
           <span class="func-text">{{ item.label }}</span>
-        </button>
+        </div>
       </div>
     </section>
 
@@ -154,16 +153,18 @@
             type="password"
             :label="t('me.form.confirmPassword.label')"
             :placeholder="t('me.form.confirmPassword.placeholder')"
-            :rules="[{ validator: validateConfirmPwd, message: t('me.validation.confirmPassword') }]"
+            :rules="[
+              { validator: validateConfirmPwd, message: t('me.validation.confirmPassword') },
+            ]"
             clearable
           />
           <div class="action">
-            <van-button type="default" block class="mr8" @click="pwd.show = false"
-              >{{ t('me.form.cancel') }}</van-button
-            >
-            <van-button type="primary" block native-type="submit" :loading="pwd.loading"
-              >{{ t('me.form.confirm') }}</van-button
-            >
+            <van-button type="default" block class="mr8" @click="pwd.show = false">{{
+              t('me.form.cancel')
+            }}</van-button>
+            <van-button type="primary" block native-type="submit" :loading="pwd.loading">{{
+              t('me.form.confirm')
+            }}</van-button>
           </div>
         </van-form>
       </div>
@@ -207,9 +208,10 @@ watch(
 
 // 页面取用户信息：来自 user 仓库
 const user = computed(() => userStore.userInfo || {});
+const userH5 = reactive({});
 
 const stats = computed(() => {
-  const info = user.value || {};
+  const info = userH5.value || {};
   const toNumber = (val) => {
     const num = Number(val);
     return Number.isFinite(num) ? num : 0;
@@ -289,9 +291,7 @@ function handleFunction(item) {
 const toArrayValue = (v) => {
   if (!v) return [];
   if (Array.isArray(v)) {
-    return v
-      .map((item) => String(item).trim())
-      .filter(Boolean);
+    return v.map((item) => String(item).trim()).filter(Boolean);
   }
   return String(v)
     .split(',')
@@ -393,9 +393,16 @@ async function doLogout(force = false) {
 
 // 若进入页面时本地无资料，则拉一次
 onMounted(() => {
-  if (!userStore.userInfo && auth.isLogin) {
-    userStore.fetchUserInfo().catch(() => {});
-  }
+  Api.user.getH5UserInfo().then((res) => {
+    console.log(res);
+    const { code, data } = res.data;
+    if (code === 200) {
+      userH5.value = data;
+    }
+  });
+  // if (!userStore.userInfo && auth.isLogin) {
+  //   userStore.fetchUserInfo().catch(() => {});
+  // }
 });
 </script>
 
@@ -415,7 +422,12 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 240px;
-  background: linear-gradient(180deg, #3060ed 0%, rgba(48, 96, 237, 0.3) 64%, rgba(48, 96, 237, 0) 100%);
+  background: linear-gradient(
+    180deg,
+    #3060ed 0%,
+    rgba(48, 96, 237, 0.3) 64%,
+    rgba(48, 96, 237, 0) 100%
+  );
   z-index: 0;
 }
 
@@ -524,9 +536,9 @@ onMounted(() => {
 }
 
 .points-card {
-  width: 132px;
-  min-width: 132px;
-  height: 132px;
+  width: 102px;
+  min-width: 102px;
+  height: 102px;
   border-radius: 24px;
   background: #3060ed;
   color: #fff;
@@ -562,7 +574,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   gap: 8px;
-  padding: 16px 12px;
+  padding: 16px 0;
   background: #f7f8ff;
   border-radius: 16px;
   border: none;
@@ -690,9 +702,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 16px 12px;
   border-radius: 16px;
-  background: #f7f8fb;
   border: none;
   cursor: pointer;
 }

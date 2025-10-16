@@ -28,4 +28,10 @@ export default {
       data,
     });
   },
+  getH5UserInfo() {
+    return request({
+      url: '/blade-bip/home-user/h5-user-info',
+      method: 'get',
+    });
+  },
 };
