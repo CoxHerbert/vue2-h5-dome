@@ -1,4 +1,28 @@
 export default {
+  common: {
+    errors: {
+      system: '系统错误',
+      tokenExpired: '用户令牌过期，请重新登录',
+      network: '网络异常',
+    },
+    validation: {
+      id: {
+        invalidFormat: '证件号码格式错误',
+        invalidRegion: '地址编码错误',
+        invalidChecksum: '证件号码校验位错误',
+        invalidLength: '证件号码长度不为18位',
+        required: '证件号码不能为空',
+      },
+      phone: {
+        invalidFormat: '手机号码格式不正确',
+        invalidLength: '手机号码长度不为11位',
+        required: '手机号码不能为空',
+      },
+    },
+    time: {
+      unsupportedUnit: '不支持的时间单位: {from} 或 {to}',
+    },
+  },
   login: {
     brand: {
       sloganFirst: '同心合力',

@@ -1,4 +1,28 @@
 export default {
+  common: {
+    errors: {
+      system: 'A system error occurred',
+      tokenExpired: 'Your session has expired. Please sign in again.',
+      network: 'Network error',
+    },
+    validation: {
+      id: {
+        invalidFormat: 'The ID number format is invalid',
+        invalidRegion: 'The region code is invalid',
+        invalidChecksum: 'The ID checksum is incorrect',
+        invalidLength: 'The ID number must be 18 characters',
+        required: 'The ID number is required',
+      },
+      phone: {
+        invalidFormat: 'The mobile number format is invalid',
+        invalidLength: 'The mobile number must be 11 digits',
+        required: 'The mobile number is required',
+      },
+    },
+    time: {
+      unsupportedUnit: 'Unsupported time unit: {from} or {to}',
+    },
+  },
   login: {
     brand: {
       sloganFirst: 'Together as one',

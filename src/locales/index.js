@@ -60,9 +60,13 @@ function applyVantLocale(locale) {
 
 applyVantLocale(initialLocale);
 
-export function translate(key, fallback = '') {
+export function translate(key, fallback = '', values) {
   if (!key) return fallback;
-  const translated = i18n.global.t(key);
+  const t = i18n.global?.t;
+  if (typeof t !== 'function') {
+    return fallback || key;
+  }
+  const translated = t(key, values);
   if (translated === key) {
     return fallback || key;
   }
