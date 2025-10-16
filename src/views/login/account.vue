@@ -6,9 +6,7 @@
       <div class="brand">
         <img class="logo" :src="logoUrl" alt="logo" />
         <div class="slogan">
-          <span class="bold">{{ t('login.brand.sloganFirst') }}</span>
-          <span class="gap"></span>
-          <span class="bold">{{ t('login.brand.sloganSecond') }}</span>
+          <span class="bold">{{ t('login.brand.slogan') }}</span>
         </div>
       </div>
 
@@ -214,17 +212,16 @@ async function onSubmit() {
 .slogan {
   margin-top: 12px;
   color: #1f2a44;
-  display: flex;
-  align-items: center;
+  text-align: center;
   font-size: 18px;
+  font-weight: 800;
   letter-spacing: 1px;
+  line-height: 1.35;
+  padding: 0 16px;
+  word-break: break-word;
 }
 .slogan .bold {
   font-weight: 800;
-}
-.slogan .gap {
-  display: inline-block;
-  width: 10px;
 }
 
 /* 表单组：去掉 inset 的外侧留白，并控制间距 */

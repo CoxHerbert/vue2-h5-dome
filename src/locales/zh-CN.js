@@ -25,8 +25,7 @@ export default {
   },
   login: {
     brand: {
-      sloganFirst: '同心合力',
-      sloganSecond: '助力生产',
+      slogan: '同心合力，助力生产',
     },
     language: {
       title: '语言',

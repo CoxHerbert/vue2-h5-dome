@@ -25,8 +25,7 @@ export default {
   },
   login: {
     brand: {
-      sloganFirst: 'Together as one',
-      sloganSecond: 'Powering productivity',
+      slogan: 'Together as one, powering productivity',
     },
     language: {
       title: 'Language',
