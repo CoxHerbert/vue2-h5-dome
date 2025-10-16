@@ -1,17 +1,23 @@
 <template>
   <div class="page">
-    <h2>受保护页面</h2>
-    <p>只有登录后并具有 <code>demo:view</code> 权限的用户可以访问。</p>
-    <van-button type="danger" @click="logout">退出登录</van-button>
+    <h2>{{ t('protected.title') }}</h2>
+    <p>
+      {{ t('protected.description.before') }}
+      <code>{{ t('protected.permission') }}</code>
+      {{ t('protected.description.after') }}
+    </p>
+    <van-button type="danger" @click="logout">{{ t('protected.logout') }}</van-button>
   </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../store/auth';
+import { useI18n } from 'vue-i18n';
 
 const auth = useAuthStore();
 const router = useRouter();
+const { t } = useI18n();
 function logout() {
   auth.logout();
   router.replace('/login');

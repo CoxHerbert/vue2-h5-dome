@@ -8,8 +8,8 @@
     <header class="m-userinfo__hero">
       <img class="m-userinfo__logo" :src="logoUrl" />
       <div class="m-userinfo__meta">
-        <h1 class="m-userinfo__title">正在准备工作环境</h1>
-        <p class="m-userinfo__sub">获取并保存用户信息</p>
+        <h1 class="m-userinfo__title">{{ t('login.userInfoTransition.title') }}</h1>
+        <p class="m-userinfo__sub">{{ t('login.userInfoTransition.subtitle') }}</p>
       </div>
     </header>
 
@@ -35,42 +35,43 @@
       <div class="m-userinfo__progress">
         <div class="m-userinfo__progress-bar" :style="{ '--pct': pctStr }"></div>
         <div class="m-userinfo__progress-text">
-          <span>进度</span><span class="m-userinfo__progress-num">{{ pctStr }}</span>
+          <span>{{ t('login.userInfoTransition.progress.label') }}</span>
+          <span class="m-userinfo__progress-num">{{ pctStr }}</span>
         </div>
       </div>
 
       <!-- 步骤（移动端紧凑行高） -->
       <ul class="m-userinfo__steps">
         <li class="step" :class="stepClass(0)">
-          <span class="step__dot"></span><span class="step__text">读取路由 urlTicketId</span
+          <span class="step__dot"></span><span class="step__text">{{ t('login.userInfoTransition.steps.readTicket') }}</span
           ><span class="step__tag">{{ stepTag(0) }}</span>
         </li>
         <li class="step" :class="stepClass(1)">
-          <span class="step__dot"></span><span class="step__text">请求用户信息</span
+          <span class="step__dot"></span><span class="step__text">{{ t('login.userInfoTransition.steps.fetchUser') }}</span
           ><span class="step__tag">{{ stepTag(1) }}</span>
         </li>
         <li class="step" :class="stepClass(2)">
-          <span class="step__dot"></span><span class="step__text">本地存储</span
+          <span class="step__dot"></span><span class="step__text">{{ t('login.userInfoTransition.steps.persist') }}</span
           ><span class="step__tag">{{ stepTag(2) }}</span>
         </li>
         <li class="step" :class="stepClass(3)">
-          <span class="step__dot"></span><span class="step__text">跳转目标页</span
+          <span class="step__dot"></span><span class="step__text">{{ t('login.userInfoTransition.steps.redirect') }}</span
           ><span class="step__tag">{{ stepTag(3) }}</span>
         </li>
       </ul>
 
       <!-- 结果提示 -->
       <div v-if="status === 'success'" class="m-userinfo__alert m-userinfo__alert--ok">
-        已就绪，正在进入系统…
+        {{ t('login.userInfoTransition.alerts.success') }}
       </div>
       <div v-if="status === 'error'" class="m-userinfo__alert m-userinfo__alert--err">
-        {{ errorMsg || '获取失败，请稍后重试' }}
+        {{ errorMsg || t('login.userInfoTransition.alerts.error') }}
       </div>
     </main>
 
     <!-- 底部安全区 + 小注释 -->
     <footer class="m-userinfo__footer">
-      <div class="m-userinfo__tip">该页面为过渡页，请勿操作</div>
+      <div class="m-userinfo__tip">{{ t('login.userInfoTransition.footerNote') }}</div>
       <div class="m-userinfo__safe-bottom"></div>
     </footer>
   </div>
@@ -83,9 +84,11 @@ import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
 import Api from '@/api/index';
 import { getLoginEnv } from '@/utils/env.js';
+import { useI18n } from 'vue-i18n';
 
 const auth = useAuthStore();
 const user = useUserStore();
+const { t } = useI18n();
 
 /** 视觉用：logo 路径（兼容二级目录） */
 const logoUrl = `${import.meta.env.BASE_URL}images/logo.png`;
@@ -106,16 +109,16 @@ const errorMsg = ref('');
 // 步骤：1=done, 0=doing, -1=error, -99=未开始
 const steps = ref([0, -99, -99, -99]);
 
-const statusText = computed(() =>
-  status.value === 'loading' ? '正在拉取资料' : status.value === 'success' ? '获取成功' : '获取失败'
-);
-const subHint = computed(() =>
-  status.value === 'loading'
-    ? '包含头像、昵称、手机号、组织等字段'
-    : status.value === 'success'
-      ? '已写入本地缓存'
-      : '请返回重试或联系管理员'
-);
+const statusText = computed(() => {
+  if (status.value === 'loading') return t('login.userInfoTransition.status.loading');
+  if (status.value === 'success') return t('login.userInfoTransition.status.success');
+  return t('login.userInfoTransition.status.error');
+});
+const subHint = computed(() => {
+  if (status.value === 'loading') return t('login.userInfoTransition.hints.loading');
+  if (status.value === 'success') return t('login.userInfoTransition.hints.success');
+  return t('login.userInfoTransition.hints.error');
+});
 const pctStr = computed(() => `${pct.value}%`);
 const statusClass = computed(() => `m-userinfo--${status.value}`);
 
@@ -128,7 +131,10 @@ function stepClass(i) {
 }
 function stepTag(i) {
   const v = steps.value[i];
-  return v === 1 ? '完成' : v === 0 ? '进行中' : v === -1 ? '失败' : '待执行';
+  if (v === 1) return t('login.userInfoTransition.stepTags.done');
+  if (v === 0) return t('login.userInfoTransition.stepTags.doing');
+  if (v === -1) return t('login.userInfoTransition.stepTags.error');
+  return t('login.userInfoTransition.stepTags.pending');
 }
 
 onMounted(async () => {
@@ -155,7 +161,7 @@ async function bootstrap() {
     if (!urlTicketId) {
       steps.value[0] = -1;
       status.value = 'error';
-      errorMsg.value = `路由缺少 ${UUID_PARAM_KEY}`;
+      errorMsg.value = t('login.userInfoTransition.errors.missingTicket', { key: UUID_PARAM_KEY });
       pct.value = 100;
       return;
     }
@@ -170,7 +176,7 @@ async function bootstrap() {
     if (code === 200) {
       userInfo = data;
     } else {
-      throw new Error(data?.msg || '服务端返回失败');
+      throw new Error(data?.msg || t('login.userInfoTransition.errors.server'));
     }
 
     steps.value[1] = 1;
@@ -204,7 +210,7 @@ async function bootstrap() {
   } catch (err) {
     console.error(err);
     status.value = 'error';
-    errorMsg.value = err?.message || '未知错误';
+    errorMsg.value = err?.message || t('login.userInfoTransition.errors.unknown');
     if (steps.value[1] === 0) steps.value[1] = -1;
     else if (steps.value[2] === 0) steps.value[2] = -1;
     else if (steps.value[3] === 0) steps.value[3] = -1;

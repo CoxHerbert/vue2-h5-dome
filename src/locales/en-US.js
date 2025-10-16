@@ -50,6 +50,119 @@ export default {
       success: 'Signed in successfully',
       fail: 'Sign-in failed, please try again',
     },
+    social: {
+      title: 'Welcome back',
+      subtitle: 'Delivering a unified, convenient, and secure sign-in experience',
+      currentEntry: 'Current entry: {type}',
+      loading: 'Signing you in…',
+      typeLabels: {
+        campusApplicant: 'Campus recruitment',
+        internalReferral: 'Internal referral',
+        vendorHr: 'Vendor HR',
+      },
+      errors: {
+        missingRedirect: 'Authorize response missing redirect url',
+        missingToken: 'Login failed: access token is missing',
+        initAccount: 'Failed to initialize the account, please try again later',
+      },
+    },
+    ticketTransfer: {
+      title: 'Preparing your workspace',
+      subtitle: 'Parsing redirect parameters…',
+      status: {
+        loading: 'Parsing redirect parameters',
+        success: 'Parameters parsed',
+        error: 'Parameter parsing failed',
+      },
+      hints: {
+        loading: 'Reading and parsing urlTicketId',
+        success: 'Redirecting to the destination shortly',
+        error: 'Please return and try again or contact the administrator',
+      },
+      errors: {
+        missingTicket: 'urlTicketId is required',
+        server: 'Server returned an error',
+        missingUrl: 'Missing redirect url',
+        unknown: 'Unknown error',
+      },
+    },
+    userInfoTransition: {
+      title: 'Preparing your workspace',
+      subtitle: 'Fetching and storing user information',
+      status: {
+        loading: 'Fetching profile data',
+        success: 'Profile retrieved',
+        error: 'Profile retrieval failed',
+      },
+      hints: {
+        loading: 'Includes avatar, nickname, phone number, and organization',
+        success: 'Saved to local cache',
+        error: 'Please return and try again or contact the administrator',
+      },
+      progress: {
+        label: 'Progress',
+      },
+      steps: {
+        readTicket: 'Read urlTicketId from route',
+        fetchUser: 'Request user info',
+        persist: 'Persist locally',
+        redirect: 'Redirect to destination',
+      },
+      stepTags: {
+        done: 'Done',
+        doing: 'In progress',
+        error: 'Failed',
+        pending: 'Pending',
+      },
+      alerts: {
+        success: 'All set, redirecting to the system…',
+        error: 'Failed to fetch information, please try again later',
+      },
+      footerNote: 'This is a transition page, please do not operate',
+      errors: {
+        missingTicket: 'Route is missing {key}',
+        server: 'Server returned an error',
+        unknown: 'Unknown error',
+      },
+    },
+  },
+  protected: {
+    title: 'Protected Page',
+    description: {
+      before: 'Only signed-in users with',
+      after: 'permission can view this page.',
+    },
+    permission: 'demo:view',
+    logout: 'Sign Out',
+  },
+  transferPage: {
+    status: {
+      initial: 'Redirecting you…',
+      pending: 'Redirect requested, please wait…',
+      error: 'Redirect failed',
+    },
+    hint: {
+      prefix: 'If you are not redirected automatically,',
+      link: 'tap here to continue',
+    },
+    errors: {
+      generic: 'Failed to redirect, please try again later',
+    },
+  },
+  error: {
+    notFound: {
+      description: 'The page is missing (404)',
+      target: 'Target address: {path}',
+      actions: {
+        back: 'Go back',
+        home: 'Go to home',
+        retry: 'Reload',
+      },
+      tip: 'Possible reasons: link expired / incorrect address / page moved',
+      toast: {
+        refreshing: 'Refreshing…',
+      },
+    },
   },
   routes: {
     home: 'Home',

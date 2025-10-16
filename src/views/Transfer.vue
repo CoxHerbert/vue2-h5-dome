@@ -8,8 +8,8 @@
       <div class="card">
         <div class="sub">{{ statusText }}</div>
         <div class="hint">
-          若未自动跳转，请
-          <a :href="fallbackUrl[platform]" rel="noopener noreferrer nofollow">点此继续</a>
+          {{ t('transferPage.hint.prefix') }}
+          <a :href="fallbackUrl[platform]" rel="noopener noreferrer nofollow">{{ t('transferPage.hint.link') }}</a>
         </div>
       </div>
     </div>
@@ -17,11 +17,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { ensureAuthOnEnter } from '@/router/ensure-auth';
 import { useRoute } from 'vue-router';
+import Api from '@/api';
+import { useI18n } from 'vue-i18n';
 const route = useRoute();
 const env = import.meta.env;
+const { t } = useI18n();
 const fallbackUrl = {
   h5: env.VITE_WEB_OLD_H5_URL,
   pc: env.VITE_WEB_PC_URL,
@@ -29,7 +32,9 @@ const fallbackUrl = {
 };
 
 const sceneId = ref('');
-const statusText = ref('正在为你跳转…');
+const statusKey = ref('initial');
+const statusOverride = ref('');
+const statusText = computed(() => statusOverride.value || t(`transferPage.status.${statusKey.value}`));
 const PLATFORM_RE = /(?:^|\/)(?:h5|mobile)(?=\/|$|\?|#)/i;
 const PLATFORM_PREFIX_RE = /^\/(?:h5|mobile)(?=\/|$)/i;
 const platform = getPlatform();
@@ -51,7 +56,8 @@ onMounted(async () => {
   if (!ok) return; // 已重定向去登录，后续不再执行
 
   sceneId.value = route.params.sceneId;
-  statusText.value = '已发起跳转，请稍候…';
+  statusKey.value = 'pending';
+  statusOverride.value = '';
   getUlMatch(sceneId.value)
     .then((res) => {
       const { code, data } = res.data;
@@ -66,8 +72,9 @@ onMounted(async () => {
     })
     .catch((err) => {
       console.error(err);
-      statusText.value = err;
-      alert(err);
+      statusKey.value = 'error';
+      statusOverride.value = err?.message || String(err) || t('transferPage.errors.generic');
+      alert(statusOverride.value);
     });
 });
 

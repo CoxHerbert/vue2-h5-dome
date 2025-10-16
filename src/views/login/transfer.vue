@@ -5,8 +5,8 @@
     <div class="m-userinfo__hero">
       <img class="m-userinfo__logo" :src="logoUrl" alt="logo" />
       <div class="m-userinfo__meta">
-        <h1 class="m-userinfo__title">正在准备工作环境</h1>
-        <p class="m-userinfo__sub">解析跳转参数中…</p>
+        <h1 class="m-userinfo__title">{{ t('login.ticketTransfer.title') }}</h1>
+        <p class="m-userinfo__sub">{{ t('login.ticketTransfer.subtitle') }}</p>
       </div>
     </div>
 
@@ -34,6 +34,7 @@
 import { onMounted, ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Api from '@/api/index';
+import { useI18n } from 'vue-i18n';
 
 // —— 可自定义 —— //
 const UUID_PARAM_KEY = 'urlTicketId'; // 若没传 :id，则从 ?urlTicketId= 取
@@ -45,35 +46,37 @@ const logoUrl = `${import.meta.env.BASE_URL}images/logo.png`;
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const status = ref('loading'); // 'loading' | 'success' | 'error'
 const errorMsg = ref('');
 
-const statusText = computed(() =>
-  status.value === 'loading' ? '正在解析参数' : status.value === 'success' ? '解析成功' : '解析失败'
-);
-const subHint = computed(() =>
-  status.value === 'loading'
-    ? '正在读取并解析 urlTicketId'
-    : status.value === 'success'
-      ? '即将跳转到目标页面'
-      : errorMsg.value || '请返回重试或联系管理员'
-);
+const statusText = computed(() => {
+  if (status.value === 'loading') return t('login.ticketTransfer.status.loading');
+  if (status.value === 'success') return t('login.ticketTransfer.status.success');
+  return t('login.ticketTransfer.status.error');
+});
+const subHint = computed(() => {
+  if (status.value === 'loading') return t('login.ticketTransfer.hints.loading');
+  if (status.value === 'success') return t('login.ticketTransfer.hints.success');
+  return errorMsg.value || t('login.ticketTransfer.hints.error');
+});
 const statusClass = computed(() => `m-userinfo--${status.value}`);
 
 onMounted(async () => {
   try {
     // ① 获取 urlTicketId（优先 :id，其次 ?urlTicketId=）
     const urlTicketId = route.params[UUID_PARAM_KEY];
-    if (!urlTicketId) throw new Error('缺少 urlTicketId');
+    if (!urlTicketId) throw new Error(t('login.ticketTransfer.errors.missingTicket'));
 
     // ② 请求接口 → 跳转
     const resp = await Api.auth.consumeTicket({ urlTicketId });
     const { code, data, msg } = resp.data || {};
-    if (code !== 200) throw new Error(msg || (data && data.msg) || '服务端返回失败');
+    if (code !== 200)
+      throw new Error(msg || (data && data.msg) || t('login.ticketTransfer.errors.server'));
 
     const target = (data && data.h5Url) || '';
-    if (!target) throw new Error('未返回 h5Url');
+    if (!target) throw new Error(t('login.ticketTransfer.errors.missingUrl'));
 
     status.value = 'success';
     const output = normalizeTarget(target);
@@ -84,7 +87,7 @@ onMounted(async () => {
   } catch (err) {
     console.error(err);
     status.value = 'error';
-    errorMsg.value = (err && err.message) || '未知错误';
+    errorMsg.value = (err && err.message) || t('login.ticketTransfer.errors.unknown');
   }
 });
 
@@ -92,7 +95,9 @@ function normalizeTarget(t) {
   let s = t;
   try {
     s = decodeURIComponent(s);
-  } catch (e) {}
+  } catch (err) {
+    console.warn('[ticket-transfer] failed to decode redirect target:', s, err);
+  }
   if (!/^https?:\/\//i.test(s)) {
     s = s.replace(/^\/mobile(\/|$)/, '/');
     if (!s.startsWith('/')) s = '/' + s;
