@@ -26,7 +26,7 @@ export default {
       metrics: {
         leave: 'Leave days this month',
         travel: 'Travel days this month',
-        overtime: 'Overtime hours this month',
+        overtime: 'Overtime this month (h)',
       },
       todayPunch: {
         title: 'Today\'s Punches',

@@ -1,127 +1,125 @@
 <template>
-  <div class="me-page">
-    <van-nav-bar :title="t('me.navTitle')" fixed />
+  <div class="mine-page">
+    <div class="top-bg"></div>
+    <van-nav-bar
+      :title="t('me.navTitle')"
+      fixed
+      :border="false"
+      class="mine-nav"
+      safe-area-inset-top
+    />
 
-    <div class="me-header" :style="{ paddingTop: '54px' }">
-      <div class="me-profile">
-        <img
-          class="avatar"
-          :src="user.avatar || defaultAvatar"
-          alt="avatar"
-          @error="onAvatarError"
-        />
-        <div class="meta">
-          <div class="name">
-            {{ user.realName || user.name || user.username || t('me.profile.unnamed') }}
-            <van-tag v-if="user.deptName" plain type="primary" class="ml8">{{
-              user.deptName
-            }}</van-tag>
+    <section class="profile-card">
+      <div class="bg-index bg-index-2"></div>
+      <div class="bg-index bg-index-1"></div>
+
+      <div class="profile-top">
+        <div class="userinfo-wrap">
+          <div class="userinfo-wrap-left">
+            <div class="avatar-and-userinfo">
+              <img
+                class="avatar"
+                :src="user.avatar || defaultAvatar"
+                alt="avatar"
+                @error="onAvatarError"
+              />
+              <div class="col">
+                <span class="name"
+                  >{{ user.realName || user.name || user.username || t('me.profile.unnamed') }}</span
+                >
+                <span class="uid">{{ user.account || '-' }}</span>
+              </div>
+            </div>
+            <div v-if="roleTags.length" class="tags">
+              <span class="tag" v-for="(tag, idx) in roleTags" :key="idx">{{ tag }}</span>
+            </div>
           </div>
-          <div class="sub">
-            <span v-if="user.account">{{ t('me.profile.account') }}：{{ user.account }}</span>
-            <span v-if="user.phone" class="dot">·</span>
-            <span v-if="user.phone">{{ user.phone }}</span>
+          <div class="points-card" @click="navigateToRoute('mePoints')">
+            <span class="points-label">{{ t('me.dashboard.pointsLabel') }}</span>
+            <span class="points-val">{{ stats.pointsDisplay }}</span>
           </div>
         </div>
       </div>
 
-      <div class="me-dashboard">
+      <div class="stats">
         <button
+          v-for="metric in metrics"
+          :key="metric.key"
           type="button"
-          class="points-card interactive"
-          @click="navigateToRoute('mePoints')"
+          class="stat"
+          @click="navigateToRoute(metric.routeName)"
         >
-          <span class="points-label">{{ t('me.dashboard.pointsLabel') }}</span>
-          <span class="points-value">{{ stats.pointsDisplay }}</span>
-          <span class="points-meta">{{ joinDaysText }}</span>
+          <span class="stat-label">{{ metric.label }}</span>
+          <span class="stat-num">{{ metric.display }}</span>
         </button>
-
-        <div class="metrics-grid">
-          <button
-            v-for="metric in metrics"
-            :key="metric.key"
-            type="button"
-            class="metric interactive"
-            @click="navigateToRoute(metric.routeName)"
-          >
-            <span class="metric-label">{{ metric.label }}</span>
-            <span class="metric-value">{{ metric.display }}</span>
-          </button>
-        </div>
       </div>
-    </div>
 
-    <div class="me-body">
-      <section class="me-card interactive" @click="navigateToRoute('mePunch')">
-        <div class="card-title-row">
-          <span class="card-title">{{ t('me.dashboard.todayPunch.title') }}</span>
-          <van-icon name="arrow" class="card-arrow" />
-        </div>
+      <div class="join-strip" :style="joinStripStyle">{{ joinDaysText }}</div>
+    </section>
 
-        <div v-if="punchRecords.length" class="timeline">
-          <div class="timeline-item" v-for="(time, index) in punchRecords" :key="index">
-            <div class="timeline-left">
-              <span class="timeline-dot"></span>
-              <span
-                v-if="index !== punchRecords.length - 1"
-                class="timeline-line"
-              ></span>
-            </div>
-            <div class="timeline-content">
-              <div class="timeline-title">{{ t('me.dashboard.todayPunch.timeLabel') }}</div>
-              <div class="timeline-time">{{ time }}</div>
-            </div>
+    <section class="card punch-card" @click="navigateToRoute('mePunch')">
+      <div class="card-title-row">
+        <span class="card-title">{{ t('me.dashboard.todayPunch.title') }}</span>
+        <van-icon name="arrow" class="arrow" />
+      </div>
+      <div class="timeline" v-if="punchRecords.length">
+        <div class="tl-item" v-for="(time, index) in punchRecords" :key="index">
+          <div class="tl-left">
+            <span class="dot done"></span>
+            <span v-if="index !== punchRecords.length - 1" class="line"></span>
+          </div>
+          <div class="tl-content">
+            <div class="tl-title">{{ t('me.dashboard.todayPunch.timeLabel') }}</div>
+            <div class="tl-time">{{ time }}</div>
           </div>
         </div>
-        <div v-else class="timeline-empty">{{ t('me.dashboard.todayPunch.empty') }}</div>
-      </section>
+      </div>
+      <div v-else class="timeline-empty">{{ t('me.dashboard.todayPunch.empty') }}</div>
+    </section>
 
-      <section class="me-card">
-        <div class="card-title-row">
-          <span class="card-title">{{ t('me.dashboard.functions.title') }}</span>
-        </div>
-        <div class="func-grid">
-          <button
-            v-for="item in functionItems"
-            :key="item.key"
-            type="button"
-            class="func-item interactive"
-            @click="handleFunction(item)"
-          >
-            <span class="func-icon">
-              <van-icon :name="item.icon" />
-            </span>
-            <span class="func-text">{{ item.label }}</span>
-          </button>
-        </div>
-      </section>
+    <section class="card func-card">
+      <div class="card-title-row">
+        <span class="card-title">{{ t('me.dashboard.functions.title') }}</span>
+      </div>
+      <div class="func-grid">
+        <button
+          v-for="item in functionItems"
+          :key="item.key"
+          type="button"
+          class="func-item"
+          @click="handleFunction(item)"
+        >
+          <span class="func-icon">
+            <van-icon :name="item.icon" />
+          </span>
+          <span class="func-text">{{ item.label }}</span>
+        </button>
+      </div>
+    </section>
 
-      <van-cell-group inset class="mt12">
-        <van-cell :title="t('me.language.title')">
-          <template #right-icon>
-            <van-radio-group v-model="selectedLocale" direction="horizontal">
-              <van-radio name="zh-CN">{{ t('me.language.zhCN') }}</van-radio>
-              <van-radio name="en-US">{{ t('me.language.enUS') }}</van-radio>
-            </van-radio-group>
-          </template>
-        </van-cell>
-      </van-cell-group>
+    <van-cell-group inset class="mt12">
+      <van-cell :title="t('me.language.title')">
+        <template #right-icon>
+          <van-radio-group v-model="selectedLocale" direction="horizontal">
+            <van-radio name="zh-CN">{{ t('me.language.zhCN') }}</van-radio>
+            <van-radio name="en-US">{{ t('me.language.enUS') }}</van-radio>
+          </van-radio-group>
+        </template>
+      </van-cell>
+    </van-cell-group>
 
-      <!-- 只展示：职位、角色、入职时间、邮箱 -->
-      <van-cell-group inset class="mt12">
-        <van-cell :title="t('me.cells.position')" :value="postText" />
-        <van-cell :title="t('me.cells.role')" :value="roleText" />
-        <van-cell :title="t('me.cells.joinedDate')" :value="joinedDateText" />
-        <van-cell :title="t('me.cells.email')" :value="user.email || '-'" />
-      </van-cell-group>
+    <van-cell-group inset class="mt12">
+      <van-cell :title="t('me.cells.position')" :value="postText" />
+      <van-cell :title="t('me.cells.role')" :value="roleText" />
+      <van-cell :title="t('me.cells.joinedDate')" :value="joinedDateText" />
+      <van-cell :title="t('me.cells.email')" :value="user.email || '-'" />
+    </van-cell-group>
 
-      <van-cell-group inset class="mt12">
-        <van-cell :title="t('me.actions.changePassword')" is-link @click="openPwdPopup" />
-        <van-cell :title="t('me.actions.logout')" is-link @click="confirmLogout" />
-      </van-cell-group>
-    </div>
+    <van-cell-group inset class="mt12">
+      <van-cell :title="t('me.actions.changePassword')" is-link @click="openPwdPopup" />
+      <van-cell :title="t('me.actions.logout')" is-link @click="confirmLogout" />
+    </van-cell-group>
 
-    <!-- 修改密码 -->
     <van-popup
       v-model:show="pwd.show"
       position="bottom"
@@ -287,18 +285,28 @@ function handleFunction(item) {
   navigateToRoute(item.routeName);
 }
 
-// 工具：数组/逗号字符串 → 文本
-const toNiceText = (v) => {
-  if (!v) return '';
-  if (Array.isArray(v)) return v.filter(Boolean).join('、') || '';
-  return (
-    String(v)
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .join('、') || ''
-  );
+// 工具：数组/逗号字符串 → 数组
+const toArrayValue = (v) => {
+  if (!v) return [];
+  if (Array.isArray(v)) {
+    return v
+      .map((item) => String(item).trim())
+      .filter(Boolean);
+  }
+  return String(v)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 };
+
+// 展示文本
+const toNiceText = (v) => toArrayValue(v).join('、') || '';
+
+const roleTags = computed(() => {
+  const tags = toArrayValue(user.value.roleNames);
+  if (tags.length) return tags;
+  return toArrayValue(user.value.roleName);
+});
 
 const roleText = computed(
   () => toNiceText(user.value.roleNames) || toNiceText(user.value.roleName) || '-'
@@ -316,6 +324,14 @@ const defaultAvatar = proxy.$assetUrl('/images/logo.png');
 const onAvatarError = (e) => {
   e.target.src = defaultAvatar;
 };
+
+const joinStripUrl = proxy.$assetUrl('/images/me/join-strip.svg');
+const joinStripStyle = computed(() => ({
+  backgroundImage: `url(${joinStripUrl})`,
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  backgroundSize: 'cover',
+}));
 
 // 修改密码
 const pwd = reactive({
@@ -384,217 +400,307 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.me-page {
+.mine-page {
+  position: relative;
+  margin: 0 auto;
   min-height: 100vh;
-  background: #f7f8fa;
+  max-width: 750px;
+  padding: 56px 0 120px;
+  background: #f6f7fb;
 }
-.me-header {
+
+.top-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 240px;
+  background: linear-gradient(180deg, #3060ed 0%, rgba(48, 96, 237, 0.3) 64%, rgba(48, 96, 237, 0) 100%);
+  z-index: 0;
+}
+
+.mine-nav {
+  background: transparent;
+  color: #fff;
+  --van-nav-bar-title-text-color: #fff;
+  --van-nav-bar-icon-color: #fff;
+  --van-nav-bar-text-color: #fff;
+}
+
+.profile-card {
+  position: relative;
+  margin: 40px 16px 0;
+  padding: 24px;
   background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 12px 36px rgba(25, 81, 230, 0.08);
+  z-index: 1;
 }
-.me-profile {
+
+.bg-index {
+  position: absolute;
+  top: -12px;
+  left: 0;
+  width: calc(100% - 16px);
+  height: 260px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 24px;
+  transform-origin: center;
+}
+
+.bg-index-1 {
+  z-index: -1;
+  transform: rotate(-4deg);
+}
+
+.bg-index-2 {
+  z-index: -2;
+  transform: rotate(-8deg);
+}
+
+.profile-top {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.userinfo-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.userinfo-wrap-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.avatar-and-userinfo {
   display: flex;
   align-items: center;
-  padding: 16px;
+  gap: 12px;
 }
+
 .avatar {
   width: 64px;
   height: 64px;
-  border-radius: 50%;
+  border-radius: 16px;
   object-fit: cover;
+  border: 1px solid #dadbe0;
   background: #f2f3f5;
-  border: 1px solid #eee;
 }
-.meta {
-  margin-left: 12px;
-  flex: 1;
-  min-width: 0;
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
+
 .name {
-  font-size: 16px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.sub {
-  margin-top: 6px;
-  color: #888;
-  font-size: 13px;
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.dot::before {
-  content: '•';
-  margin-right: 6px;
-  color: #ccc;
-}
-.mt12 {
-  margin-top: 12px;
-}
-.ml8 {
-  margin-left: 8px;
-}
-.interactive {
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.interactive:active {
-  transform: scale(0.98);
-}
-.me-dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 0 16px 16px;
-}
-.points-card {
-  border: none;
-  outline: none;
-  border-radius: 16px;
-  padding: 20px 24px;
-  background: linear-gradient(135deg, #3060ed 0%, #5c87ff 100%);
-  color: #fff;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font: inherit;
-}
-.points-label {
-  font-size: 14px;
-  opacity: 0.85;
-}
-.points-value {
-  font-size: 28px;
+  font-size: 18px;
   font-weight: 700;
+  color: #1f2b3d;
 }
-.points-meta {
+
+.uid {
   font-size: 13px;
-  opacity: 0.85;
+  color: #8c9aaf;
 }
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
-.metric {
-  border: none;
-  outline: none;
-  border-radius: 14px;
-  background: #f3f6ff;
-  padding: 14px 12px;
-  text-align: left;
-  color: #1f2b3d;
-  font: inherit;
-}
-.metric-label {
+
+.tag {
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: #baccff;
+  color: #3060ed;
   font-size: 12px;
-  color: #5f6b7a;
 }
-.metric-value {
-  margin-top: 6px;
-  font-size: 20px;
-  font-weight: 600;
-}
-.me-body {
-  padding: 0 16px 24px;
-}
-.me-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 8px 24px rgba(48, 96, 237, 0.08);
-  margin-top: 16px;
-}
-.me-card:first-of-type {
-  margin-top: 0;
-}
-.card-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2b3d;
-}
-.card-arrow {
-  color: #c8cdd8;
-}
-.timeline {
-  margin-top: 16px;
-}
-.timeline-item {
-  display: flex;
-  align-items: flex-start;
-}
-.timeline-item + .timeline-item {
-  margin-top: 12px;
-}
-.timeline-left {
-  width: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.timeline-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+
+.points-card {
+  width: 132px;
+  min-width: 132px;
+  height: 132px;
+  border-radius: 24px;
   background: #3060ed;
-  border: 3px solid #dbe4ff;
-  box-sizing: border-box;
-}
-.timeline-line {
-  flex: 1;
-  width: 2px;
-  margin-top: 6px;
-  background: linear-gradient(180deg, rgba(48, 96, 237, 0.2) 0%, rgba(48, 96, 237, 0) 100%);
-}
-.timeline-content {
-  flex: 1;
-  padding-left: 12px;
-}
-.timeline-title {
-  font-size: 12px;
-  color: #5f6b7a;
-}
-.timeline-time {
-  margin-top: 4px;
-  font-size: 16px;
-  font-weight: 500;
-  color: #1f2b3d;
-}
-.timeline-empty {
-  margin-top: 16px;
-  font-size: 13px;
-  color: #9aa2b1;
-}
-.func-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
-}
-.func-item {
-  border: none;
-  outline: none;
-  border-radius: 14px;
-  background: #f7f8fb;
-  padding: 16px 12px;
+  color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  font: inherit;
+  border: none;
+  cursor: pointer;
 }
+
+.points-label {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.points-val {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: #f7f8ff;
+  border-radius: 16px;
+  border: none;
+  color: #1f2b3d;
+  cursor: pointer;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #8c9aaf;
+  text-align: center;
+}
+
+.stat-num {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.join-strip {
+  margin-top: 20px;
+  padding: 16px 24px;
+  border-radius: 20px;
+  background-color: #3060ed;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.card {
+  position: relative;
+  margin: 16px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 12px 36px rgba(25, 81, 230, 0.08);
+  padding: 20px 24px;
+}
+
+.punch-card {
+  cursor: pointer;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2b3d;
+}
+
+.arrow {
+  color: #c5ccda;
+}
+
+.timeline {
+  margin-top: 16px;
+}
+
+.tl-item {
+  display: flex;
+  gap: 12px;
+}
+
+.tl-item + .tl-item {
+  margin-top: 12px;
+}
+
+.tl-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #1d65f3;
+  border: 4px solid #b4cdff;
+  box-sizing: border-box;
+}
+
+.line {
+  flex: 1;
+  width: 2px;
+  margin-top: 6px;
+  border-left: 1px dashed #bbbbbb;
+}
+
+.tl-content {
+  flex: 1;
+}
+
+.tl-title {
+  font-size: 13px;
+  color: #5f6b7a;
+}
+
+.tl-time {
+  margin-top: 4px;
+  font-size: 16px;
+  color: #1f2b3d;
+  font-weight: 500;
+}
+
+.timeline-empty {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #9aa2b1;
+}
+
+.func-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.func-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 12px;
+  border-radius: 16px;
+  background: #f7f8fb;
+  border: none;
+  cursor: pointer;
+}
+
 .func-icon {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: 16px;
   background: #e4ebff;
   display: flex;
   align-items: center;
@@ -602,23 +708,41 @@ onMounted(() => {
   color: #3060ed;
   font-size: 24px;
 }
+
 .func-text {
   font-size: 14px;
-  color: #1f2b3d;
+  color: #353638;
 }
+
+.mt12 {
+  margin: 12px 16px 0;
+}
+
 .sheet {
   padding: 16px;
 }
+
 .sheet-title {
   text-align: center;
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 8px;
 }
+
 .action {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin: 16px 0 8px;
+}
+
+.mr8 {
+  margin-right: 0;
+}
+
+button {
+  font: inherit;
+  border: none;
+  padding: 0;
 }
 </style>

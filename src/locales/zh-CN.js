@@ -26,7 +26,7 @@ export default {
       metrics: {
         leave: '本月请假天数',
         travel: '本月出差天数',
-        overtime: '本月加班（小时）',
+        overtime: '本月加班（h）',
       },
       todayPunch: {
         title: '今日打卡',
