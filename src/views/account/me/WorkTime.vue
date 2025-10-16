@@ -7,6 +7,7 @@
       fixed
       :border="false"
       safe-area-inset-top
+      placeholder
       @click-left="handleBack"
     />
     <div class="me-work-time__top-bg"></div>
@@ -196,7 +197,7 @@ onMounted(() => {
 .me-work-time {
   min-height: 100vh;
   background: linear-gradient(180deg, #3060ed 0%, rgba(48, 96, 237, 0) 200px), #f7f8fa;
-  padding: 56px 0 24px;
+  padding: 0 0 24px;
   padding-bottom: calc(96px + constant(safe-area-inset-bottom));
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
   position: relative;
