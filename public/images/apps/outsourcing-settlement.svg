@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <defs>
+    <linearGradient id="outsourcingGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14b8a6" />
+      <stop offset="1" stop-color="#2dd4bf" />
+    </linearGradient>
+  </defs>
+  <rect width="72" height="72" x="4" y="4" rx="16" fill="url(#outsourcingGradient)" />
+  <path d="M24 28h32v24H24z" fill="#fff" opacity="0.8" />
+  <path d="M28 40h24" stroke="#0f766e" stroke-width="4" stroke-linecap="round" />
+  <path d="M32 34h16" stroke="#0f766e" stroke-width="4" stroke-linecap="round" />
+  <path d="M32 46h16" stroke="#0f766e" stroke-width="4" stroke-linecap="round" />
+</svg>

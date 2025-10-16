@@ -5,7 +5,7 @@
 ## 特性概览
 - ⚙️ **现代技术栈**：Vue 3 组合式 API、Vite 5、Pinia、Vue Router 4、Vue I18n、Vant 4、Day.js。
 - 🌐 **国际化支持**：内置中/英双语，提供全局 `LanguageSelector` 组件，统一的 `changeLocale` 辅助方法以及语言持久化逻辑。
-- 🧭 **全局组件**：`ScrollAwareNavBar`、`LanguageSelector`、`Dict`、`RecruitForm`、`Uploader` 等常用能力一次注册全局复用。
+- 🧭 **全局组件**：`ScrollAwareNavBar`、`LanguageSelector`、`dc-dict`、`dc-recruit-form`、`dc-uploader` 等常用能力一次注册全局复用。
 - 🔐 **认证体系**：`store/user` 负责令牌、用户信息管理以及密码修改，配合权限指令与路由守卫实现细粒度控制。
 - 📡 **网络层增强**：基于 Axios 的请求封装，支持刷新 Token、取消重复请求、失败重试、上传等高级能力。
 - 🧰 **开发体验**：ESLint + Prettier + Vitest，内置常用工具函数、常量、组合式函数，提高业务迭代效率。
