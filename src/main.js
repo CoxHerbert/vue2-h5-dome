@@ -1,6 +1,6 @@
 // src/main.js
 import { createApp } from 'vue';
-import { createPinia } from 'pinia';
+import { createPinia, setActivePinia } from 'pinia';
 import App from './App.vue';
 import router from '@/router';
 import i18n from './locales';
@@ -25,6 +25,7 @@ async function bootstrap() {
   // 1) 状态 & 路由
   const pinia = createPinia();
   app.use(pinia);
+  setActivePinia(pinia);
   app.use(vant);
   app.use(i18n);
   app.use(router);
