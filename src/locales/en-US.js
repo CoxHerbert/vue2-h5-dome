@@ -3,6 +3,15 @@ export default {
     home: 'Home',
     apps: 'Applications',
     me: 'Profile',
+    meChildren: {
+      points: 'My Points',
+      leave: 'Leave Days (Monthly)',
+      travel: 'Travel Days (Monthly)',
+      overtime: 'Overtime Hours (Monthly)',
+      punch: 'Today\'s Punches',
+      workTime: 'Work Time Lookup',
+      punchRecord: 'Punch History',
+    },
     recruit: {
       campusList: 'Campus Positions',
       campusApply: 'Campus Application',
@@ -11,6 +20,30 @@ export default {
   },
   me: {
     navTitle: 'Profile',
+    dashboard: {
+      pointsLabel: 'My Points',
+      joinDays: 'With Dongchuang for {days} days',
+      metrics: {
+        leave: 'Leave days this month',
+        travel: 'Travel days this month',
+        overtime: 'Overtime hours this month',
+      },
+      todayPunch: {
+        title: 'Today\'s Punches',
+        timeLabel: 'Punch Time',
+        empty: 'No punches recorded today',
+      },
+      functions: {
+        title: 'My Shortcuts',
+        items: {
+          workTime: 'Work time inquiry',
+          punchRecord: 'Punch history',
+        },
+      },
+    },
+    placeholder: {
+      default: 'This feature is under preparation',
+    },
     language: {
       title: 'Language',
       zhCN: 'Chinese',

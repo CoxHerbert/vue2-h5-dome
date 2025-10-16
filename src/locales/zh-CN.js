@@ -3,6 +3,15 @@ export default {
     home: '首页',
     apps: '应用',
     me: '我的',
+    meChildren: {
+      points: '我的积分',
+      leave: '本月请假天数',
+      travel: '本月出差天数',
+      overtime: '本月加班',
+      punch: '今日打卡',
+      workTime: '工时查询',
+      punchRecord: '打卡记录',
+    },
     recruit: {
       campusList: '校招岗位列表',
       campusApply: '校招投递表单',
@@ -11,6 +20,30 @@ export default {
   },
   me: {
     navTitle: '我的',
+    dashboard: {
+      pointsLabel: '我的积分',
+      joinDays: '加入东创{days}天',
+      metrics: {
+        leave: '本月请假天数',
+        travel: '本月出差天数',
+        overtime: '本月加班（小时）',
+      },
+      todayPunch: {
+        title: '今日打卡',
+        timeLabel: '打卡时间',
+        empty: '今日暂无打卡记录',
+      },
+      functions: {
+        title: '我的功能',
+        items: {
+          workTime: '工时查询',
+          punchRecord: '打卡记录',
+        },
+      },
+    },
+    placeholder: {
+      default: '功能开发中，敬请期待',
+    },
     language: {
       title: '语言',
       zhCN: '中文',
