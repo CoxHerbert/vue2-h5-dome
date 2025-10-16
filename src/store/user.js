@@ -29,5 +29,14 @@ export const useUserStore = defineStore('user', {
       this.setUserInfo(normalized);
       return normalized;
     },
+
+    async changePassword(payload = {}) {
+      const params = {
+        oldPassword: payload.oldPassword,
+        newPassword: payload.newPassword,
+      };
+
+      await Api.user.updatePassword(params);
+    },
   },
 });

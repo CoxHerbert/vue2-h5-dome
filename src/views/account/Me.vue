@@ -357,7 +357,7 @@ async function submitChangePwd() {
     return showToast(t('me.validation.confirmPassword'));
   try {
     pwd.loading = true;
-    await Api.user.updatePassword({
+    await userStore.changePassword({
       oldPassword: pwd.oldPassword,
       newPassword: pwd.newPassword,
     });
