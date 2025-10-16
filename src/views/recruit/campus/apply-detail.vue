@@ -1,5 +1,11 @@
 <template>
-  <van-nav-bar title="投递详情" fixed placeholder left-arrow @click-left="onClickLeft" />
+  <ScrollAwareNavBar
+    title="投递详情"
+    fixed
+    placeholder
+    left-arrow
+    @click-left="onClickLeft"
+  />
 
   <div class="page">
     <div class="page-top-bg"></div>
@@ -103,7 +109,6 @@ import { useRoute } from 'vue-router';
 import Api from '@/api/index';
 import { ensureAuthOnEnter } from '@/router/ensure-auth';
 import { useUserStore } from '@/store/user';
-
 const user = useUserStore();
 
 const route = useRoute();

@@ -1,6 +1,6 @@
 <template>
   <div class="notfound-page">
-    <van-empty class="nf-empty" image="error" description="页面走丢了 (404)">
+    <van-empty class="nf-empty" image="error" :description="t('error.notFound.description')">
       <template #image>
         <!-- 自定义插画：大图标 + 404 文案 -->
         <div class="nf-hero">
@@ -9,19 +9,25 @@
         </div>
       </template>
       <div class="nf-desc" @click="$copyText(route.fullPath)">
-        目标地址：{{ route.fullPath || '-' }}
+        {{ t('error.notFound.target', { path: route.fullPath || '-' }) }}
       </div>
       <div class="nf-actions">
         <van-space :size="8" direction="horizontal" class="nf-row">
-          <van-button type="primary" block round @click="goBack">返回上一页</van-button>
+          <van-button type="primary" block round @click="goBack">
+            {{ t('error.notFound.actions.back') }}
+          </van-button>
         </van-space>
         <van-space :size="8" direction="horizontal" class="nf-row">
-          <van-button plain type="primary" round @click="goHome">回到首页</van-button>
-          <van-button plain type="default" round @click="reload">刷新重试</van-button>
+          <van-button plain type="primary" round @click="goHome">
+            {{ t('error.notFound.actions.home') }}
+          </van-button>
+          <van-button plain type="default" round @click="reload">
+            {{ t('error.notFound.actions.retry') }}
+          </van-button>
         </van-space>
       </div>
 
-      <div class="nf-tip">可能的原因：链接过期 / 地址拼写错误 / 页面已被移动</div>
+      <div class="nf-tip">{{ t('error.notFound.tip') }}</div>
     </van-empty>
   </div>
 </template>
@@ -30,9 +36,11 @@
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showToast } from 'vant';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
 
 function goBack() {
   // 如果没有历史记录，就回首页
@@ -50,7 +58,7 @@ function goHome() {
 
 function reload() {
   // 对外部直链或弱网场景友好
-  showToast('正在刷新…');
+  showToast(t('error.notFound.toast.refreshing'));
   setTimeout(() => location.reload(), 200);
 }
 

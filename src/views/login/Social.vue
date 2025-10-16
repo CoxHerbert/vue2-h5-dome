@@ -6,15 +6,15 @@
       <div class="brand">
         <img class="logo" :src="logoUrl" alt="logo" />
         <div class="meta">
-          <h1>欢迎登录</h1>
-          <p class="sub">为你提供统一、便捷、安全的登录体验</p>
+          <h1>{{ t('login.social.title') }}</h1>
+          <p class="sub">{{ t('login.social.subtitle') }}</p>
         </div>
       </div>
     </div>
 
     <!-- 入口类型提示 -->
     <van-tag v-if="typeLabel" plain type="success" class="type-tip">
-      当前入口：{{ typeLabel }}
+      {{ t('login.social.currentEntry', { type: typeLabel }) }}
     </van-tag>
 
     <!-- 内容卡片 -->
@@ -23,7 +23,7 @@
         <div class="wx-social-page">
           <div class="card loading-box">
             <van-loading size="20px" style="margin-right: 8px" />
-            <span>正在登录中…</span>
+            <span>{{ t('login.social.loading') }}</span>
           </div>
         </div>
       </div>
@@ -39,11 +39,13 @@ import { useUserStore } from '@/store/user';
 import { getLoginEnv } from '@/utils/env.js';
 import { getCallbackUrl } from '@/utils/callback-url';
 import Api from '@/api';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const user = useUserStore();
+const { t } = useI18n();
 const _env = {
   WECHAT_MP: 'wechat_open',
   WECHAT_ENTERPRISE: 'wechat_enterprise',
@@ -55,11 +57,11 @@ const env = _env[getLoginEnv()] || null; // WECHAT_MP / WECHAT_ENTERPRISE / 其�
 const logoUrl = `${import.meta.env.BASE_URL}images/logo.png`;
 
 /** 入口类型标签映射（与 AccountLogin 保持一致） */
-const TYPE_LABELS = {
-  campus_applicant: '校园招聘',
-  internal_referral: '内部内推',
-  vendor_hr: '供应商HR',
-};
+const typeLabelMap = computed(() => ({
+  campus_applicant: t('login.social.typeLabels.campusApplicant'),
+  internal_referral: t('login.social.typeLabels.internalReferral'),
+  vendor_hr: t('login.social.typeLabels.vendorHr'),
+}));
 const DEFAULT_TYPE = 'campus_applicant';
 
 const type = computed(() => {
@@ -69,7 +71,7 @@ const type = computed(() => {
     DEFAULT_TYPE
   );
 });
-const typeLabel = computed(() => TYPE_LABELS[type.value] || type.value);
+const typeLabel = computed(() => typeLabelMap.value[type.value] || type.value);
 
 onMounted(async () => {
   try {
@@ -127,7 +129,7 @@ async function authorize() {
   if (typeof url === 'string') {
     window.location.href = url;
   } else {
-    throw new Error('Authorize response missing redirect url');
+    throw new Error(t('login.social.errors.missingRedirect'));
   }
 }
 
@@ -142,7 +144,8 @@ async function loginBySocial(data) {
     payload?.refresh_token || payload?.refreshToken || payload?.data?.refresh_token;
 
   if (!accessToken) {
-    const msg = payload?.error_description || payload?.msg || '登录失败：未获取到 access_token';
+    const msg =
+      payload?.error_description || payload?.msg || t('login.social.errors.missingToken');
     console.error('[social] loginBySocial error:', msg, payload);
     alert(msg);
     return;
@@ -180,7 +183,8 @@ async function loginBySocial(data) {
         const u = new URL(p);
         if (u.origin !== window.location.origin) return '';
         p = u.pathname + u.search + u.hash;
-      } catch {
+      } catch (err) {
+        console.warn('[social] invalid absolute redirect:', p, err);
         return '';
       }
     }
@@ -198,7 +202,9 @@ async function loginBySocial(data) {
     let decoded = callbackUrlRaw;
     try {
       decoded = decodeURIComponent(callbackUrlRaw); // 如果外层 encode 过，这里解一次
-    } catch {}
+    } catch (err) {
+      console.warn('[social] failed to decode callbackUrl:', callbackUrlRaw, err);
+    }
     try {
       const innerURL = new URL(decoded, window.location.origin); // 注意：加 base
       const innerRedirect = innerURL.searchParams.get('redirect') || '';
@@ -222,7 +228,7 @@ async function createUserThenRedirect(oauthId) {
 
   if (code !== 200) {
     console.error('[social] userCreate failed:', res);
-    alert('初始化账号失败，请稍后重试');
+    alert(t('login.social.errors.initAccount'));
     return;
   }
 
@@ -234,7 +240,9 @@ async function createUserThenRedirect(oauthId) {
       // auth.logout();
       // location.reload();
     }
-  } catch {}
+  } catch (err) {
+    console.warn('[social] failed to persist user info after init:', err);
+  }
 }
 </script>
 

@@ -1,4 +1,4 @@
-// src/shared/user-types.js
+// src/constants/user-types.js
 export const USER_TYPES = {
   CAMPUS_APPLICANT: 'campus_applicant', // 校园招聘
   INTERNAL_REFERRAL: 'internal_referral', // 内推

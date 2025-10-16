@@ -1,7 +1,7 @@
 <template>
   <div class="mine-page">
     <div class="top-bg"></div>
-    <van-nav-bar
+    <ScrollAwareNavBar
       :title="t('me.navTitle')"
       fixed
       :border="false"
@@ -96,16 +96,7 @@
       </div>
     </section>
 
-    <van-cell-group inset class="mt12">
-      <van-cell :title="t('me.language.title')">
-        <template #right-icon>
-          <van-radio-group v-model="selectedLocale" direction="horizontal">
-            <van-radio name="zh-CN">{{ t('me.language.zhCN') }}</van-radio>
-            <van-radio name="en-US">{{ t('me.language.enUS') }}</van-radio>
-          </van-radio-group>
-        </template>
-      </van-cell>
-    </van-cell-group>
+    <LanguageSelector />
 
     <van-cell-group inset class="mt12">
       <van-cell :title="t('me.cells.position')" :value="postText" />
@@ -169,42 +160,23 @@
         </van-form>
       </div>
     </van-popup>
+
   </div>
 </template>
 
 <script setup>
-import { computed, reactive, ref, onMounted, getCurrentInstance, watch } from 'vue';
+import { computed, reactive, ref, onMounted, getCurrentInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
 import Api from '@/api';
-import { changeLocale } from '@/locales';
-
 const { proxy } = getCurrentInstance();
 const router = useRouter();
 const auth = useAuthStore();
 const userStore = useUserStore();
-const { t, locale } = useI18n();
-
-const selectedLocale = ref(locale.value);
-
-watch(locale, (val) => {
-  if (val && val !== selectedLocale.value) {
-    selectedLocale.value = val;
-  }
-});
-
-watch(
-  selectedLocale,
-  (val, oldVal) => {
-    if (val && val !== oldVal && val !== locale.value) {
-      changeLocale(val);
-    }
-  },
-  { flush: 'sync' }
-);
+const { t } = useI18n();
 
 // 页面取用户信息：来自 user 仓库
 const user = computed(() => userStore.userInfo || {});
@@ -358,7 +330,7 @@ async function submitChangePwd() {
     return showToast(t('me.validation.confirmPassword'));
   try {
     pwd.loading = true;
-    await Api.user.updatePassword({
+    await userStore.changePassword({
       oldPassword: pwd.oldPassword,
       newPassword: pwd.newPassword,
     });
@@ -380,6 +352,8 @@ async function confirmLogout() {
     await showConfirmDialog({
       title: t('me.dialog.logoutTitle'),
       message: t('me.dialog.logoutMessage'),
+      confirmButtonText: t('me.form.confirm'),
+      cancelButtonText: t('me.form.cancel'),
     });
     await doLogout();
   } catch {}

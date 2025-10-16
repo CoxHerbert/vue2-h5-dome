@@ -1,3 +1,5 @@
+import { translate } from '@/locales';
+
 /**
  * Created by jiachenpan on 16/11/18.
  */
@@ -136,9 +138,9 @@ export function cardid(code) {
   if (!validatenull(code)) {
     if (code.length === 18) {
       if (!code || !/(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(code)) {
-        msg = '证件号码格式错误';
+        msg = translate('common.validation.id.invalidFormat', '证件号码格式错误');
       } else if (!city[code.substr(0, 2)]) {
-        msg = '地址编码错误';
+        msg = translate('common.validation.id.invalidRegion', '地址编码错误');
       } else {
         //18位身份证需要验证最后一位校验位
         code = code.split('');
@@ -156,16 +158,16 @@ export function cardid(code) {
           sum += ai * wi;
         }
         if (parity[sum % 11] !== code[17]) {
-          msg = '证件号码校验位错误';
+          msg = translate('common.validation.id.invalidChecksum', '证件号码校验位错误');
         } else {
           result = false;
         }
       }
     } else {
-      msg = '证件号码长度不为18位';
+      msg = translate('common.validation.id.invalidLength', '证件号码长度不为18位');
     }
   } else {
-    msg = '证件号码不能为空';
+    msg = translate('common.validation.id.required', '证件号码不能为空');
   }
   list.push(result);
   list.push(msg);
@@ -184,15 +186,15 @@ export function isvalidatemobile(phone) {
   if (!validatenull(phone)) {
     if (phone.length === 11) {
       if (isPhone.test(phone)) {
-        msg = '手机号码格式不正确';
+        msg = translate('common.validation.phone.invalidFormat', '手机号码格式不正确');
       } else {
         result = false;
       }
     } else {
-      msg = '手机号码长度不为11位';
+      msg = translate('common.validation.phone.invalidLength', '手机号码长度不为11位');
     }
   } else {
-    msg = '手机号码不能为空';
+    msg = translate('common.validation.phone.required', '手机号码不能为空');
   }
   list.push(result);
   list.push(msg);

@@ -11,6 +11,7 @@ import { baseUrl } from '@/config/env';
 import crypto from '@/utils/crypto';
 import { showToast } from 'vant';
 import { useAuthStore } from '@/store/auth';
+import { translate } from '@/locales';
 
 // 与路由守卫共享：类型匹配 & 回跳地址
 import { isLoginPath, resolveTypeByPath, getIntendedFullPathForAxios } from '@/router/auth-helpers';
@@ -28,9 +29,14 @@ NProgress.configure({ showSpinner: false });
 const noBaseUrlPrefixList = ['/pdf-printing'];
 
 // 统一错误提示（遵守 noErrorMsg）
+const getSystemErrorMessage = () => translate('common.errors.system', '系统错误');
+const getTokenExpiredMessage = () => translate('common.errors.tokenExpired', '用户令牌过期，请重新登录');
+const getNetworkErrorMessage = () => translate('common.errors.network', '网络异常');
+
 function toastError(message, cfg) {
   if (cfg?.noErrorMsg) return;
-  showToast({ message: message || '系统错误', type: 'fail', duration: 20000 });
+  const resolvedMessage = message || getSystemErrorMessage();
+  showToast({ message: resolvedMessage, type: 'fail', duration: 20000 });
 }
 
 // 全局只提示一次未授权
@@ -123,7 +129,7 @@ service.interceptors.response.use(
 
     const status = res.data?.error_code ?? res.data?.code ?? res.status;
     const statusWhiteList = website.statusWhiteList || [];
-    const message = res.data?.msg || res.data?.error_description || '系统错误';
+    const message = res.data?.msg || res.data?.error_description || getSystemErrorMessage();
     const config = res.config;
     const cryptoData = config.cryptoData === true;
 
@@ -147,7 +153,7 @@ service.interceptors.response.use(
           // 刷新失败 → 统一登出 & 导航
           if (!isErrorShown) {
             isErrorShown = true;
-            toastError('用户令牌过期，请重新登录', res.config);
+            toastError(getTokenExpiredMessage(), res.config);
           }
           const auth = useAuthStore();
           auth.logout?.();
@@ -183,7 +189,7 @@ service.interceptors.response.use(
       // 已重试过仍 401
       if (!isErrorShown) {
         isErrorShown = true;
-        toastError('用户令牌过期，请重新登录', res.config);
+        toastError(getTokenExpiredMessage(), res.config);
       }
       const auth = useAuthStore();
       auth.logout?.();
@@ -239,7 +245,7 @@ service.interceptors.response.use(
   },
   (error) => {
     NProgress.done();
-    toastError(error?.message || '网络异常');
+    toastError(error?.message || getNetworkErrorMessage());
     return Promise.reject(new Error(error));
   }
 );

@@ -1,4 +1,5 @@
 import CryptoJS from 'crypto-js';
+import { translate } from '@/locales';
 
 // 小工具：统一 CryptoJS 编码与输出
 const sha256Hex = (input) => CryptoJS.SHA256(String(input)).toString();
@@ -617,7 +618,10 @@ export const convertTime = ({ value, from, to, decimal = 3 }) => {
   };
 
   if (!unitToSeconds[from] || !unitToSeconds[to]) {
-    throw new Error(`不支持的时间单位: ${from} 或 ${to}`);
+    const fallbackMessage = `不支持的时间单位: ${from} 或 ${to}`;
+    throw new Error(
+      translate('common.time.unsupportedUnit', fallbackMessage, { from, to })
+    );
   }
 
   const valueInSeconds = value * unitToSeconds[from];

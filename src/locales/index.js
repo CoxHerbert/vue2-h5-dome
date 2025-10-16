@@ -1,4 +1,7 @@
 import { createI18n } from 'vue-i18n';
+import { Locale as VantLocale } from 'vant';
+import vantZhCN from 'vant/es/locale/lang/zh-CN';
+import vantEnUS from 'vant/es/locale/lang/en-US';
 import zhCN from './zh-CN';
 import enUS from './en-US';
 
@@ -6,6 +9,11 @@ const defaultLocale = 'zh-CN';
 const messages = {
   'zh-CN': zhCN,
   'en-US': enUS,
+};
+
+const vantMessages = {
+  'zh-CN': vantZhCN,
+  'en-US': vantEnUS,
 };
 
 const LOCALE_STORAGE_KEY = 'app-locale';
@@ -43,9 +51,22 @@ const i18n = createI18n({
   messages,
 });
 
-export function translate(key, fallback = '') {
+function applyVantLocale(locale) {
+  const targetLocale = vantMessages[locale];
+  if (targetLocale) {
+    VantLocale.use(locale, targetLocale);
+  }
+}
+
+applyVantLocale(initialLocale);
+
+export function translate(key, fallback = '', values) {
   if (!key) return fallback;
-  const translated = i18n.global.t(key);
+  const t = i18n.global?.t;
+  if (typeof t !== 'function') {
+    return fallback || key;
+  }
+  const translated = t(key, values);
   if (translated === key) {
     return fallback || key;
   }
@@ -57,6 +78,7 @@ export function changeLocale(nextLocale) {
     return;
   }
   i18n.global.locale.value = nextLocale;
+  applyVantLocale(nextLocale);
   if (typeof window !== 'undefined') {
     try {
       window.localStorage?.setItem(LOCALE_STORAGE_KEY, nextLocale);

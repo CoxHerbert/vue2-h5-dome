@@ -1,4 +1,168 @@
 export default {
+  common: {
+    errors: {
+      system: '系统错误',
+      tokenExpired: '用户令牌过期，请重新登录',
+      network: '网络异常',
+    },
+    validation: {
+      id: {
+        invalidFormat: '证件号码格式错误',
+        invalidRegion: '地址编码错误',
+        invalidChecksum: '证件号码校验位错误',
+        invalidLength: '证件号码长度不为18位',
+        required: '证件号码不能为空',
+      },
+      phone: {
+        invalidFormat: '手机号码格式不正确',
+        invalidLength: '手机号码长度不为11位',
+        required: '手机号码不能为空',
+      },
+    },
+    time: {
+      unsupportedUnit: '不支持的时间单位: {from} 或 {to}',
+    },
+  },
+  login: {
+    brand: {
+      slogan: '同心合力，助力生产',
+    },
+    language: {
+      title: '语言',
+      cancel: '取消',
+    },
+    form: {
+      username: {
+        placeholder: '请输入手机号或工号',
+        required: '请输入用户名',
+      },
+      password: {
+        placeholder: '请输入密码',
+        required: '请输入密码',
+      },
+    },
+    button: {
+      submit: '登录',
+      loading: '登录中…',
+    },
+    toast: {
+      success: '登录成功',
+      fail: '登录失败，请重试',
+    },
+    social: {
+      title: '欢迎登录',
+      subtitle: '为你提供统一、便捷、安全的登录体验',
+      currentEntry: '当前入口：{type}',
+      loading: '正在登录中…',
+      typeLabels: {
+        campusApplicant: '校园招聘',
+        internalReferral: '内部内推',
+        vendorHr: '供应商HR',
+      },
+      errors: {
+        missingRedirect: '授权返回缺少跳转地址',
+        missingToken: '登录失败：未获取到 access_token',
+        initAccount: '初始化账号失败，请稍后重试',
+      },
+    },
+    ticketTransfer: {
+      title: '正在准备工作环境',
+      subtitle: '解析跳转参数中…',
+      status: {
+        loading: '正在解析参数',
+        success: '解析成功',
+        error: '解析失败',
+      },
+      hints: {
+        loading: '正在读取并解析 urlTicketId',
+        success: '即将跳转到目标页面',
+        error: '请返回重试或联系管理员',
+      },
+      errors: {
+        missingTicket: '缺少 urlTicketId',
+        server: '服务端返回失败',
+        missingUrl: '未返回 h5Url',
+        unknown: '未知错误',
+      },
+    },
+    userInfoTransition: {
+      title: '正在准备工作环境',
+      subtitle: '获取并保存用户信息',
+      status: {
+        loading: '正在拉取资料',
+        success: '获取成功',
+        error: '获取失败',
+      },
+      hints: {
+        loading: '包含头像、昵称、手机号、组织等字段',
+        success: '已写入本地缓存',
+        error: '请返回重试或联系管理员',
+      },
+      progress: {
+        label: '进度',
+      },
+      steps: {
+        readTicket: '读取路由 urlTicketId',
+        fetchUser: '请求用户信息',
+        persist: '本地存储',
+        redirect: '跳转目标页',
+      },
+      stepTags: {
+        done: '完成',
+        doing: '进行中',
+        error: '失败',
+        pending: '待执行',
+      },
+      alerts: {
+        success: '已就绪，正在进入系统…',
+        error: '获取失败，请稍后重试',
+      },
+      footerNote: '该页面为过渡页，请勿操作',
+      errors: {
+        missingTicket: '路由缺少 {key}',
+        server: '服务端返回失败',
+        unknown: '未知错误',
+      },
+    },
+  },
+  protected: {
+    title: '受保护页面',
+    description: {
+      before: '只有登录后并具有',
+      after: '权限的用户可以访问。',
+    },
+    permission: 'demo:view',
+    logout: '退出登录',
+  },
+  transferPage: {
+    status: {
+      initial: '正在为你跳转…',
+      pending: '已发起跳转，请稍候…',
+      error: '跳转失败',
+    },
+    hint: {
+      prefix: '若未自动跳转，请',
+      link: '点此继续',
+    },
+    errors: {
+      generic: '跳转失败，请稍后重试',
+    },
+  },
+  error: {
+    notFound: {
+      description: '页面走丢了 (404)',
+      target: '目标地址：{path}',
+      actions: {
+        back: '返回上一页',
+        home: '回到首页',
+        retry: '刷新重试',
+      },
+      tip: '可能的原因：链接过期 / 地址拼写错误 / 页面已被移动',
+      toast: {
+        refreshing: '正在刷新…',
+      },
+    },
+  },
   routes: {
     home: '首页',
     apps: '应用',

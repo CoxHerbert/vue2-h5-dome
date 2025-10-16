@@ -6,9 +6,7 @@
       <div class="brand">
         <img class="logo" :src="logoUrl" alt="logo" />
         <div class="slogan">
-          <span class="bold">同心合力</span>
-          <span class="gap"></span>
-          <span class="bold">助力生产</span>
+          <span class="bold">{{ t('login.brand.slogan') }}</span>
         </div>
       </div>
 
@@ -19,8 +17,8 @@
           <van-field
             v-model="formData.username"
             name="username"
-            placeholder="请输入手机号或工号"
-            :rules="[{ required: true, message: '请输入用户名' }]"
+            :placeholder="t('login.form.username.placeholder')"
+            :rules="[{ required: true, message: t('login.form.username.required') }]"
             :border="false"
             class="field"
           >
@@ -36,8 +34,8 @@
             v-model="formData.password"
             :type="showPwd ? 'text' : 'password'"
             name="password"
-            placeholder="请输入密码"
-            :rules="[{ required: true, message: '请输入密码' }]"
+            :placeholder="t('login.form.password.placeholder')"
+            :rules="[{ required: true, message: t('login.form.password.required') }]"
             :border="false"
             class="field"
           >
@@ -59,26 +57,36 @@
           native-type="submit"
           :loading="loading"
           :disabled="loading"
-          loading-text="登录中…"
+          :loading-text="t('login.button.loading')"
         >
-          登录
+          {{ t('login.button.submit') }}
         </van-button>
       </van-form>
+
+      <div class="lang-actions">
+        <LanguageSelector
+          variant="compact"
+          trigger-class="login-lang-trigger"
+          :title="t('login.language.title')"
+          :cancel-text="t('login.language.cancel')"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
 import { showToast, showFailToast } from 'vant';
+import { useI18n } from 'vue-i18n';
 
-const router = useRouter();
 const route = useRoute();
 const auth = useAuthStore();
 const user = useUserStore();
+const { t } = useI18n();
 
 /** 兼容二级目录的 logo 地址 */
 const logoUrl = `${import.meta.env.BASE_URL}images/logo.png`;
@@ -157,10 +165,10 @@ async function onSubmit() {
     if (remember.value) localStorage.setItem('LAST_USERNAME', formData.username);
     else localStorage.removeItem('LAST_USERNAME');
 
-    showToast('登录成功');
+    showToast(t('login.toast.success'));
     window.location.replace(safeRedirect());
   } catch (err) {
-    const msg = err?.message || '登录失败，请重试';
+    const msg = err?.message || t('login.toast.fail');
     console.error('[account-login] login error:', err);
     showFailToast(msg);
   } finally {
@@ -204,17 +212,16 @@ async function onSubmit() {
 .slogan {
   margin-top: 12px;
   color: #1f2a44;
-  display: flex;
-  align-items: center;
+  text-align: center;
   font-size: 18px;
+  font-weight: 800;
   letter-spacing: 1px;
+  line-height: 1.35;
+  padding: 0 16px;
+  word-break: break-word;
 }
 .slogan .bold {
   font-weight: 800;
-}
-.slogan .gap {
-  display: inline-block;
-  width: 10px;
 }
 
 /* 表单组：去掉 inset 的外侧留白，并控制间距 */
@@ -263,5 +270,19 @@ async function onSubmit() {
   color: #fff;
   background: #2563ff;
   box-shadow: 0 10px 22px rgba(37, 99, 255, 0.35);
+}
+
+.lang-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 28px;
+}
+
+.login-lang-trigger {
+  margin: 0;
+  font-size: 12px;
+  color: #2563ff;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 4px 12px rgba(37, 99, 255, 0.18);
 }
 </style>
