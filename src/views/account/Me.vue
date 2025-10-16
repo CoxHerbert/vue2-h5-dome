@@ -181,8 +181,6 @@ import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
 import Api from '@/api';
 import { changeLocale } from '@/locales';
-import ScrollAwareNavBar from '@/components/ScrollAwareNavBar.vue';
-
 const { proxy } = getCurrentInstance();
 const router = useRouter();
 const auth = useAuthStore();

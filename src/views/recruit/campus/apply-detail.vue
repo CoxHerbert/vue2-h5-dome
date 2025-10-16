@@ -109,8 +109,6 @@ import { useRoute } from 'vue-router';
 import Api from '@/api/index';
 import { ensureAuthOnEnter } from '@/router/ensure-auth';
 import { useUserStore } from '@/store/user';
-import ScrollAwareNavBar from '@/components/ScrollAwareNavBar.vue';
-
 const user = useUserStore();
 
 const route = useRoute();
