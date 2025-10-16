@@ -3,6 +3,7 @@ import LanguageSelector from './LanguageSelector.vue';
 import RecruitForm from './RecruitForm.vue';
 import ScrollAwareNavBar from './ScrollAwareNavBar.vue';
 import Uploader from './Uploader.vue';
+import DcPagination from './dc-ui/DcPagination.vue';
 
 export function registerComponents(app) {
   app.component('Uploader', Uploader);
@@ -10,4 +11,5 @@ export function registerComponents(app) {
   app.component('Dict', Dict);
   app.component('LanguageSelector', LanguageSelector);
   app.component('ScrollAwareNavBar', ScrollAwareNavBar);
+  app.component('DcPagination', DcPagination);
 }
