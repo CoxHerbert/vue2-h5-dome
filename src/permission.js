@@ -14,10 +14,10 @@ function setTitle(meta) {
 
   const isString = typeof meta === 'string';
   const titleKey = isString ? meta : meta.title;
-  const fallback = isString ? meta : meta.titleFallback ?? meta.title;
+  const fallback = isString ? meta : (meta.titleFallback ?? meta.title);
   const resolved = translate(titleKey, fallback);
 
-  document.title = resolved ? `${baseTitle}-${resolved}` : baseTitle;
+  document.title = resolved ? `${resolved}` : baseTitle;
 }
 
 watch(
