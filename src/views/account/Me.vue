@@ -97,14 +97,12 @@
     </section>
 
     <van-cell-group inset class="mt12">
-      <van-cell :title="t('me.language.title')">
-        <template #right-icon>
-          <van-radio-group v-model="selectedLocale" direction="horizontal">
-            <van-radio name="zh-CN">{{ t('me.language.zhCN') }}</van-radio>
-            <van-radio name="en-US">{{ t('me.language.enUS') }}</van-radio>
-          </van-radio-group>
-        </template>
-      </van-cell>
+      <van-cell
+        :title="t('me.language.title')"
+        :value="currentLanguageLabel"
+        is-link
+        @click="openLanguageSheet"
+      />
     </van-cell-group>
 
     <van-cell-group inset class="mt12">
@@ -169,6 +167,16 @@
         </van-form>
       </div>
     </van-popup>
+
+    <van-action-sheet
+      v-model:show="languageSheet.show"
+      :title="t('me.language.title')"
+      :actions="languageActions"
+      :cancel-text="t('me.form.cancel')"
+      close-on-click-action
+      @cancel="languageSheet.show = false"
+      @select="onSelectLanguage"
+    />
   </div>
 </template>
 
@@ -188,6 +196,24 @@ const userStore = useUserStore();
 const { t, locale } = useI18n();
 
 const selectedLocale = ref(locale.value);
+const languageSheet = reactive({ show: false });
+
+const localeLabels = computed(() => ({
+  'zh-CN': t('me.language.zhCN'),
+  'en-US': t('me.language.enUS'),
+}));
+
+const currentLanguageLabel = computed(
+  () => localeLabels.value[selectedLocale.value] || '-'
+);
+
+const languageActions = computed(() =>
+  Object.entries(localeLabels.value).map(([value, label]) => ({
+    name: label,
+    value,
+    color: selectedLocale.value === value ? '#3060ed' : undefined,
+  }))
+);
 
 watch(locale, (val) => {
   if (val && val !== selectedLocale.value) {
@@ -204,6 +230,17 @@ watch(
   },
   { flush: 'sync' }
 );
+
+function openLanguageSheet() {
+  languageSheet.show = true;
+}
+
+function onSelectLanguage(action) {
+  if (action?.value) {
+    selectedLocale.value = action.value;
+  }
+  languageSheet.show = false;
+}
 
 // 页面取用户信息：来自 user 仓库
 const user = computed(() => userStore.userInfo || {});
