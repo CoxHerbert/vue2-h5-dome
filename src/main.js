@@ -3,6 +3,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from '@/router';
+import i18n from './locales';
 
 // 样式
 import 'nprogress/nprogress.css';
@@ -25,6 +26,7 @@ async function bootstrap() {
   const pinia = createPinia();
   app.use(pinia);
   app.use(vant);
+  app.use(i18n);
   app.use(router);
   app.use(plugins);
   setupRouterGuard(router);

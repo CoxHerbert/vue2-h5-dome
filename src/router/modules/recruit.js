@@ -11,13 +11,13 @@ export default {
         {
           path: 'list', // 校招岗位列表
           name: 'recruit-campus-list',
-          meta: { title: '校招岗位列表', requiresAuth: true },
+          meta: { title: 'routes.recruit.campusList', requiresAuth: true },
           component: () => import('@/views/recruit/campus/list.vue'),
         },
         {
           path: 'apply', // 校招投递表单
           name: 'recruit-campus-apply',
-          meta: { title: '校招投递表单', requiresAuth: false },
+          meta: { title: 'routes.recruit.campusApply', requiresAuth: false },
           beforeEnter: ensureAuthRouteGuard({ type: 'campus_applicant', mode: 'social' }),
           component: () => import('@/views/recruit/campus/apply.vue'),
         },
@@ -25,7 +25,7 @@ export default {
         {
           path: 'apply-detail/:applyId?', // 可带投递ID；没有ID也可通过query传status
           name: 'recruit-campus-apply-detail',
-          meta: { title: '投递详情', requiresAuth: false },
+          meta: { title: 'routes.recruit.campusApplyDetail', requiresAuth: false },
           component: () => import('@/views/recruit/campus/apply-detail.vue'),
         },
       ],
