@@ -1,4 +1,32 @@
 export default {
+  login: {
+    brand: {
+      sloganFirst: 'Together as one',
+      sloganSecond: 'Powering productivity',
+    },
+    language: {
+      title: 'Language',
+      cancel: 'Cancel',
+    },
+    form: {
+      username: {
+        placeholder: 'Enter mobile number or employee ID',
+        required: 'Please enter your username',
+      },
+      password: {
+        placeholder: 'Enter password',
+        required: 'Please enter your password',
+      },
+    },
+    button: {
+      submit: 'Sign In',
+      loading: 'Signing in…',
+    },
+    toast: {
+      success: 'Signed in successfully',
+      fail: 'Sign-in failed, please try again',
+    },
+  },
   routes: {
     home: 'Home',
     apps: 'Applications',

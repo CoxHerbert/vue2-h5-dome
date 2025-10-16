@@ -1,4 +1,32 @@
 export default {
+  login: {
+    brand: {
+      sloganFirst: '同心合力',
+      sloganSecond: '助力生产',
+    },
+    language: {
+      title: '语言',
+      cancel: '取消',
+    },
+    form: {
+      username: {
+        placeholder: '请输入手机号或工号',
+        required: '请输入用户名',
+      },
+      password: {
+        placeholder: '请输入密码',
+        required: '请输入密码',
+      },
+    },
+    button: {
+      submit: '登录',
+      loading: '登录中…',
+    },
+    toast: {
+      success: '登录成功',
+      fail: '登录失败，请重试',
+    },
+  },
   routes: {
     home: '首页',
     apps: '应用',
