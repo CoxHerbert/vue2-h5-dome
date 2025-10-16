@@ -65,12 +65,14 @@
         </van-button>
       </van-form>
 
-      <LanguageSelector
-        variant="compact"
-        trigger-class="login-lang-trigger"
-        :title="t('login.language.title')"
-        :cancel-text="t('login.language.cancel')"
-      />
+      <div class="lang-actions">
+        <LanguageSelector
+          variant="compact"
+          trigger-class="login-lang-trigger"
+          :title="t('login.language.title')"
+          :cancel-text="t('login.language.cancel')"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -273,8 +275,14 @@ async function onSubmit() {
   box-shadow: 0 10px 22px rgba(37, 99, 255, 0.35);
 }
 
+.lang-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 28px;
+}
+
 .login-lang-trigger {
-  margin: 24px auto 0;
+  margin: 0;
   font-size: 12px;
   color: #2563ff;
   background: rgba(255, 255, 255, 0.72);
