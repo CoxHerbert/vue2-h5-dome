@@ -103,14 +103,13 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, onMounted, getCurrentInstance } from 'vue';
+import { computed, reactive, ref, onMounted, getCurrentInstance, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
 import Api from '@/api';
-import { encrypt } from '@/utils/sm2';
 import { changeLocale } from '@/locales';
 
 const { proxy } = getCurrentInstance();
@@ -119,14 +118,23 @@ const auth = useAuthStore();
 const userStore = useUserStore();
 const { t, locale } = useI18n();
 
-const selectedLocale = computed({
-  get: () => locale.value,
-  set: (val) => {
-    if (val && val !== locale.value) {
+const selectedLocale = ref(locale.value);
+
+watch(locale, (val) => {
+  if (val && val !== selectedLocale.value) {
+    selectedLocale.value = val;
+  }
+});
+
+watch(
+  selectedLocale,
+  (val, oldVal) => {
+    if (val && val !== oldVal && val !== locale.value) {
       changeLocale(val);
     }
   },
-});
+  { flush: 'sync' }
+);
 
 // 页面取用户信息：来自 user 仓库
 const user = computed(() => userStore.userInfo || {});
