@@ -1,6 +1,10 @@
 <template>
   <div>
-    <van-cell-group :inset="inset" :class="cellGroupClass">
+    <van-cell-group
+      v-if="isCellVariant"
+      :inset="inset"
+      :class="cellGroupClass"
+    >
       <van-cell
         :title="titleText"
         :value="currentLabel"
@@ -8,6 +12,16 @@
         @click="openSheet"
       />
     </van-cell-group>
+
+    <button
+      v-else
+      type="button"
+      :class="['language-trigger', triggerClass]"
+      @click="openSheet"
+    >
+      <span class="language-trigger__label">{{ currentLabel }}</span>
+      <van-icon class="language-trigger__icon" name="arrow-down" />
+    </button>
 
     <van-action-sheet
       v-model:show="showSheet"
@@ -36,6 +50,11 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  variant: {
+    type: String,
+    default: 'cell',
+    validator: (value) => ['cell', 'compact'].includes(value),
+  },
   inset: {
     type: Boolean,
     default: true,
@@ -43,6 +62,10 @@ const props = defineProps({
   cellGroupClass: {
     type: [String, Array, Object],
     default: () => 'mt12',
+  },
+  triggerClass: {
+    type: [String, Array, Object],
+    default: () => [],
   },
   title: {
     type: String,
@@ -73,6 +96,7 @@ const optionMap = computed(() =>
 );
 
 const currentLabel = computed(() => optionMap.value[selectedLocale.value] || '-');
+const isCellVariant = computed(() => props.variant === 'cell');
 
 const actions = computed(() =>
   LANGUAGE_OPTIONS.map((option) => ({
@@ -125,3 +149,29 @@ function onSelect(action) {
   closeSheet();
 }
 </script>
+
+<style scoped>
+.language-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  font-size: 14px;
+  color: #1f2a44;
+  background: rgba(255, 255, 255, 0.65);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.language-trigger:active,
+.language-trigger:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.language-trigger__icon {
+  font-size: 12px;
+}
+</style>

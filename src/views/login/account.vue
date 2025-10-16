@@ -66,8 +66,8 @@
       </van-form>
 
       <LanguageSelector
-        :inset="false"
-        cell-group-class="login-lang-selector"
+        variant="compact"
+        trigger-class="login-lang-trigger"
         :title="t('login.language.title')"
         :cancel-text="t('login.language.cancel')"
       />
@@ -273,17 +273,11 @@ async function onSubmit() {
   box-shadow: 0 10px 22px rgba(37, 99, 255, 0.35);
 }
 
-.login-lang-selector {
-  margin-top: 24px;
-  border-radius: 12px;
-  overflow: hidden;
-
-  :deep(.van-cell) {
-    background: rgba(255, 255, 255, 0.6);
-  }
-
-  :deep(.van-cell__title) {
-    font-weight: 600;
-  }
+.login-lang-trigger {
+  margin: 24px auto 0;
+  font-size: 12px;
+  color: #2563ff;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 4px 12px rgba(37, 99, 255, 0.18);
 }
 </style>
