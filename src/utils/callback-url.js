@@ -49,19 +49,3 @@ export function readCallbackUrlFromLocation(key = 'callbackUrl') {
 export function getCallbackUrl(route, key = 'callbackUrl') {
   return readCallbackUrlFromRoute(route, key) ?? readCallbackUrlFromLocation(key);
 }
-
-// 可选：安全校验，避免开放重定向漏洞
-// 允许相对路径，或与当前同源的绝对地址；其它外域请按需白名单
-export function isSafeRedirect(url) {
-  if (!url) return false;
-  // 相对路径直接允许
-  if (/^[/#?]/.test(url)) return true;
-
-  try {
-    const target = new URL(url, window.location.origin);
-    return target.origin === window.location.origin;
-  } catch {
-    // 非法 URL，当作相对路径处理
-    return true;
-  }
-}

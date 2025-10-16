@@ -131,8 +131,9 @@ const icons = reactive({
   reject: proxy.$assetUrl('/images/recruit/campus/apply/status-reject.svg'),
 });
 
-// 文案配置
-const STATUS_MAP = {
+const pageData = reactive({ detail: {}, positionList: [] });
+const { detail, positionList } = toRefs(pageData);
+const STATUS_MAP = computed(() => ({
   pending: {
     text: '评估中',
     color: '#3478F6',
@@ -151,12 +152,9 @@ const STATUS_MAP = {
   reject: {
     text: '未通过',
     color: '#FF3B30',
-    desc: `【联合东创】亲爱的${detail.value?.name}同学，您好！！非常感谢您对 XX 公司的关注与参与，经综合评估，很遗憾您暂未通过本轮面试。您的简历会纳入我司人才库，未来若有匹配岗位，我们将优先与您联系，期待未来有机会与您再次合作，祝您求职顺利！`,
+    desc: `【联合东创】亲爱的${detail.value?.name}同学，您好！！非常感谢您对 联合东创 公司的关注与参与，经综合评估，很遗憾您暂未通过本轮面试。您的简历会纳入我司人才库，未来若有匹配岗位，我们将优先与您联系，期待未来有机会与您再次合作，祝您求职顺利！`,
   },
-};
-
-const pageData = reactive({ detail: {}, positionList: [] });
-const { detail, positionList } = toRefs(pageData);
+}));
 
 // ===== 计算字段 =====
 
@@ -166,7 +164,7 @@ const statusKey = computed(() => {
   return STATUS_CODE_TO_KEY[code] || 'pending';
 });
 
-const statusCfg = computed(() => STATUS_MAP[statusKey.value] || STATUS_MAP.pending);
+const statusCfg = computed(() => STATUS_MAP[statusKey.value] || STATUS_MAP.value.pending);
 const statusText = computed(() => statusCfg.value.text);
 const statusClass = computed(() => `s--${statusKey.value}`);
 const finalDesc = computed(() => statusCfg.value.desc);

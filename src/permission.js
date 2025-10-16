@@ -2,7 +2,10 @@
 import router from './router';
 import { useAuthStore } from '@/store/auth';
 import NProgress from 'nprogress';
-import { setTitle } from '@/utils/set-title';
+
+function setTitle(title) {
+  if (title) document.title = `联合东创-${title}`;
+}
 
 // ✅ 与 axios 401 拦截器共享的一套工具
 import {
@@ -18,7 +21,7 @@ NProgress.configure({ showSpinner: false });
 const publicviews = new Set(['/404', '/about']);
 
 /** URL token 白名单（SSO 回跳等） */
-const urlTokenWhiteList = new Set(['/sso/callback', '/magic-login']);
+const urlTokenWhiteList = new Set(['/login']);
 
 /** 是否公开页面 */
 const isPublic = (path) => publicviews.has(path);
@@ -71,6 +74,7 @@ router.beforeEach(async (to, from, next) => {
   // 3) 需要鉴权但未登录 ⇒ 静默 or 普通登录
   if (!token) {
     // 避免已经在登录页时再次重定向导致循环
+    console.log(!isLoginPath(to.path));
     if (!isLoginPath(to.path)) {
       const detectedType = resolveTypeByPath(to.path); // 统一“类型匹配”
       const redirectFull = getIntendedFullPathForGuard(to, from); // 统一“回跳计算”（to 是 /login* 时优先用 from）

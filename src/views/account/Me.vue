@@ -160,13 +160,16 @@ async function submitChangePwd() {
   if (!validateConfirmPwd(pwd.confirmPassword)) return showToast('两次输入不一致');
   try {
     pwd.loading = true;
-    await Api.user.changePassword({
-      oldPassword: encrypt(pwd.oldPassword),
-      newPassword: encrypt(pwd.newPassword),
+    await Api.user.updatePassword({
+      oldPassword: pwd.oldPassword,
+      newPassword: pwd.newPassword,
     });
-    showToast('修改成功，请使用新密码重新登录');
+    showToast('修改成功');
     pwd.show = false;
-    await doLogout(true);
+    pwd.oldPassword = '';
+    pwd.newPassword = '';
+    pwd.confirmPassword = '';
+    // await doLogout(true);
   } catch (err) {
     showToast(err?.message || '修改失败');
   } finally {

@@ -99,16 +99,40 @@ const formData = reactive({
   key: '',
 });
 
-/** 安全回跳：禁止回到 /login*，仅允许同源路径 */
+/** 安全回跳：保留 BASE_URL（如 /mobile/），禁止跳回登录页，且仅同源 */
 function safeRedirect() {
+  const BASE = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/'); // 归一化为以 / 结尾
+  const origin = window.location.origin;
+  const raw = String(route.query?.redirect || BASE);
+
   try {
-    const raw = String(route.query?.redirect || '/');
-    const u = new URL(raw, window.location.origin);
-    if (u.pathname === '/login' || u.pathname.startsWith('/login/')) return '/';
-    if (u.origin !== window.location.origin) return '/';
-    return u.pathname + u.search + u.hash || '/';
+    // 用“origin + BASE”作为解析基准，确保保留 /mobile/ 前缀
+    const u = new URL(raw, origin + BASE);
+
+    // 仅允许同源
+    if (u.origin !== origin) return BASE;
+
+    // 计算带前缀的登录路径前缀：/mobile/login
+    const loginPrefix = new URL(BASE + 'login', origin).pathname;
+
+    // 禁止回到登录页（含 /login/*）
+    if (u.pathname === loginPrefix || u.pathname.startsWith(loginPrefix + '/')) {
+      return BASE;
+    }
+
+    // 若 redirect 没带到 BASE 前缀，补上它
+    let finalPath = u.pathname;
+    if (!finalPath.startsWith(BASE)) {
+      finalPath = BASE.replace(/\/$/, '') + (finalPath.startsWith('/') ? '' : '/') + finalPath;
+    }
+
+    // 去重 //，并返回完整 path + 查询 + hash
+    finalPath = finalPath.replace(/\/{2,}/g, '/');
+    const out = finalPath + u.search + u.hash;
+
+    return out || BASE;
   } catch {
-    return '/';
+    return import.meta.env.BASE_URL || '/';
   }
 }
 

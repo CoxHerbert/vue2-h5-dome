@@ -1,5 +1,5 @@
 {
-  "name": "vue3-enterprise-scaffold-js",
+  "name": "bip-mobile",
   "private": true,
   "type": "module",
   "packageManager": "npm@10",
@@ -9,7 +9,6 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier -w .",
-    "prepare": "husky install",
     "test": "vitest"
   },
   "dependencies": {

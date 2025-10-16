@@ -1,4 +1,13 @@
 // src/utils/env.js
+export function isMobile() {
+  try {
+    const ch = navigator.userAgentData;
+    if (ch && typeof ch.mobile === 'boolean') return ch.mobile;
+  } catch (_) {}
+  const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+}
+
 function getUA(ua) {
   if (ua) return String(ua);
   if (typeof navigator === 'undefined') return '';
@@ -17,12 +26,12 @@ export function isWeChat(ua) {
 
 /**
  * 同步环境识别
- * 返回值：'wechat_enterprise' | 'wechat_open' | 'h5'
+ * 返回值：'WECHAT_ENTERPRISE' | 'WECHAT_MP' | 'normal'
  */
 export function getLoginEnv(ua) {
-  if (isWeCom(ua)) return 'wechat_enterprise';
-  if (isWeChat(ua)) return 'wechat_open';
-  return 'h5';
+  if (isWeCom(ua)) return 'WECHAT_ENTERPRISE';
+  if (isWeChat(ua)) return 'WECHAT_MP';
+  return 'normal';
 }
 
 // 若项目里曾用过 getLoginEnvSync，这里做个别名兼容

@@ -3,7 +3,7 @@ import loginModule from './modules/login';
 import recruitModule from './modules/recruit';
 
 import homeModule from './modules/home';
-import tasksModule from './modules/tasks';
+import appsModule from './modules/apps.js';
 import meModule from './modules/me';
 
 const routes = [
@@ -12,13 +12,14 @@ const routes = [
   {
     path: '/',
     component: () => import('@/layouts/TabLayout.vue'),
-    children: [homeModule, tasksModule, meModule],
+    redirect: '/home',
+    children: [homeModule, appsModule, meModule],
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/error/NotFound.vue'),
-    meta: { title: '404 - 页面不存在' },
+    meta: { title: '404 - 页面不存在', requiresAuth: false },
   },
   // { path: '/:pathMatch(.*)*', redirect: '/home' },
 ];

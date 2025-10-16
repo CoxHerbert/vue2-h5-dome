@@ -1,4 +1,6 @@
 // src/plugins/utils.js
+import { showToast } from 'vant';
+
 export function assetUrl(p) {
   if (!p) return '';
   const s = String(p);
@@ -32,4 +34,19 @@ export function previewUrl(raw) {
   if (!abs) return '';
   const base = import.meta.env.VITE_FILE_URL + '?url=';
   return base + encodeURIComponent(Base64.encode(abs));
+}
+
+export function copyText(text) {
+  if (!navigator.clipboard) {
+    // 兼容旧版浏览器
+    const input = document.createElement('textarea');
+    input.value = text;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+  } else {
+    navigator.clipboard.writeText(text);
+  }
+  showToast('已复制:' + text);
 }

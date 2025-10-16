@@ -28,6 +28,8 @@ export function normalizeFullPath(loc) {
 // 守卫用：to 已是 /login* 时优先用 from 还原原始目标
 export function getIntendedFullPathForGuard(to, from) {
   if (isLoginPath(to?.path) && from && !isLoginPath(from?.path)) {
+    console.log(normalizeFullPath(from));
+
     return normalizeFullPath(from);
   }
   let p = to?.fullPath || '';

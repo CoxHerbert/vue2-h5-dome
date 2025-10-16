@@ -706,7 +706,7 @@ function buildWithDefaults(fields, incoming = {}) {
       f.options.forEach((op) => {
         if (op.extra?.key) {
           const k = op.extra.key;
-          base[k] = incoming[k] !== undefined ? incoming[k] : op.extra.defaultValue ?? '';
+          base[k] = incoming[k] !== undefined ? incoming[k] : (op.extra.defaultValue ?? '');
         }
       });
     }

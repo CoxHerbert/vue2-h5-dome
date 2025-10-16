@@ -44,8 +44,12 @@ const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const user = useUserStore();
+const _env = {
+  WECHAT_MP: 'wechat_open',
+  WECHAT_ENTERPRISE: 'wechat_enterprise',
+};
 
-const env = getLoginEnv(); // wechat_open / wechat_enterprise / 其它
+const env = _env[getLoginEnv()] || null; // WECHAT_MP / WECHAT_ENTERPRISE / 其它
 
 /** 视觉用：logo 路径（兼容二级目录） */
 const logoUrl = `${import.meta.env.BASE_URL}images/logo.png`;
@@ -151,7 +155,7 @@ async function loginBySocial(data) {
   const userId = String(payload?.user_id ?? '');
   const oauthId = payload?.oauth_id;
 
-  if ((userId === 'null' || userId === '') && env === 'wechat_open' && oauthId) {
+  if ((userId === 'null' || userId === '') && env === 'WECHAT_MP' && oauthId) {
     await createUserThenRedirect(oauthId);
     return;
   }
@@ -227,7 +231,8 @@ async function createUserThenRedirect(oauthId) {
     if (id) {
       const next = { ...(user.userInfo || {}), id };
       user.setUserInfo(next);
-      await auth.refresh();
+      // auth.logout();
+      // location.reload();
     }
   } catch {}
 }

@@ -16,5 +16,17 @@ export default {
       component: () => import('@/views/login/social.vue'),
       meta: { requiresAuth: false },
     },
+    {
+      path: 'userInfoTransition/:urlTicketId?', // 也支持 ?urlTicketId=xxx
+      name: 'LOGIN_USER_INFO_TRANSITION',
+      component: () => import('@/views/login/UserInfoTransition.vue'),
+      meta: { requiresAuth: false },
+    },
+    {
+      path: 'transfer/:urlTicketId?', // 也支持 ?id=xxx
+      name: 'LOGIN_TRANSFER',
+      component: () => import('@/views/login/transfer.vue'),
+      meta: { requiresAuth: false },
+    },
   ],
 };

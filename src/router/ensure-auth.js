@@ -11,7 +11,7 @@ let _redirecting = false;
  * @param {string} [opts.type]         - 业务类型（不传则按 path 自动匹配）
  * @param {('social'|'account'|'auto')} [opts.mode='auto'] - 优先登录方式
  * @param {string} [opts.redirect]     - 指定回跳（不传则用当前路由 fullPath）
- * @param {boolean} [opts.replace=true]- 用 replace 跳转，避免历史栈多一页
+ * @param {boolean} [opts.replace=true] - 用 replace 跳转，避免历史栈多一页
  * @returns {Promise<boolean>}         - true=已登录可继续；false=已跳转登录
  */
 export async function ensureAuthOnEnter(opts = {}) {

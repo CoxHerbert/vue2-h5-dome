@@ -24,6 +24,9 @@ import { showToast } from 'vant';
 import Api from '@/api/index';
 import { useRouter } from 'vue-router';
 import { ensureAuthOnEnter } from '@/router/ensure-auth';
+import { useUserStore } from '@/store/user';
+
+const user = useUserStore();
 
 const router = useRouter();
 const { proxy } = getCurrentInstance();
@@ -155,8 +158,21 @@ onMounted(async () => {
     mode: 'social', // 强制静默登录
   });
   if (!ok) return; // 已重定向去登录，后续不再执行
+  try {
+    const res = await getDetail();
+    const { code, data } = res.data;
+    if (code === 200 && !!data) {
+      router.push({ path: '/recruit/campus/apply-detail/userid' });
+    }
+  } catch (error) {
+    console.log('error:', error);
+  }
   getCampusPositionList();
 });
+
+function getDetail() {
+  return Api.recruit.campus.apply.getDetail({ userId: user.userInfo?.id });
+}
 
 const getCampusPositionList = () => {
   Api.recruit.campus.apply

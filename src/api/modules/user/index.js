@@ -21,4 +21,11 @@ export default {
       data,
     });
   },
+  updatePassword(data) {
+    return request({
+      url: '/blade-system/dc-system-user/update-password',
+      method: 'post',
+      data,
+    });
+  },
 };

@@ -8,9 +8,13 @@
           <div class="nf-code">404</div>
         </div>
       </template>
-
+      <div class="nf-desc" @click="$copyText(route.fullPath)">
+        目标地址：{{ route.fullPath || '-' }}
+      </div>
       <div class="nf-actions">
-        <van-button type="primary" block round @click="goBack">返回上一页</van-button>
+        <van-space :size="8" direction="horizontal" class="nf-row">
+          <van-button type="primary" block round @click="goBack">返回上一页</van-button>
+        </van-space>
         <van-space :size="8" direction="horizontal" class="nf-row">
           <van-button plain type="primary" round @click="goHome">回到首页</van-button>
           <van-button plain type="default" round @click="reload">刷新重试</van-button>
@@ -41,7 +45,7 @@ function goBack() {
 
 function goHome() {
   // 根据你的首页路由名调整
-  router.replace({ name: 'Home' }).catch(() => {});
+  router.replace({ path: '/home' }).catch(() => {});
 }
 
 function reload() {
@@ -101,7 +105,12 @@ onMounted(() => {
   display: flex;
   justify-content: center;
 }
-
+.nf-desc {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--nf-tip, blue);
+  text-align: center;
+}
 .nf-tip {
   margin-top: 12px;
   font-size: 12px;
