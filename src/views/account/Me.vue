@@ -350,10 +350,10 @@ async function submitChangePwd() {
 async function confirmLogout() {
   try {
     await showConfirmDialog({
-      title: '退出登录',
-      message: '确定要退出当前账号吗？',
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+      title: t('me.dialog.logoutTitle'),
+      message: t('me.dialog.logoutMessage'),
+      confirmButtonText: t('me.form.confirm'),
+      cancelButtonText: t('me.form.cancel'),
     });
     await doLogout();
   } catch {}
