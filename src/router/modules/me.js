@@ -1,9 +1,14 @@
 export default {
   path: 'me',
-  name: 'me',
+  component: () => import('@/views/account/me/Layout.vue'),
   meta: { title: 'routes.me', icon: 'user-o', tabbar: true, requiresAuth: true },
-  component: () => import('@/views/account/Me.vue'),
   children: [
+    {
+      path: '',
+      name: 'me',
+      meta: { title: 'routes.me', icon: 'user-o', tabbar: true, requiresAuth: true },
+      component: () => import('@/views/account/Me.vue'),
+    },
     {
       path: 'points',
       name: 'mePoints',
@@ -62,7 +67,7 @@ export default {
         requiresAuth: true,
         placeholderKey: 'me.placeholder.default',
       },
-      component: () => import('@/views/account/me/Placeholder.vue'),
+      component: () => import('@/views/account/me/WorkTime.vue'),
     },
     {
       path: 'punch-record',
