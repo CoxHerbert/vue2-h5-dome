@@ -2,7 +2,8 @@
 import router from './router';
 import { useAuthStore } from '@/store/auth';
 import NProgress from 'nprogress';
-import { translate } from './locales';
+import { watch } from 'vue';
+import i18n, { translate } from './locales';
 
 function setTitle(meta) {
   const baseTitle = '联合东创';
@@ -18,6 +19,14 @@ function setTitle(meta) {
 
   document.title = resolved ? `${baseTitle}-${resolved}` : baseTitle;
 }
+
+watch(
+  () => i18n.global.locale.value,
+  () => {
+    const { meta } = router.currentRoute.value || {};
+    setTitle(meta);
+  }
+);
 
 // ✅ 与 axios 401 拦截器共享的一套工具
 import {
