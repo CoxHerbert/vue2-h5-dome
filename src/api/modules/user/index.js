@@ -34,4 +34,11 @@ export default {
       method: 'get',
     });
   },
+  getUserDailyAttendanceInfo(params) {
+    return request({
+      url: '/blade-bip/home-user/user-daily-attendance-info',
+      method: 'get',
+      params,
+    });
+  },
 };

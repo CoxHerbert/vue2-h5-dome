@@ -62,7 +62,7 @@ export default {
         requiresAuth: true,
         placeholderKey: 'me.placeholder.default',
       },
-      component: () => import('@/views/account/me/Placeholder.vue'),
+      component: () => import('@/views/account/me/WorkTime.vue'),
     },
     {
       path: 'punch-record',
