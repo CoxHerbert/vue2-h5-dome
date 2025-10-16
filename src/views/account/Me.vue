@@ -96,14 +96,7 @@
       </div>
     </section>
 
-    <van-cell-group inset class="mt12">
-      <van-cell
-        :title="t('me.language.title')"
-        :value="currentLanguageLabel"
-        is-link
-        @click="openLanguageSheet"
-      />
-    </van-cell-group>
+    <LanguageSelector />
 
     <van-cell-group inset class="mt12">
       <van-cell :title="t('me.cells.position')" :value="postText" />
@@ -168,79 +161,22 @@
       </div>
     </van-popup>
 
-    <van-action-sheet
-      v-model:show="languageSheet.show"
-      :title="t('me.language.title')"
-      :actions="languageActions"
-      :cancel-text="t('me.form.cancel')"
-      close-on-click-action
-      @cancel="languageSheet.show = false"
-      @select="onSelectLanguage"
-    />
   </div>
 </template>
 
 <script setup>
-import { computed, reactive, ref, onMounted, getCurrentInstance, watch } from 'vue';
+import { computed, reactive, ref, onMounted, getCurrentInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
 import Api from '@/api';
-import { changeLocale } from '@/locales';
 const { proxy } = getCurrentInstance();
 const router = useRouter();
 const auth = useAuthStore();
 const userStore = useUserStore();
-const { t, locale } = useI18n();
-
-const selectedLocale = ref(locale.value);
-const languageSheet = reactive({ show: false });
-
-const localeLabels = computed(() => ({
-  'zh-CN': t('me.language.zhCN'),
-  'en-US': t('me.language.enUS'),
-}));
-
-const currentLanguageLabel = computed(
-  () => localeLabels.value[selectedLocale.value] || '-'
-);
-
-const languageActions = computed(() =>
-  Object.entries(localeLabels.value).map(([value, label]) => ({
-    name: label,
-    value,
-    color: selectedLocale.value === value ? '#3060ed' : undefined,
-  }))
-);
-
-watch(locale, (val) => {
-  if (val && val !== selectedLocale.value) {
-    selectedLocale.value = val;
-  }
-});
-
-watch(
-  selectedLocale,
-  (val, oldVal) => {
-    if (val && val !== oldVal && val !== locale.value) {
-      changeLocale(val);
-    }
-  },
-  { flush: 'sync' }
-);
-
-function openLanguageSheet() {
-  languageSheet.show = true;
-}
-
-function onSelectLanguage(action) {
-  if (action?.value) {
-    selectedLocale.value = action.value;
-  }
-  languageSheet.show = false;
-}
+const { t } = useI18n();
 
 // 页面取用户信息：来自 user 仓库
 const user = computed(() => userStore.userInfo || {});
