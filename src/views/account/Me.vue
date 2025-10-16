@@ -413,6 +413,8 @@ onMounted(() => {
   min-height: 100vh;
   max-width: 750px;
   padding: 56px 0 120px;
+  padding-bottom: calc(120px + constant(safe-area-inset-bottom));
+  padding-bottom: calc(120px + env(safe-area-inset-bottom));
   background: #f6f7fb;
 }
 
