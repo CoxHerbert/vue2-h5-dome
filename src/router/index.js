@@ -3,12 +3,13 @@ import loginModule from './modules/login';
 import recruitModule from './modules/recruit';
 
 import homeModule from './modules/home';
-import appsModule from './modules/apps.js';
+import appsModule, { appDetailRoutes } from './modules/apps.js';
 import meModule from './modules/me';
 
 const routes = [
   loginModule,
   recruitModule,
+  ...appDetailRoutes,
   {
     path: '/',
     component: () => import('@/layouts/TabLayout.vue'),

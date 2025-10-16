@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <defs>
+    <linearGradient id="flowGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b82f6" />
+      <stop offset="1" stop-color="#60a5fa" />
+    </linearGradient>
+  </defs>
+  <rect width="72" height="72" x="4" y="4" rx="16" fill="url(#flowGradient)" />
+  <path
+    d="M26 26h12l-4-6h20l-4 6h12v12l6-4v20l-6-4v12H38l4 6H22l4-6H14V38l-6 4V22l6 4V14h12z"
+    fill="#fff"
+    opacity="0.85"
+  />
+</svg>
