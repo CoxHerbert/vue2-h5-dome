@@ -89,7 +89,7 @@
           @click="handleFunction(item)"
         >
           <span class="func-icon">
-            <van-icon :name="item.icon" />
+            <img :src="item.icon" :alt="item.label" class="func-icon__image" loading="lazy" />
           </span>
           <span class="func-text">{{ item.label }}</span>
         </div>
@@ -172,6 +172,8 @@ import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
 import Api from '@/api';
 const { proxy } = getCurrentInstance();
+const workTimeIcon = proxy.$assetUrl('/images/me/worktime.svg');
+const punchRecordIcon = proxy.$assetUrl('/images/me/card.svg');
 const router = useRouter();
 const auth = useAuthStore();
 const userStore = useUserStore();
@@ -236,13 +238,13 @@ const functionItems = computed(() => [
   {
     key: 'workTime',
     label: t('me.dashboard.functions.items.workTime'),
-    icon: 'clock-o',
+    icon: workTimeIcon,
     routeName: 'meWorkTime',
   },
   {
     key: 'punchRecord',
     label: t('me.dashboard.functions.items.punchRecord'),
-    icon: 'underway-o',
+    icon: punchRecordIcon,
     routeName: 'mePunchRecord',
   },
 ]);
@@ -692,6 +694,12 @@ onMounted(() => {
   justify-content: center;
   color: #3060ed;
   font-size: 24px;
+}
+
+.func-icon__image {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .func-text {

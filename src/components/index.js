@@ -1,15 +1,12 @@
-import Dict from './Dict.vue';
+import dcUiComponents from './dc-ui';
 import LanguageSelector from './LanguageSelector.vue';
-import RecruitForm from './RecruitForm.vue';
 import ScrollAwareNavBar from './ScrollAwareNavBar.vue';
-import Uploader from './Uploader.vue';
-import DcPagination from './dc-ui/DcPagination.vue';
 
 export function registerComponents(app) {
-  app.component('Uploader', Uploader);
-  app.component('RecruitForm', RecruitForm);
-  app.component('Dict', Dict);
+  Object.entries(dcUiComponents).forEach(([name, component]) => {
+    app.component(name, component);
+  });
+
   app.component('LanguageSelector', LanguageSelector);
   app.component('ScrollAwareNavBar', ScrollAwareNavBar);
-  app.component('DcPagination', DcPagination);
 }

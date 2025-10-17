@@ -1,6 +1,6 @@
 <template>
   <div class="page apps">
-    <ScrollAwareNavBar title="应用" fixed />
+    <ScrollAwareNavBar :title="t('routes.apps')" fixed />
     <div class="apps__content">
       <van-grid class="apps__grid" :column-num="4" :gutter="12" clickable :border="false">
         <van-grid-item v-for="app in apps" :key="app.routeName" :to="{ name: app.routeName }">
@@ -17,6 +17,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 const apps = [
   { label: '流程中心', icon: '/images/apps/流程中心.svg', routeName: 'appsWorkflowCenter' },
   { label: '料况跟进', icon: '/images/apps/料况跟进.svg', routeName: 'appsMaterialTracking' },
