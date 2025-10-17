@@ -160,7 +160,6 @@
         </van-form>
       </div>
     </van-popup>
-
   </div>
 </template>
 
