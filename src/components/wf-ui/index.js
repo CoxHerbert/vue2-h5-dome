@@ -1,4 +1,5 @@
 import { validateNull, validData, deepClone, findObject } from './util/index.js';
+import { registerVantAdapters } from './adapter/registerVantAdapters.js';
 
 const prototypes = {
     validateNull,
@@ -9,12 +10,12 @@ const prototypes = {
 };
 
 export default {
-    install(Vue) {
-        // 注册全局方法
+    install(app) {
+        const target = app?.config?.globalProperties ?? app.prototype;
         Object.keys(prototypes).forEach((key) => {
-            Vue.prototype[key] = prototypes[key];
-            uni.$u[key] = prototypes[key];
+            target[key] = prototypes[key];
         });
+        registerVantAdapters(app);
     },
     author: 'SSC',
     version: '1.4.0',
