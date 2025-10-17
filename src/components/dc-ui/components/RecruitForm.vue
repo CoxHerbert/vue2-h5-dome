@@ -525,14 +525,14 @@
               </van-popup>
             </template>
 
-            <!-- ===================== UPLOADER（DcUploader） ===================== -->
+            <!-- ===================== UPLOADER（dc-uploader） ===================== -->
             <div v-else-if="f.type === 'uploader'">
               <div v-if="getLayout(f) === 'vertical'" class="dc-field-vertical">
                 <div class="dc-field-label" :class="{ required: isRequired(f) }">
                   {{ f.label }}
                 </div>
                 <div class="dc-pad-16">
-                  <Uploader
+                  <dc-uploader
                     v-model="uploaderModels[f.name]"
                     :multiple="(f.upload?.maxCount || 1) > 1"
                     :max-count="f.upload?.maxCount || 1"
@@ -554,7 +554,7 @@
                   :title-style="cellTitleStyle(f)"
                 />
                 <div class="dc-pad-16">
-                  <Uploader
+                  <dc-uploader
                     v-model="uploaderModels[f.name]"
                     :multiple="(f.upload?.maxCount || 1) > 1"
                     :max-count="f.upload?.maxCount || 1"

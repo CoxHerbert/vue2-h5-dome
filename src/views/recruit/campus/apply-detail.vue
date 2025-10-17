@@ -46,7 +46,7 @@
       <van-cell-group inset>
         <van-cell title="应聘渠道">
           <template #default>
-            <Dict :options="dictRefs.DC_APPLY_CHANNEL" :value="detail.applyChannel" />
+            <dc-dict :options="dictRefs.DC_APPLY_CHANNEL" :value="detail.applyChannel" />
           </template>
         </van-cell>
         <van-cell title="推荐人">
@@ -63,7 +63,7 @@
 
         <van-cell title="意向地点">
           <template #default>
-            <Dict :options="dictRefs.DC_WORK_LOCATION" :value="detail.desiredLocation" />
+            <dc-dict :options="dictRefs.DC_WORK_LOCATION" :value="detail.desiredLocation" />
           </template>
         </van-cell>
       </van-cell-group>
