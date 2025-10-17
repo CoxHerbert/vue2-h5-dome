@@ -48,7 +48,7 @@ export default {
       path: 'material-maintenance',
       name: 'appsMaterialMaintenance',
       meta: { title: '物料信息维护', requiresAuth: true },
-      component: () => import('@/views/apps/MaterialMaintenance.vue'),
+      component: () => import('@/views/apps/MaterialMaintenance/index.vue'),
     },
     {
       path: 'wire-inspection',
