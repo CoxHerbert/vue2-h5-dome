@@ -1,9 +1,6 @@
-import Dict from './dc-ui/Dict.vue';
+import { Dict, RecruitForm, Uploader, DcPagination } from './dc-ui';
 import LanguageSelector from './LanguageSelector.vue';
-import RecruitForm from './dc-ui/RecruitForm.vue';
 import ScrollAwareNavBar from './ScrollAwareNavBar.vue';
-import Uploader from './dc-ui/Uploader.vue';
-import DcPagination from './dc-ui/DcPagination.vue';
 
 export function registerComponents(app) {
   app.component('Uploader', Uploader);
