@@ -1,5 +1,5 @@
 <template>
-  <div class="mine-page">
+  <div class="page mine">
     <div class="top-bg"></div>
     <ScrollAwareNavBar
       :title="t('me.navTitle')"
@@ -8,7 +8,6 @@
       class="mine-nav"
       safe-area-inset-top
     />
-
     <section class="profile-card">
       <div class="bg-index bg-index-2"></div>
       <div class="bg-index bg-index-1"></div>
@@ -369,7 +368,6 @@ async function doLogout(force = false) {
 // 若进入页面时本地无资料，则拉一次
 onMounted(() => {
   Api.user.getH5UserInfo().then((res) => {
-    console.log(res);
     const { code, data } = res.data;
     if (code === 200) {
       userH5.value = data;
@@ -382,7 +380,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.mine-page {
+.mine {
   position: relative;
   margin: 0 auto;
   min-height: 100vh;
