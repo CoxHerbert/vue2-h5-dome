@@ -22,9 +22,27 @@ export default {
     },
     {
       path: 'inbound-order',
-      name: 'appsInboundOrder',
-      meta: { title: '入库单', requiresAuth: true },
-      component: () => import('@/views/apps/InboundOrder.vue'),
+      component: () => import('@/views/apps/InboundOrder/index.vue'),
+      children: [
+        {
+          path: '',
+          name: 'appsInboundOrder',
+          meta: { title: '入库单', requiresAuth: true },
+          component: () => import('@/views/apps/InboundOrder/List.vue'),
+        },
+        {
+          path: 'create',
+          name: 'appsInboundOrderCreate',
+          meta: { title: '新增入库单', requiresAuth: true },
+          component: () => import('@/views/apps/InboundOrder/Create.vue'),
+        },
+        {
+          path: ':id',
+          name: 'appsInboundOrderDetail',
+          meta: { title: '入库单详情', requiresAuth: true },
+          component: () => import('@/views/apps/InboundOrder/Detail.vue'),
+        },
+      ],
     },
     {
       path: 'site-planning',
