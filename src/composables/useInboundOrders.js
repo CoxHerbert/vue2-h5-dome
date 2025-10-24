@@ -1,75 +1,65 @@
 import { computed, ref } from 'vue';
 import dayjs from 'dayjs';
 
+export const INBOUND_STATUS_META = {
+  DC_WMS_IN_STATUS_A: { label: '待审核', type: 'warning' },
+  DC_WMS_IN_STATUS_C: { label: '已审核', type: 'success' },
+};
+
+const resolveStatusMeta = (status) =>
+  INBOUND_STATUS_META[status] ?? { label: '已完成', type: 'primary' };
+
 const createSeedOrders = () => [
   {
     id: 'RK20241001001',
-    inboundNo: 'RK20241001001',
-    locatorNo: 'A-01-01',
-    createdAt: '2024-10-01 09:12',
-    createdBy: '李晓明',
+    inStockCode: 'RK20241001001',
+    inStockStatus: 'DC_WMS_IN_STATUS_C',
+    inStockNumber: 'SRC-20241001-01',
+    warehouseName: '一号成品仓',
+    applicantName: '李晓明',
+    processingPersonnelName: '张主管',
+    createTime: '2024-10-01 09:12',
     remark: '首批到货，优先处理',
-    items: [
+    detailList: [
       {
         id: 'ITEM-1',
-        bomNo: 'BOM-01-001',
-        bomVersion: 'V3.2',
-        drawAddress: 'https://example.com/draw/1',
-        drawQty: 120,
-        exeMaterialNumber: 'MAT-0001',
-        exeMaterialName: '电源线组件',
-        finishMaterialNumber: 'FIN-9001',
-        finishMaterialName: '终端电源线',
-        mtoNo: 'MTO-202409-01',
-        unit: 'PCS',
-        no: 'DC-EXEC-202409-01',
-        isQualified: '1',
-        execeptionType: '',
-        remark: '外观正常',
+        productCode: 'MAT-0001',
+        productName: '电源线组件',
+        productSpec: '1.5m/国标',
+        productQty: 120,
+        productUnit: 'PCS',
+        locationCode: 'A-01-01',
       },
       {
         id: 'ITEM-2',
-        bomNo: 'BOM-02-010',
-        bomVersion: 'V1.8',
-        drawAddress: 'https://example.com/draw/2',
-        drawQty: 60,
-        exeMaterialNumber: 'MAT-0002',
-        exeMaterialName: '信号线束',
-        finishMaterialNumber: 'FIN-9002',
-        finishMaterialName: '成品信号线束',
-        mtoNo: 'MTO-202409-02',
-        unit: 'PCS',
-        no: 'DC-EXEC-202409-02',
-        isQualified: '0',
-        execeptionType: '表面瑕疵',
-        remark: '外皮存在划痕',
+        productCode: 'MAT-0002',
+        productName: '信号线束',
+        productSpec: '8芯/屏蔽',
+        productQty: 60,
+        productUnit: 'PCS',
+        locationCode: 'A-01-01',
       },
     ],
   },
   {
     id: 'RK20241002003',
-    inboundNo: 'RK20241002003',
-    locatorNo: 'B-03-07',
-    createdAt: '2024-10-02 14:35',
-    createdBy: '王婷婷',
-    remark: '常规入库',
-    items: [
+    inStockCode: 'RK20241002003',
+    inStockStatus: 'DC_WMS_IN_STATUS_A',
+    inStockNumber: 'SRC-20241002-03',
+    warehouseName: '二号原料仓',
+    applicantName: '王婷婷',
+    processingPersonnelName: '刘主管',
+    createTime: '2024-10-02 14:35',
+    remark: '常规入库批次',
+    detailList: [
       {
         id: 'ITEM-3',
-        bomNo: 'BOM-08-020',
-        bomVersion: 'V2.1',
-        drawAddress: 'https://example.com/draw/8',
-        drawQty: 45,
-        exeMaterialNumber: 'MAT-0010',
-        exeMaterialName: '控制线组件',
-        finishMaterialNumber: 'FIN-9010',
-        finishMaterialName: '控制线成品',
-        mtoNo: 'MTO-202410-08',
-        unit: 'PCS',
-        no: 'DC-EXEC-202410-08',
-        isQualified: '1',
-        execeptionType: '',
-        remark: '尺寸合格',
+        productCode: 'MAT-0010',
+        productName: '控制线组件',
+        productSpec: '6芯/2m',
+        productQty: 45,
+        productUnit: 'PCS',
+        locationCode: 'B-03-07',
       },
     ],
   },
@@ -86,25 +76,26 @@ const generateOrderId = () => {
 const generateItemId = () => `ITEM-${Math.random().toString(36).slice(2, 8)}`;
 
 const decorateOrder = (payload) => {
-  const createdAt = payload.createdAt ?? dayjs().format('YYYY-MM-DD HH:mm');
-  const inboundNo = payload.inboundNo ?? generateOrderId();
-  const id = payload.id ?? inboundNo;
-  const items = (payload.items ?? []).map((item) => ({
+  const createdAt = payload.createTime ?? dayjs().format('YYYY-MM-DD HH:mm');
+  const inStockCode = payload.inStockCode ?? generateOrderId();
+  const id = payload.id ?? inStockCode;
+  const detailList = (payload.detailList ?? []).map((item) => ({
     ...item,
     id: item.id ?? generateItemId(),
-    drawQty: Number(item.drawQty ?? 0),
-    isQualified: item.isQualified ?? '1',
-    execeptionType: item.execeptionType ?? '',
+    productQty: Number(item.productQty ?? 0),
   }));
 
   return {
     id,
-    inboundNo,
-    locatorNo: payload.locatorNo ?? '',
-    createdAt,
-    createdBy: payload.createdBy ?? '当前用户',
+    inStockCode,
+    inStockStatus: payload.inStockStatus ?? 'DC_WMS_IN_STATUS_A',
+    inStockNumber: payload.inStockNumber ?? '',
+    warehouseName: payload.warehouseName ?? '',
+    applicantName: payload.applicantName ?? '当前用户',
+    processingPersonnelName: payload.processingPersonnelName ?? '当前用户',
+    createTime: createdAt,
     remark: payload.remark ?? '',
-    items,
+    detailList,
   };
 };
 
@@ -112,7 +103,7 @@ export default function useInboundOrders() {
   const orders = ordersRef;
 
   const totalCount = computed(() =>
-    orders.value.reduce((acc, order) => acc + (order.items?.length ?? 0), 0)
+    orders.value.reduce((acc, order) => acc + (order.detailList?.length ?? 0), 0)
   );
 
   const addOrder = (payload) => {
@@ -127,7 +118,7 @@ export default function useInboundOrders() {
     orders.value = orders.value.map((order) => {
       if (order.id !== id) return order;
       const next = typeof updater === 'function' ? updater(order) : { ...order, ...updater };
-      return decorateOrder({ ...order, ...next, id: order.id, inboundNo: order.inboundNo });
+      return decorateOrder({ ...order, ...next, id: order.id, inStockCode: order.inStockCode });
     });
     return orders.value.find((order) => order.id === id);
   };
@@ -138,5 +129,6 @@ export default function useInboundOrders() {
     addOrder,
     getOrderById,
     updateOrder,
+    resolveStatusMeta,
   };
 }

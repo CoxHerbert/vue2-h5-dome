@@ -11,10 +11,12 @@
 
     <div v-if="order" class="page-body">
       <van-cell-group inset>
-        <van-cell title="入库单号" :value="order.inboundNo" />
-        <van-cell title="库位编码" :value="order.locatorNo || '-'" />
-        <van-cell title="创建人" :value="order.createdBy" />
-        <van-cell title="创建时间" :value="order.createdAt" />
+        <van-cell title="入库单号" :value="order.inStockCode" />
+        <van-cell title="来源单号" :value="order.inStockNumber || '-'" />
+        <van-cell title="仓库" :value="order.warehouseName || '-'" />
+        <van-cell title="处理人" :value="order.processingPersonnelName || '-'" />
+        <van-cell title="申请人" :value="order.applicantName || '-'" />
+        <van-cell title="登记时间" :value="order.createTime" />
         <van-cell title="备注" :value="order.remark || '-'" />
       </van-cell-group>
 
@@ -24,63 +26,37 @@
           <van-tag :type="status.type">{{ status.label }}</van-tag>
         </div>
 
-        <div v-for="(item, index) in order.items" :key="item.id" class="detail-card">
+        <div v-for="(item, index) in order.detailList" :key="item.id" class="detail-card">
           <div class="detail-card__header">
             <span class="index">#{{ index + 1 }}</span>
-            <span class="material">{{ item.exeMaterialName || '-' }}</span>
+            <span class="material">{{ item.productName || '-' }}</span>
           </div>
           <div class="detail-card__grid">
             <div class="grid-item">
-              <span class="label">BOM编码</span>
-              <span class="value">{{ item.bomNo || '-' }}</span>
+              <span class="label">物料编号</span>
+              <span class="value">{{ item.productCode || '-' }}</span>
             </div>
             <div class="grid-item">
-              <span class="label">BOM版本</span>
-              <span class="value">{{ item.bomVersion || '-' }}</span>
+              <span class="label">规格型号</span>
+              <span class="value">{{ item.productSpec || '-' }}</span>
             </div>
             <div class="grid-item">
-              <span class="label">执行单单号</span>
-              <span class="value">{{ item.no || '-' }}</span>
-            </div>
-            <div class="grid-item">
-              <span class="label">物料编码</span>
-              <span class="value">{{ item.exeMaterialNumber || '-' }}</span>
-            </div>
-            <div class="grid-item">
-              <span class="label">成品物料编码</span>
-              <span class="value">{{ item.finishMaterialNumber || '-' }}</span>
-            </div>
-            <div class="grid-item">
-              <span class="label">成品物料名称</span>
-              <span class="value">{{ item.finishMaterialName || '-' }}</span>
-            </div>
-            <div class="grid-item">
-              <span class="label">专案号</span>
-              <span class="value">{{ item.mtoNo || '-' }}</span>
+              <span class="label">数量</span>
+              <span class="value highlight">{{ item.productQty }}</span>
             </div>
             <div class="grid-item">
               <span class="label">单位</span>
-              <span class="value">{{ item.unit || '-' }}</span>
+              <span class="value">{{ item.productUnit || '-' }}</span>
             </div>
             <div class="grid-item">
-              <span class="label">图档数量</span>
-              <span class="value highlight">{{ item.drawQty }}</span>
+              <span class="label">仓位编码</span>
+              <span class="value">{{ item.locationCode || '-' }}</span>
             </div>
           </div>
-          <div class="detail-card__footer">
-            <div>
-              <span class="label">是否合格：</span>
-              <van-tag :type="item.isQualified === '1' ? 'success' : 'danger'">
-                {{ item.isQualified === '1' ? '合格' : '不合格' }}
-              </van-tag>
-            </div>
-            <div>
-              <span class="label">异常类型：</span>
-              <span class="value">{{ item.execeptionType || '-' }}</span>
-            </div>
+          <div v-if="item.remark" class="detail-card__footer">
             <div>
               <span class="label">备注：</span>
-              <span class="value">{{ item.remark || '-' }}</span>
+              <span class="value">{{ item.remark }}</span>
             </div>
           </div>
         </div>
@@ -102,7 +78,7 @@ import useInboundOrders from '@/composables/useInboundOrders';
 
 const route = useRoute();
 const router = useRouter();
-const { getOrderById } = useInboundOrders();
+const { getOrderById, resolveStatusMeta } = useInboundOrders();
 
 const order = computed(() => getOrderById(route.params.id));
 
@@ -110,10 +86,7 @@ const status = computed(() => {
   if (!order.value) {
     return { label: '-', type: 'primary' };
   }
-  const hasException = order.value.items.some((item) => item.isQualified === '0');
-  return hasException
-    ? { label: '存在异常', type: 'danger' }
-    : { label: '全部合格', type: 'success' };
+  return resolveStatusMeta(order.value.inStockStatus);
 });
 
 const goBack = () => {
