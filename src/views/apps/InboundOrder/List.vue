@@ -33,8 +33,8 @@
           background="#fff"
         >
           <van-tab title="全部" />
-          <van-tab title="全部合格" />
-          <van-tab title="存在异常" />
+          <van-tab title="已审核" />
+          <van-tab title="待审核" />
         </van-tabs>
       </div>
 
@@ -45,7 +45,7 @@
           <span class="toolbar__value">{{ displayOrders.length }}</span>
         </div>
         <div class="toolbar__meta">
-          <span class="toolbar__label">总明细</span>
+          <span class="toolbar__label">明细合计</span>
           <span class="toolbar__value">{{ totalCount }}</span>
         </div>
         <van-button type="primary" size="small" class="toolbar__button" @click="handleCreate">
@@ -63,21 +63,23 @@
             @click="openDetail(order.id)"
           >
             <div class="order-card__header">
-              <div class="order-card__title">{{ order.inboundNo }}</div>
-              <van-tag :type="getStatus(order).type">{{ getStatus(order).label }}</van-tag>
+              <div class="order-card__title">{{ order.inStockCode }}</div>
+              <van-tag :type="resolveStatus(order.inStockStatus).type">
+                {{ resolveStatus(order.inStockStatus).label }}
+              </van-tag>
             </div>
             <div class="order-card__meta">
-              <span>库位：{{ order.locatorNo || '-' }}</span>
-              <span>创建人：{{ order.createdBy }}</span>
+              <span>仓库：{{ order.warehouseName || '-' }}</span>
+              <span>处理人：{{ order.processingPersonnelName || '-' }}</span>
             </div>
             <div class="order-card__meta">
-              <span>创建时间：{{ order.createdAt }}</span>
-              <span>明细：{{ order.items.length }} 条</span>
+              <span>登记时间：{{ order.createTime }}</span>
+              <span>明细：{{ order.detailList.length }} 条</span>
             </div>
             <div class="order-card__footer">
               <div class="order-card__footer-item">
-                <span class="label">图档数量合计</span>
-                <span class="value">{{ sumDrawQty(order.items) }}</span>
+                <span class="label">数量合计</span>
+                <span class="value">{{ sumProductQty(order.detailList) }}</span>
               </div>
               <div class="order-card__footer-item">
                 <span class="label">备注</span>
@@ -105,49 +107,44 @@ import useInboundOrders from '@/composables/useInboundOrders';
 const PRIMARY = 'rgb(48, 96, 237)';
 
 const router = useRouter();
-const { orders, totalCount } = useInboundOrders();
+const { orders, totalCount, resolveStatusMeta } = useInboundOrders();
 
 const refreshing = ref(false);
 
 // 搜索 & 状态筛选（前端本地筛选）
 const keyword = ref('');
-const activeTab = ref(0); // 0: 全部 1: 全部合格 2: 存在异常
+const activeTab = ref(0); // 0: 全部 1: 已审核 2: 待审核
+const STATUS_TABS = [null, 'DC_WMS_IN_STATUS_C', 'DC_WMS_IN_STATUS_A'];
 
 const onSearch = () => {
   // 本地筛选无需额外处理；存在后端搜索时可在此触发请求
 };
 
 const filterByTab = (order) => {
-  const hasException = order.items?.some((it) => it.isQualified === '0');
-  if (activeTab.value === 1) return !hasException; // 全部合格
-  if (activeTab.value === 2) return hasException; // 存在异常
-  return true; // 全部
+  const target = STATUS_TABS[activeTab.value];
+  if (!target) return true;
+  return order.inStockStatus === target;
 };
 
 const filterByKeyword = (order) => {
   const kw = keyword.value?.trim();
   if (!kw) return true;
-  return String(order.inboundNo || '').includes(kw);
+  return String(order.inStockCode || '').includes(kw);
 };
 
 const displayOrders = computed(() =>
   [...(orders.value || [])]
     .filter((o) => filterByKeyword(o) && filterByTab(o))
-    .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
+    .sort((a, b) => dayjs(b.createTime).valueOf() - dayjs(a.createTime).valueOf())
 );
 
 const goBack = () => router.back();
 const handleCreate = () => router.push({ name: 'appsInboundOrderCreate' });
 const openDetail = (id) => router.push({ name: 'appsInboundOrderDetail', params: { id } });
 
-const sumDrawQty = (items = []) => items.reduce((acc, item) => acc + Number(item.drawQty ?? 0), 0);
+const sumProductQty = (items = []) => items.reduce((acc, item) => acc + Number(item.productQty ?? 0), 0);
 
-const getStatus = (order) => {
-  const hasException = order.items?.some((item) => item.isQualified === '0');
-  return hasException
-    ? { label: '存在异常', type: 'danger' }
-    : { label: '全部合格', type: 'success' };
-};
+const resolveStatus = (status) => resolveStatusMeta(status);
 
 const onRefresh = () => {
   // 如果需要联动服务端，这里触发拉取；当前示例仅本地状态，做个动效延迟
