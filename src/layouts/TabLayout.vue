@@ -2,8 +2,9 @@
   <div class="tab-layout">
     <router-view class="tab-content" />
 
-    <!-- 交给路由控制选中，无需 v-model -->
-    <van-tabbar route>
+    <!-- 仅在 /home /me /apps 三个路由下显示 -->
+    {{ showTabbar }}
+    <van-tabbar v-if="showTabbar" route>
       <van-tabbar-item
         v-for="r in tabRoutes"
         :key="r.name"
@@ -19,12 +20,20 @@
 <script setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import router from '@/router';
+
+const { t } = useI18n();
+const route = useRoute();
 
 // 只拿需要出现在底部的叶子路由
 const tabRoutes = computed(() => router.getRoutes().filter((r) => r.meta?.tabbar && r.name));
 
-const { t } = useI18n();
+// 仅当当前路径 === /home 或 /me 或 /apps 时显示 TabBar（严格匹配）
+const ALLOW_PATHS = ['/home', '/me', '/apps'];
+const showTabbar = computed(() =>
+  ALLOW_PATHS.some((p) => route.path === p || route.path.startsWith(p + '/'))
+);
 </script>
 
 <style scoped>

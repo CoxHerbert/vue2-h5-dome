@@ -4,6 +4,7 @@ import dict from './modules/dict/index';
 import auth from './modules/auth';
 import user from './modules/user';
 import urlMatch from './modules/urlMatch';
+import application from './modules/application/index';
 
 export default {
   recruit,
@@ -12,4 +13,5 @@ export default {
   auth,
   user,
   urlMatch,
+  application,
 };

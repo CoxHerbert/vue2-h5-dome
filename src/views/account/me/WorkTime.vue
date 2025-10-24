@@ -35,23 +35,12 @@
         </div>
       </section>
 
-      <section
-        v-for="group in groups"
-        :key="group.key"
-        class="card"
-      >
+      <section v-for="group in groups" :key="group.key" class="card">
         <div class="card__title">{{ group.label }}</div>
         <div class="card__content card__content--grid">
-          <div
-            v-for="col in group.columns"
-            :key="col.prop"
-            class="field"
-          >
+          <div v-for="col in group.columns" :key="col.prop" class="field">
             <div class="field__label">{{ col.label }}</div>
-            <div
-              class="field__value"
-              :class="{ 'field__value--zero': isZeroValue(col.prop) }"
-            >
+            <div class="field__value" :class="{ 'field__value--zero': isZeroValue(col.prop) }">
               {{ formatValue(col.prop) }}
             </div>
           </div>
@@ -127,9 +116,18 @@ const groups = computed(() => [
     label: t('me.workTime.groups.correction'),
     columns: [
       { label: t('me.workTime.fields.correctionNormalHours'), prop: 'correctionNormalHours' },
-      { label: t('me.workTime.fields.correctionNormalOverHours'), prop: 'correctionNormalOverHours' },
-      { label: t('me.workTime.fields.correctionWeekendOverHours'), prop: 'correctionWeekendOverHours' },
-      { label: t('me.workTime.fields.correctionHolidayOverHours'), prop: 'correctionHolidayOverHours' },
+      {
+        label: t('me.workTime.fields.correctionNormalOverHours'),
+        prop: 'correctionNormalOverHours',
+      },
+      {
+        label: t('me.workTime.fields.correctionWeekendOverHours'),
+        prop: 'correctionWeekendOverHours',
+      },
+      {
+        label: t('me.workTime.fields.correctionHolidayOverHours'),
+        prop: 'correctionHolidayOverHours',
+      },
     ],
   },
 ]);
@@ -162,7 +160,7 @@ async function fetchDetail() {
   loading.value = true;
   try {
     const res = await Api.user.getUserDailyAttendanceInfo({ attendanceDate: selectedDate.value });
-    const { code, data, msg } = res || {};
+    const { code, data, msg } = res.data || {};
     if (code === 200) {
       pageInfo.value = data || {};
     } else {
