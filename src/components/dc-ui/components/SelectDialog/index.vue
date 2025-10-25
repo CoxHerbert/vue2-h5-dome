@@ -711,6 +711,18 @@ function resetSearch(force = false, resetFn) {
   flex-wrap: nowrap;
 }
 
+.dc-select-dialog__tags :deep(.van-tag),
+.dc-select-dialog__selected-tags :deep(.van-tag) {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.dc-select-dialog__tags :deep(.van-tag__text),
+.dc-select-dialog__selected-tags :deep(.van-tag__text) {
+  white-space: nowrap;
+}
+
 .dc-select-dialog__text {
   flex: 1;
 }
