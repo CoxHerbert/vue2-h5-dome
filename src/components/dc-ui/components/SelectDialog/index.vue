@@ -1,5 +1,5 @@
 <template>
-  <div class="dc-select-dialog" :style="{ width }">
+  <div class="dc-select-dialog" :style="{ width, '--dc-select-dialog-footer-height': footerHeight }">
     <div v-if="$slots.default" class="dc-select-dialog__trigger" @click="openPopup">
       <slot></slot>
     </div>
@@ -208,7 +208,10 @@
       </div>
 
       <div class="dc-select-dialog__footer">
-        <van-button block type="primary" @click="confirmSelection">{{ confirmText }}</van-button>
+        <div class="dc-select-dialog__footer-actions">
+          <van-button size="mini" type="default" plain @click="cancelSelection">取消</van-button>
+          <van-button size="mini" type="primary" @click="confirmSelection">{{ confirmText }}</van-button>
+        </div>
       </div>
     </van-popup>
   </div>
@@ -276,6 +279,7 @@ const popupHeight = computed(() => '100vh');
 const popupTitle = computed(() => props.title || model.value?.title || '请选择');
 const confirmText = computed(() => model.value?.submitTitle || '确定');
 const placeholderText = computed(() => props.placeholder || model.value?.placeholder || '请选择');
+const footerHeight = computed(() => '96px');
 
 const keyField = computed(() => props.masterKey || model.value?.rowKey || rowKeyRef.value || 'id');
 const modelColumns = computed(() => (Array.isArray(model.value?.column) ? model.value.column : []));
@@ -651,6 +655,10 @@ function confirmSelection() {
   open.value = false;
 }
 
+function cancelSelection() {
+  open.value = false;
+}
+
 function onSearch(resetFn) {
   if (typeof resetFn === 'function') {
     resetFn();
@@ -934,7 +942,7 @@ function resetSearch(force = false, resetFn) {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 12px 16px 80px;
+  padding: 12px 16px calc(var(--dc-select-dialog-footer-height, 96px) + 32px + var(--van-safe-area-bottom, 0px));
 }
 
 .dc-select-dialog__pagination :deep(.dc-content .van-pull-refresh) {
@@ -995,10 +1003,19 @@ function resetSearch(force = false, resetFn) {
 }
 
 .dc-select-dialog__footer {
-  padding: 12px 16px 24px;
+  padding: 12px 16px calc(16px + var(--van-safe-area-bottom, 0px));
   border-top: 1px solid #f5f6f7;
   flex-shrink: 0;
   background: #fff;
+}
+
+.dc-select-dialog__footer-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.dc-select-dialog__footer-actions :deep(.van-button) {
+  flex: 1;
 }
 
 .dc-select-dialog__cell-value {
