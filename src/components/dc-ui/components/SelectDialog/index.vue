@@ -63,43 +63,76 @@
           >
             <template #sticky="{ resetAndLoad }">
               <div class="dc-select-dialog__sticky">
-                <div v-if="searchFields.length" class="dc-select-dialog__search">
-                  <div class="dc-select-dialog__search-grid">
-                    <van-field
-                      v-for="field in searchFields"
-                      :key="field.prop"
-                      v-model="searchState[field.prop]"
-                      :label="field.label"
-                      :placeholder="field.searchProps?.placeholder || `请输入${field.label}`"
-                      clearable
-                      label-width="auto"
-                      @clear="() => onSearch(resetAndLoad)"
-                    />
+                <div v-if="searchFields.length" class="dc-select-dialog__search" :class="{ 'is-collapsed': searchCollapsed }">
+                  <div class="dc-select-dialog__search-preview">
+                    <div class="dc-select-dialog__search-chips" @click="toggleSearchPanel">
+                      <template v-if="searchPreviewChips.length">
+                        <span
+                          v-for="chip in searchPreviewChips"
+                          :key="chip.key"
+                          class="dc-select-dialog__search-chip"
+                        >
+                          {{ chip.text }}
+                        </span>
+                      </template>
+                      <span v-else class="dc-select-dialog__search-placeholder">点击展开筛选条件</span>
+                    </div>
+                    <div class="dc-select-dialog__search-controls">
+                      <van-button text size="small" type="primary" @click="toggleSearchPanel">
+                        {{ searchCollapsed ? '展开' : '收起' }}
+                        <van-icon :name="searchCollapsed ? 'arrow-down' : 'arrow-up'" size="14" />
+                      </van-button>
+                      <van-button
+                        type="default"
+                        size="small"
+                        plain
+                        @click="() => resetSearch(false, resetAndLoad)"
+                      >
+                        重置
+                      </van-button>
+                      <van-button type="primary" size="small" @click="() => onSearch(resetAndLoad)">
+                        查询
+                      </van-button>
+                    </div>
                   </div>
-                  <div class="dc-select-dialog__search-actions">
-                    <van-button type="default" size="small" @click="() => resetSearch(false, resetAndLoad)">
-                      重置
-                    </van-button>
-                    <van-button type="primary" size="small" @click="() => onSearch(resetAndLoad)">
-                      查询
-                    </van-button>
-                  </div>
+                  <transition name="van-fade">
+                    <div v-show="!searchCollapsed" class="dc-select-dialog__search-panel">
+                      <div class="dc-select-dialog__search-grid">
+                        <van-field
+                          v-for="field in searchFields"
+                          :key="field.prop"
+                          v-model="searchState[field.prop]"
+                          :label="field.label"
+                          :placeholder="field.searchProps?.placeholder || `请输入${field.label}`"
+                          clearable
+                          label-width="auto"
+                          @clear="() => onSearch(resetAndLoad)"
+                        />
+                      </div>
+                    </div>
+                  </transition>
                 </div>
 
-                <div v-if="selectedRows.length" class="dc-select-dialog__selected">
+                <div v-if="selectedRows.length" class="dc-select-dialog__selected" :class="{ 'is-collapsed': selectedCollapsed }">
                   <div class="dc-select-dialog__selected-header">
                     <span>已选 {{ selectedRows.length }}</span>
-                    <van-button
-                      v-if="clearable"
-                      text
-                      type="danger"
-                      size="small"
-                      @click="clearSelection"
-                    >
-                      清空
-                    </van-button>
+                    <div class="dc-select-dialog__selected-actions">
+                      <van-button
+                        v-if="clearable"
+                        text
+                        type="danger"
+                        size="small"
+                        @click="clearSelection"
+                      >
+                        清空
+                      </van-button>
+                      <van-button text size="small" @click="toggleSelectedCollapsed">
+                        {{ selectedCollapsed ? '展开' : '收起' }}
+                        <van-icon :name="selectedCollapsed ? 'arrow-down' : 'arrow-up'" size="14" />
+                      </van-button>
+                    </div>
                   </div>
-                  <div class="dc-select-dialog__selected-tags">
+                  <div class="dc-select-dialog__selected-tags" :class="{ 'is-collapsed': selectedCollapsed }">
                     <van-tag
                       v-for="row in selectedRows"
                       :key="getKey(row)"
@@ -135,7 +168,7 @@
                     class="dc-select-dialog__cell"
                   >
                     <span class="dc-select-dialog__cell-label">{{ col.label }}</span>
-                    <span class="dc-select-dialog__cell-value">
+                    <div class="dc-select-dialog__cell-value">
                       <template v-if="col.component === 'dc-view'">
                         <dc-view
                           v-model="item[col.prop]"
@@ -152,7 +185,7 @@
                         />
                       </template>
                       <template v-else-if="col.component === 'dc-dict-key'">
-                        <dc-dict
+                        <dc-dict-key
                           type="text"
                           :value="item[col.prop]"
                           :options="dictMaps[col.dictData]"
@@ -161,7 +194,7 @@
                       <template v-else>
                         {{ formatCell(item, col) }}
                       </template>
-                    </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -225,6 +258,8 @@ const loading = ref(false);
 const pagerRef = ref(null);
 const pageSize = ref(20);
 const selectedRows = ref([]);
+const searchCollapsed = ref(true);
+const selectedCollapsed = ref(true);
 const dictMaps = reactive({});
 const searchState = reactive({});
 const initDefaultSearch = ref(true);
@@ -250,6 +285,22 @@ const displayTags = computed(() => {
     key: getKey(row),
     label: getDisplayLabel(row) || getKey(row) || '-',
   }));
+});
+
+const searchPreviewChips = computed(() => {
+  return searchFields.value
+    .map((field) => {
+      const value = searchState[field.prop];
+      const hasValue = value !== undefined && value !== null && `${value}`.trim() !== '';
+      return {
+        key: field.prop,
+        label: field.label,
+        value,
+        hasValue,
+        text: hasValue ? `${field.label}: ${value}` : field.label,
+      };
+    })
+    .filter((item) => item.hasValue);
 });
 
 const dictCodes = computed(() => {
@@ -291,6 +342,7 @@ watch(
     pageSize.value = sizeFromModel;
     initDefaultSearch.value = true;
     resetSearch(true);
+    searchCollapsed.value = true;
   },
   { immediate: true }
 );
@@ -346,12 +398,39 @@ watch(
   { immediate: true, deep: true }
 );
 
+watch(
+  () => selectedRows.value.length,
+  (len) => {
+    if (!len) {
+      selectedCollapsed.value = true;
+    }
+  }
+);
+
+watch(
+  searchFields,
+  (fields) => {
+    if (!fields.length) {
+      searchCollapsed.value = true;
+    }
+  },
+  { immediate: true }
+);
+
 const multiple = computed(() => props.multiple !== false);
 
 function openPopup() {
   if (props.disabled) return;
   open.value = true;
   triggerReload();
+}
+
+function toggleSearchPanel() {
+  searchCollapsed.value = !searchCollapsed.value;
+}
+
+function toggleSelectedCollapsed() {
+  selectedCollapsed.value = !selectedCollapsed.value;
 }
 
 function handleClose() {
@@ -414,6 +493,12 @@ function normalizeResponse(res, fallbackPageNo, fallbackSize) {
   }
 
   const normalizedRecords = Array.isArray(records) ? records.map((item) => ({ ...item })) : [];
+  if (!pages && typeof total === 'number' && total > 0 && typeof size === 'number' && size > 0) {
+    pages = Math.ceil(total / size);
+  }
+  if (!pages && total === 0 && normalizedRecords.length > 0 && typeof size === 'number' && size > 0) {
+    pages = normalizedRecords.length < size ? 1 : undefined;
+  }
 
   return {
     records: normalizedRecords,
@@ -517,7 +602,15 @@ function getKey(row) {
 
 function getDisplayLabel(row) {
   const labelKey = props.showKey || model.value?.defaultLabel || keyField.value;
-  return row?.[labelKey];
+  const value = row?.[labelKey];
+  if (value !== undefined && value !== null && `${value}` !== '') {
+    return value;
+  }
+  const fallbackKey = modelColumns.value?.[0]?.prop;
+  if (fallbackKey && row?.[fallbackKey] != null && `${row[fallbackKey]}` !== '') {
+    return row[fallbackKey];
+  }
+  return row?.[keyField.value];
 }
 
 function formatCell(row, column) {
@@ -612,8 +705,10 @@ function resetSearch(force = false, resetFn) {
 .dc-select-dialog__tags {
   display: flex;
   flex: 1;
-  flex-wrap: wrap;
   gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
 }
 
 .dc-select-dialog__text {
@@ -698,15 +793,67 @@ function resetSearch(force = false, resetFn) {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px 16px 12px;
+  padding: 12px 16px 10px;
   background: #fff;
   border-bottom: 1px solid #f5f6f7;
 }
 
 .dc-select-dialog__search {
   background: #f7f8fa;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: padding 0.2s ease;
+}
+
+.dc-select-dialog__search.is-collapsed {
+  padding-bottom: 8px;
+}
+
+.dc-select-dialog__search-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dc-select-dialog__search-chips {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+  cursor: pointer;
+}
+
+.dc-select-dialog__search-chip {
+  flex: 0 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #323233;
+  border: 1px solid #ebedf0;
+}
+
+.dc-select-dialog__search-placeholder {
+  font-size: 12px;
+  color: #969799;
+  white-space: nowrap;
+}
+
+.dc-select-dialog__search-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dc-select-dialog__search-panel {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -728,29 +875,42 @@ function resetSearch(force = false, resetFn) {
   min-width: 48px;
 }
 
-.dc-select-dialog__search-actions {
+.dc-select-dialog__selected {
+  background: #fff7e6;
+  padding: 10px 12px;
+  border-radius: 10px;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: 8px;
 }
 
-.dc-select-dialog__selected {
-  background: #fff7e6;
-  padding: 12px;
-  border-radius: 8px;
+.dc-select-dialog__selected.is-collapsed {
+  padding-bottom: 8px;
 }
 
 .dc-select-dialog__selected-header {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.dc-select-dialog__selected-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .dc-select-dialog__selected-tags {
   display: flex;
-  flex-wrap: wrap;
   gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dc-select-dialog__selected-tags.is-collapsed {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .dc-select-dialog__pagination :deep(.dc-content) {
@@ -780,11 +940,11 @@ function resetSearch(force = false, resetFn) {
 
 .dc-select-dialog__row {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 12px;
   padding: 12px;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #f1f2f3;
   margin-bottom: 8px;
   &.active {
@@ -800,19 +960,22 @@ function resetSearch(force = false, resetFn) {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .dc-select-dialog__cell {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   font-size: 13px;
   color: #323233;
+  text-align: left;
 }
 
 .dc-select-dialog__cell-label {
   color: #969799;
-  margin-right: 8px;
+  font-size: 12px;
 }
 
 .dc-select-dialog__footer {
@@ -820,5 +983,11 @@ function resetSearch(force = false, resetFn) {
   border-top: 1px solid #f5f6f7;
   flex-shrink: 0;
   background: #fff;
+}
+
+.dc-select-dialog__cell-value {
+  color: #323233;
+  width: 100%;
+  word-break: break-word;
 }
 </style>

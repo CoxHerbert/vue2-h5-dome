@@ -28,11 +28,16 @@ export const useGlobalCacheStore = defineStore('global-cache', {
     },
     _resolvePromises(url, promises) {
       const bucket = this.globalData[url] || {};
-      promises.forEach(({ resolve, data }) => {
+      promises.forEach(({ resolve, data, masterKey }) => {
         const ids = Array.isArray(data) ? data : [];
         const payload = ids.map((id) => {
           const key = toKey(id);
-          return bucket[key] || { id };
+          if (bucket[key]) return bucket[key];
+          if (!key) return {};
+          if (masterKey) {
+            return { [masterKey]: id };
+          }
+          return { id };
         });
         resolve(payload);
       });
@@ -57,7 +62,7 @@ export const useGlobalCacheStore = defineStore('global-cache', {
       });
 
       return new Promise((resolve, reject) => {
-        queueItem.promises.push({ resolve, reject, data: ids.slice() });
+        queueItem.promises.push({ resolve, reject, data: ids.slice(), masterKey });
         if (!queueItem.timer) {
           queueItem.timer = setTimeout(async () => {
             const pendingData = queueItem.data.slice();
