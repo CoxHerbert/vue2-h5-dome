@@ -23,9 +23,9 @@
 
 <script setup>
 import { reactive, toRefs, watch, computed } from 'vue';
+import cacheRequest from './../../util/request';
 // import ComponentApi from './../../api/index';
-// import store from '@/store/';
-// import cacheData from './../../constant/cacheData';
+import cacheData from './../../constant/cacheData';
 
 const props = defineProps({
   // 展示类型：'text' | 'tag'
@@ -79,15 +79,13 @@ watch(
       }
 
       // 触发缓存/视图接口预取（维持你的原始逻辑）
-      await ComponentApi.cache.getView({
+      const viewData = await cacheRequest.getView({
         url: componentData.currentObject.url,
         data: ids,
       });
 
-      const currentGlobalData = store.getters?.globalData?.[componentData.currentObject.url] || {};
-
       // 将 id 映射为对象（或保留原始 id）
-      componentData.iptTagData = ids.map((id) => currentGlobalData[id] ?? id);
+      componentData.iptTagData = Array.isArray(viewData) ? viewData : [];
     } catch (error) {
       console.error(error);
       componentData.iptTagData = [];
