@@ -972,22 +972,26 @@ function resetSearch(force = false, resetFn) {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .dc-select-dialog__cell {
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 6px;
   font-size: 13px;
   color: #323233;
   text-align: left;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .dc-select-dialog__cell-label {
   color: #969799;
   font-size: 12px;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .dc-select-dialog__footer {
@@ -1000,6 +1004,9 @@ function resetSearch(force = false, resetFn) {
 .dc-select-dialog__cell-value {
   color: #323233;
   width: 100%;
-  word-break: break-word;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
