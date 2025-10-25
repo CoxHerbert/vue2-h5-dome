@@ -1,12 +1,14 @@
-// src/api/modules/inventory.js
+// src/modules/inventory.js
 import request from '@/utils/http';
+import planSheep from './planSheep';
 
 export default {
+  planSheep,
   // 入库单列表
   inventoryList(params) {
     return request({
-      url: '/api/blade-bip/dc-wms-in-stock/list',
-      method: 'GET',
+      url: '/blade-bip/dc-wms-in-stock/list',
+      method: 'get',
       params,
     });
   },
@@ -14,8 +16,8 @@ export default {
   // 入库单详情
   inventoryDetail(params) {
     return request({
-      url: '/api/blade-bip/dc-wms-in-stock/detail',
-      method: 'GET',
+      url: '/blade-bip/dc-wms-in-stock/detail',
+      method: 'get',
       params,
     });
   },
@@ -23,8 +25,8 @@ export default {
   // 根据单据查询入库单详情
   detailByInStockNumber(params) {
     return request({
-      url: '/api/blade-bip/dc-wms-in-stock-detail/query-source-documents-by-type',
-      method: 'GET',
+      url: '/blade-bip/dc-wms-in-stock-detail/query-source-documents-by-type',
+      method: 'get',
       params,
     });
   },
@@ -32,8 +34,8 @@ export default {
   // 入库单审核通过
   inventoryAudit(data) {
     return request({
-      url: '/api/blade-bip/dc-wms-in-stock/submit-audit',
-      method: 'POST',
+      url: '/blade-bip/dc-wms-in-stock/submit-audit',
+      method: 'post',
       data,
     });
   },
@@ -41,8 +43,8 @@ export default {
   // 入库单审核驳回
   inventoryAuditReject(data) {
     return request({
-      url: '/api/blade-bip/dc-wms-in-stock/reject',
-      method: 'POST',
+      url: '/blade-bip/dc-wms-in-stock/reject',
+      method: 'post',
       data,
     });
   },
@@ -50,8 +52,8 @@ export default {
   // 入库单保存
   inventoryAdd(data) {
     return request({
-      url: '/api/blade-bip/dc-wms-in-stock/submit-detail',
-      method: 'POST',
+      url: '/blade-bip/dc-wms-in-stock/submit-detail',
+      method: 'post',
       data,
     });
   },
@@ -59,8 +61,8 @@ export default {
   // 用户列表
   userList(data) {
     return request({
-      url: '/api/blade-bip/bip-blade-user/select-data',
-      method: 'POST',
+      url: '/blade-bip/bip-blade-user/select-data',
+      method: 'post',
       data,
     });
   },
