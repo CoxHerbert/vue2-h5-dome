@@ -217,7 +217,7 @@ const currentPage = ref(1);
 const cacheStore = useGlobalCacheStore();
 const dictStore = useDictStore();
 
-const popupHeight = computed(() => '85vh');
+const popupHeight = computed(() => '100vh');
 const popupTitle = computed(() => props.title || model.value?.title || '请选择');
 const confirmText = computed(() => model.value?.submitTitle || '确定');
 const placeholderText = computed(() => props.placeholder || model.value?.placeholder || '请选择');
@@ -555,16 +555,20 @@ function resetSearch(force = false) {
 }
 
 .dc-select-dialog__popup {
-  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   box-sizing: border-box;
+  padding: 0;
 }
 
 .dc-select-dialog__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 8px;
+  padding: 16px;
   border-bottom: 1px solid #f5f6f7;
+  flex-shrink: 0;
 }
 
 .dc-select-dialog__title {
@@ -573,11 +577,12 @@ function resetSearch(force = false) {
 }
 
 .dc-select-dialog__body {
+  flex: 1;
   overflow-y: auto;
-  height: calc(85vh - 96px);
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 16px;
 }
 
 .dc-select-dialog__search {
@@ -627,8 +632,13 @@ function resetSearch(force = false) {
   flex: 1;
   min-height: 200px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.dc-select-dialog__list :deep(.van-loading),
+.dc-select-dialog__list :deep(.van-empty) {
+  margin: auto;
 }
 
 .dc-select-dialog__rows {
@@ -672,6 +682,8 @@ function resetSearch(force = false) {
 }
 
 .dc-select-dialog__footer {
-  padding-top: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid #f5f6f7;
+  flex-shrink: 0;
 }
 </style>
