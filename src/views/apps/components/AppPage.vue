@@ -1,6 +1,6 @@
 <template>
   <div class="page app-page">
-    <ScrollAwareNavBar :title="title" fixed />
+    <dc-nav-bar :title="title" fixed />
     <div class="app-page__content">
       <van-empty :description="description" />
     </div>

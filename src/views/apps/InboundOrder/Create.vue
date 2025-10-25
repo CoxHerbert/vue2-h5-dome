@@ -1,256 +1,357 @@
+<!-- InboundCreate.vue / Vue3 + Vant4 版本 -->
 <template>
-  <div class="page inbound-order-create">
-    <van-nav-bar
-      fixed
-      :z-index="999"
-      title="新增入库单"
-      left-arrow
-      :style="{ background: '#F7EEE8' }"
-      @click-left="goBack"
-    />
+  <div class="cnt">
+    <!-- 顶部导航 -->
+    <dc-nav-bar ref="navRef" title="新增入库单" fixed left-arrow @click-left="goBack" />
 
-    <div class="page-body">
-      <van-form ref="formRef" @submit="handleSubmit">
+    <!-- 基本信息 -->
+    <div class="base-wrapper mtop20">
+      <div class="title" style="padding-top: 10px">基本信息</div>
+      <div class="baseinfo">
         <van-cell-group inset>
-          <van-field
-            v-model="form.warehouseName"
-            label="仓库名称"
-            placeholder="请输入仓库名称"
-            :rules="[{ required: true, message: '请输入仓库名称' }]"
+          <!-- 仓库选择 -->
+          <van-cell
+            title="仓库"
+            :value="form.warehouseName || '请选择仓库'"
+            is-link
+            clickable
+            @click="handleSelect('warehouseRef')"
           />
-          <van-field
-            v-model="form.inStockNumber"
-            label="来源单号"
-            placeholder="请输入来源单号"
-            :rules="[{ required: true, message: '请输入来源单号' }]"
+
+          <!-- 入库类型（字典映射显示） -->
+          <van-field label="入库类型" :model-value="inTypeLabel" readonly clickable />
+
+          <!-- 来源单号 -->
+          <van-cell
+            title="来源单号"
+            :value="form.inStockNumber || '请选择来源单号'"
+            is-link
+            clickable
+            @click="handleSelect('inStocknumberRef')"
           />
-          <van-field
-            v-model="form.processingPersonnelName"
-            label="处理人"
-            placeholder="请输入处理人"
-          />
-          <van-field
-            v-model="form.applicantName"
-            label="申请人"
-            placeholder="请输入申请人"
-          />
-          <van-field v-model="form.remark" label="备注" placeholder="请输入备注" />
+
+          <!-- 申请人 -->
+          <van-cell title="申请人">
+            <template #value>
+              <dc-view :value="form.applicantId" object-name="user" />
+            </template>
+          </van-cell>
+
+          <!-- 处理人 -->
+          <van-cell title="处理人">
+            <template #value>
+              <dc-view :value="form.processingPersonnel" object-name="user" />
+            </template>
+          </van-cell>
         </van-cell-group>
-
-        <div class="section">
-          <div class="section__header">
-            <h3>入库明细</h3>
-            <van-button plain size="small" type="primary" @click="addItem">
-              <van-icon name="plus" size="14" /> 添加明细
-            </van-button>
-          </div>
-
-          <div v-if="form.detailList.length" class="items">
-            <div v-for="(item, index) in form.detailList" :key="item.id" class="item-card">
-              <div class="item-card__header">
-                <span class="index">#{{ index + 1 }}</span>
-                <van-button size="mini" type="danger" plain @click="removeItem(index)">删除</van-button>
-              </div>
-              <van-cell-group inset>
-                <van-field
-                  v-model="item.productCode"
-                  label="物料编号"
-                  placeholder="请输入物料编号"
-                  :rules="[{ required: true, message: '请输入物料编号' }]"
-                />
-                <van-field
-                  v-model="item.productName"
-                  label="物料名称"
-                  placeholder="请输入物料名称"
-                  :rules="[{ required: true, message: '请输入物料名称' }]"
-                />
-                <van-field v-model="item.productSpec" label="规格型号" placeholder="请输入规格型号" />
-                <van-field v-model="item.productUnit" label="单位" placeholder="请输入单位" />
-                <van-field
-                  v-model.number="item.productQty"
-                  label="数量"
-                  type="digit"
-                  placeholder="请输入数量"
-                  :rules="[{ required: true, message: '请输入数量' }]"
-                />
-                <van-field v-model="item.locationCode" label="仓位编码" placeholder="请输入仓位编码" />
-                <van-field v-model="item.remark" label="备注" type="textarea" rows="2" placeholder="请输入备注" />
-              </van-cell-group>
-            </div>
-          </div>
-          <van-empty v-else description="请添加入库明细" />
-        </div>
-
-        <div class="form-footer">
-          <van-button block type="success" native-type="submit">保存入库单</van-button>
-        </div>
-      </van-form>
+      </div>
     </div>
+
+    <!-- 入库明细 -->
+    <div class="title detail-title">入库明细</div>
+    <div class="base-wrapper">
+      <div class="baseinfo">
+        <div class="cell">
+          <span class="label">物料编号</span>
+          <span class="value">{{ detail.productCode || '-' }}</span>
+        </div>
+        <div class="cell">
+          <span class="label">物料名称</span>
+          <span class="value">{{ detail.productName || '-' }}</span>
+        </div>
+        <div class="cell">
+          <span class="label">规格型号</span>
+          <span class="value">{{ detail.productSpec || '-' }}</span>
+        </div>
+        <div class="cell">
+          <span class="label">数量</span>
+          <span class="value">{{ detail.productQty ?? '-' }}</span>
+        </div>
+        <div class="cell">
+          <span class="label">单位</span>
+          <span class="value">{{ detail.productUnit || '-' }}</span>
+        </div>
+        <div class="cell">
+          <span class="label">仓位编号</span>
+          <span class="value">{{ detail.locationId || '-' }}</span>
+        </div>
+
+        <van-button
+          v-if="form.warehouseId && hasDetail"
+          class="edite-btn"
+          size="small"
+          type="primary"
+          @click.stop="handleSelect('locationIdRef')"
+        >
+          仓位选择
+        </van-button>
+      </div>
+    </div>
+
+    <!-- 底部固定操作 -->
+    <div class="foot">
+      <van-button block type="primary" @click="add">保存</van-button>
+    </div>
+
+    <!-- 仓库选择 -->
+    <!-- <selectDialog
+      ref="warehouseRef"
+      :config="cacheData.warehouse"
+      :params="{ siteWarehouse: true }"
+      @on-confirm="(e) => selectonConfirm(e, 'warehouse')"
+    /> -->
+
+    <!-- 来源单号选择 -->
+    <!-- <InStocknumberDialog
+      ref="inStocknumberRef"
+      :config="cacheData.inStockNumber"
+      @on-confirm="(e) => selectonConfirm(e, 'inStockNumber')"
+    /> -->
+
+    <!-- 仓位选择（依赖选中仓库） -->
+    <!-- <selectDialog
+      :key="form.warehouseId"
+      ref="locationIdRef"
+      :config="cacheData.locationId"
+      :params="{ warehouseId: form.warehouseId }"
+      @on-confirm="(e) => selectonConfirm(e, 'locationId')"
+    /> -->
   </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue';
-import { showSuccessToast, showToast } from 'vant';
+import { ref, reactive, computed, onMounted, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
-import useInboundOrders from '@/composables/useInboundOrders';
+import { showToast, showConfirmDialog } from 'vant';
+
+import Api from '@/api/index';
+// import selectDialog from './com/selectDialog.vue';
+// import InStocknumberDialog from './com/inStocknumberDialog.vue';
+// import cacheData from '@/components/dc/constant/cacheData';
 
 const router = useRouter();
-const { addOrder } = useInboundOrders();
+const { proxy } = getCurrentInstance();
 
+// ===== 字典：使用 proxy.dicts(['dc_dict']) =====
+// 期望 dc_dict 下包含 DC_WMS_IN_TYPE、DC_WMS_IN_STATUS 等键
+const { dc_dict } = proxy.dicts(['dc_dict']);
+
+// 表单
 const form = reactive({
+  inType: 'DC_WMS_IN_TYPE_ON_SITE_STORAGE', // 入库类型编码
+  warehouseId: null,
   warehouseName: '',
   inStockNumber: '',
-  processingPersonnelName: '',
-  applicantName: '当前用户',
-  remark: '',
-  detailList: [],
+  applicantId: null,
+  processingPersonnel: null,
 });
 
-const goBack = () => {
-  router.back();
-};
+// 明细（响应式对象，使用 Object.assign 更新）
+const detail = reactive({});
 
-const createEmptyItem = () => ({
-  id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-  productCode: '',
-  productName: '',
-  productSpec: '',
-  productQty: null,
-  productUnit: '',
-  locationCode: '',
-  remark: '',
+// 选择弹窗 ref
+const warehouseRef = ref();
+const inStocknumberRef = ref();
+const locationIdRef = ref();
+
+// 是否已有明细
+const hasDetail = computed(() => Object.keys(detail).length > 0);
+
+// 登录信息（从 store 或 localStorage 兜底）
+const loginInfo =
+  proxy?.$store?.getters?.loginInfo || JSON.parse(localStorage.getItem('loginInfo') || '{}');
+
+// 字典取值工具：把编码映射为显示值
+function review(value, list) {
+  if (!value || !Array.isArray(list)) return undefined;
+  const hit = list.find((it) => String(it.dictKey) === String(value));
+  return hit ? hit.dictValue : undefined;
+}
+
+// 入库类型显示值（字典映射；没有就回退“现场入库”）
+const inTypeLabel = computed(() => review(form.inType, dc_dict?.DC_WMS_IN_TYPE) || '现场入库');
+
+onMounted(() => {
+  form.applicantId = loginInfo?.user_id || loginInfo?.userId || null;
 });
 
-const addItem = () => {
-  form.detailList.push(createEmptyItem());
-};
+// 打开弹窗
+function handleSelect(refname) {
+  if (refname === 'warehouseRef') {
+    warehouseRef.value?.open?.() ?? (warehouseRef.value.visible = true);
+  } else if (refname === 'inStocknumberRef') {
+    inStocknumberRef.value?.open?.() ?? (inStocknumberRef.value.visible = true);
+  } else if (refname === 'locationIdRef') {
+    if (!form.warehouseId) {
+      showToast('请先选择仓库');
+      return;
+    }
+    locationIdRef.value?.open?.() ?? (locationIdRef.value.visible = true);
+  }
+}
 
-const removeItem = (index) => {
-  form.detailList.splice(index, 1);
-};
+// 弹窗确认
+function selectonConfirm(e, name) {
+  if (name === 'warehouse') {
+    form.warehouseId = e.id;
+    form.warehouseName = e.warehouseName;
+    form.processingPersonnel = e.warehouseSupervisor;
+    // 切换仓库后清空已选仓位
+    detail.locationId = null;
+  } else if (name === 'inStockNumber') {
+    form.inStockNumber = e.FBILLNO;
+    getDetail(e.FBILLNO);
+  } else if (name === 'locationId') {
+    detail.locationId = e.id;
+  }
+}
 
-const validateForm = () => {
-  if (!form.warehouseName) {
-    showToast({ type: 'fail', message: '请输入仓库名称' });
-    return false;
+// 获取来源单号的明细
+async function getDetail(sourceId) {
+  try {
+    const res = await Api.application.appdetailByInStockNumber({
+      type: 'DC_WMS_IN_TYPE_ON_SITE_STORAGE',
+      sourceId,
+    });
+    // 兼容：若返回是数组则取第一条
+    const row = Array.isArray(res?.data) ? res.data[0] : res?.data || {};
+    Object.assign(detail, row || {});
+  } catch (err) {
+    console.error(err);
+    showToast('获取明细失败');
   }
-  if (!form.inStockNumber) {
-    showToast({ type: 'fail', message: '请输入来源单号' });
-    return false;
-  }
-  if (!form.detailList.length) {
-    showToast({ type: 'fail', message: '请添加入库明细' });
-    return false;
-  }
-  const invalidIndex = form.detailList.findIndex((item) => item.productQty === null || item.productQty === '');
-  if (invalidIndex !== -1) {
-    showToast({ type: 'fail', message: `请填写第 ${invalidIndex + 1} 行的数量` });
-    return false;
-  }
-  const missingMaterial = form.detailList.findIndex((item) => !item.productCode || !item.productName);
-  if (missingMaterial !== -1) {
-    showToast({ type: 'fail', message: `请完善第 ${missingMaterial + 1} 行的物料信息` });
-    return false;
-  }
-  return true;
-};
+}
 
-const resetForm = () => {
-  form.warehouseName = '';
-  form.inStockNumber = '';
-  form.processingPersonnelName = '';
-  form.applicantName = '当前用户';
-  form.remark = '';
-  form.detailList = [];
-};
-
-const handleSubmit = () => {
-  if (!validateForm()) {
+// 保存
+async function add() {
+  if (!form.warehouseId) {
+    showToast('请选择仓库');
     return;
   }
-  const order = addOrder({
-    warehouseName: form.warehouseName,
-    inStockNumber: form.inStockNumber,
-    processingPersonnelName: form.processingPersonnelName,
-    applicantName: form.applicantName,
-    remark: form.remark,
-    detailList: form.detailList.map((item) => ({
-      ...item,
-      productQty: Number(item.productQty ?? 0),
-    })),
-  });
+  if (!form.inStockNumber) {
+    showToast('请选择来源单号');
+    return;
+  }
 
-  resetForm();
-  showSuccessToast('保存成功');
-  router.replace({ name: 'appsInboundOrderDetail', params: { id: order.id } });
-};
+  try {
+    await showConfirmDialog({
+      title: '提示',
+      message: '确认入库保存吗',
+    });
+
+    detail.warehouseId = form.warehouseId;
+
+    const payload = {
+      ...form,
+      inTypeName: inTypeLabel.value, // 直接带上展示名
+      detailList: [detail],
+    };
+
+    const res = await Api.application.inventoryAdd(payload);
+    const code = res?.data?.code ?? res?.code;
+    const success = res?.data?.success ?? code === 200;
+
+    if (success) {
+      showToast('入库成功');
+      // 返回上一页并派发刷新事件（上一页可监听 window 的事件）
+      setTimeout(() => {
+        router.back();
+        window.dispatchEvent(new CustomEvent('refreshData', { detail: true }));
+      }, 600);
+    } else {
+      showToast(res?.data?.msg || '保存失败');
+    }
+  } catch (err) {
+    // 用户取消/或异常
+    if (err?.isCanceled) return;
+    console.error(err);
+    showToast('系统异常');
+  }
+}
 </script>
 
-<style scoped>
-.page {
-  min-height: 100vh;
-  background: #f7f8fa;
-}
-
-.page-body {
-  padding: 96px 16px 120px;
-  box-sizing: border-box;
-}
-
-.section {
-  margin-top: 16px;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
-}
-
-.section__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.section__header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: #333;
-}
-
-.items {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.item-card {
-  border: 1px solid #f0f0f0;
-  border-radius: 12px;
-  padding: 12px;
-  background: #fff7f0;
-}
-
-.item-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.item-card__header .index {
+<style lang="scss" scoped>
+.name {
   font-weight: 600;
-  color: #d05507;
+  font-size: 30rpx;
 }
 
-.form-footer {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+/* Vant 的确认按钮颜色用组件默认，这里只保留你原来样式里与业务相关的部分 */
+.cnt {
+  background: linear-gradient(180deg, #f7e9df 0%, rgba(255, 255, 255, 0) 12%) !important;
+  padding-bottom: 200rpx;
+  box-sizing: border-box;
+
+  .title {
+    font-weight: 600;
+    font-size: 30rpx;
+    line-height: 30rpx;
+    margin-bottom: 32rpx;
+  }
+
+  .detail-title {
+    padding: 40rpx 30rpx 0rpx;
+  }
+
+  .mtop20 {
+    margin-top: 20rpx;
+  }
+
+  .base-wrapper {
+    padding: 0 26rpx;
+    box-sizing: border-box;
+
+    .baseinfo {
+      padding: 32rpx 24rpx;
+      box-sizing: border-box;
+      border-radius: 20rpx;
+      background-color: #fff;
+      position: relative;
+
+      .edite-btn {
+        position: absolute;
+        bottom: 22rpx;
+        right: 18rpx;
+        height: 48rpx;
+        line-height: 48rpx;
+        padding: 0 26rpx;
+        border-radius: 24rpx;
+        font-size: 28rpx;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .cell + .cell {
+    margin-top: 24rpx;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    font-size: 28rpx;
+
+    .label {
+      color: #999;
+      width: 150rpx;
+      flex: 0 0 150rpx;
+    }
+    .value {
+      color: #565656;
+      margin-left: 10rpx;
+      flex: 1;
+      word-break: break-all;
+    }
+  }
+
+  .foot {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 24rpx 24rpx calc(env(safe-area-inset-bottom) + 24rpx);
+    background-color: #fff;
+    z-index: 999;
+  }
 }
 </style>

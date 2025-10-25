@@ -1,6 +1,6 @@
 <template>
   <div class="me-work-time">
-    <ScrollAwareNavBar
+    <dc-nav-bar
       class="me-work-time__nav"
       :title="t('me.workTime.title')"
       left-arrow

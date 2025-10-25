@@ -1,6 +1,6 @@
 <template>
   <div class="page apps">
-    <ScrollAwareNavBar :title="t('routes.apps')" fixed />
+    <dc-nav-bar :title="t('routes.apps')" fixed />
     <div class="apps__content">
       <van-grid class="apps__grid" :column-num="4" :gutter="12" clickable :border="false">
         <van-grid-item v-for="app in apps" :key="app.routeName" :to="{ name: app.routeName }">

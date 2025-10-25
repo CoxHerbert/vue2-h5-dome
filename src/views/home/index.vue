@@ -1,7 +1,7 @@
 <!-- pages/CascaderDemo.vue -->
 <template>
   <div class="page home">
-    <ScrollAwareNavBar :title="t('routes.home')" fixed />
+    <dc-nav-bar :title="t('routes.home')" fixed />
   </div>
 </template>
 

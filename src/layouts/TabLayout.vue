@@ -3,7 +3,6 @@
     <router-view class="tab-content" />
 
     <!-- 仅在 /home /me /apps 三个路由下显示 -->
-    {{ showTabbar }}
     <van-tabbar v-if="showTabbar" route>
       <van-tabbar-item
         v-for="r in tabRoutes"
@@ -30,10 +29,8 @@ const route = useRoute();
 const tabRoutes = computed(() => router.getRoutes().filter((r) => r.meta?.tabbar && r.name));
 
 // 仅当当前路径 === /home 或 /me 或 /apps 时显示 TabBar（严格匹配）
-const ALLOW_PATHS = ['/home', '/me', '/apps'];
-const showTabbar = computed(() =>
-  ALLOW_PATHS.some((p) => route.path === p || route.path.startsWith(p + '/'))
-);
+const ALLOW_PATHS = ['/home', '/me', '/apps', '/'];
+const showTabbar = computed(() => ALLOW_PATHS.some((p) => route.path === p));
 </script>
 
 <style scoped>

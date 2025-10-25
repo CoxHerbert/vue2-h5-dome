@@ -1,7 +1,7 @@
 <template>
   <div class="page mine">
     <div class="top-bg"></div>
-    <ScrollAwareNavBar
+    <dc-nav-bar
       :title="t('me.navTitle')"
       fixed
       :border="false"
@@ -383,7 +383,7 @@ onMounted(() => {
 .mine {
   position: relative;
   margin: 0 auto;
-  min-height: 100vh;
+  /* min-height: 100vh; */
   max-width: 750px;
   padding: 56px 0 120px;
   padding-bottom: calc(120px + constant(safe-area-inset-bottom));

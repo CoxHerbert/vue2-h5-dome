@@ -13,7 +13,7 @@ import '@/styles/index.scss';
 // 插件 & 工具
 import plugins from './plugins/index';
 import vant from 'vant';
-// import wfUI from './components/wf-ui/index.js';
+import dcUI from './components/dc-ui/index.js';
 import { registerComponents } from './components/index';
 import { setupDirectives } from './directives';
 import { attachNProgress } from '@/router/nprogress';
@@ -27,7 +27,7 @@ async function bootstrap() {
   const pinia = createPinia();
   app.use(pinia);
   setActivePinia(pinia);
-  // app.use(wfUI);
+  app.use(dcUI);
   app.use(vant);
   app.use(i18n);
   app.use(router);
