@@ -1,14 +1,21 @@
 <template>
-  <div class="page apps">
+  <div class="dc-apps page">
     <dc-nav-bar :title="t('routes.apps')" fixed />
-    <div class="apps__content">
-      <van-grid class="apps__grid" :column-num="4" :gutter="12" clickable :border="false">
-        <van-grid-item v-for="app in apps" :key="app.routeName" :to="{ name: app.routeName }">
+
+    <div class="dc-apps__content">
+      <van-grid class="dc-apps__grid" :column-num="4" :gutter="12" clickable :border="false">
+        <van-grid-item
+          v-for="app in apps"
+          :key="app.routeName || app.url || app.label"
+          :to="app.url ? undefined : app.routeName ? { name: app.routeName } : undefined"
+          style="padding: 0"
+          @click="handleClick(app)"
+        >
           <template #icon>
-            <img :src="app.icon" :alt="app.label" class="apps__icon" loading="lazy" />
+            <img :src="app.icon" :alt="app.label" class="dc-apps__icon" loading="lazy" />
           </template>
           <template #text>
-            <span class="apps__label">{{ app.label }}</span>
+            <span class="dc-apps__label">{{ app.label }}</span>
           </template>
         </van-grid-item>
       </van-grid>
@@ -21,9 +28,27 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
+/**
+ * 规则：
+ * - 有 url 就外链新开；
+ * - 否则若有 routeName 交给 :to 处理；
+ * - 两者都没有则不跳。
+ */
+const handleClick = (app) => {
+  if (app?.url) {
+    // 如需同页打开可改为 '_self'
+    window.open(app.url, '_blank', 'noopener,noreferrer');
+  }
+};
+
 const apps = [
   { label: '流程中心', icon: '/images/apps/流程中心.svg', routeName: 'appsWorkflowCenter' },
-  { label: '料况跟进', icon: '/images/apps/料况跟进.svg', routeName: 'appsMaterialTracking' },
+  {
+    label: '料况跟进',
+    icon: '/images/apps/料况跟进.svg',
+    routeName: 'appsMaterialTracking',
+    url: 'http://board.eastwinsz.com:8022/webroot/decision/view/report?viewlet=DC%252Fphone%252Fsuplier.cpt&username=',
+  },
   { label: '入库单', icon: '/images/apps/入库单.svg', routeName: 'appsInboundOrder' },
   { label: '现场计划单', icon: '/images/apps/现场计划单.svg', routeName: 'appsSitePlanning' },
   { label: '工时汇报', icon: '/images/apps/工时汇报.svg', routeName: 'appsWorkReport' },
@@ -42,37 +67,63 @@ const apps = [
 </script>
 
 <style lang="scss" scoped>
-.apps {
+.dc-apps {
+  // 主题变量（可按需覆盖）
+  --dc-page-bg: #f7f8fa;
+  --dc-card-bg: #ffffff;
+  --dc-text: #323233;
+  --dc-radius: 16px;
+
   min-height: 100vh;
-  background: #f7f8fa;
-}
+  background: var(--dc-page-bg);
 
-.apps__content {
-  padding: 24px 16px;
-  padding-top: calc(72px + var(--van-safe-area-top, 0px));
-  box-sizing: border-box;
-}
-:deep(.van-grid-item) {
-  padding: 0;
-}
-:deep(.van-grid-item__content) {
-  padding: 0;
-}
-.apps__grid {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 12px 0;
-}
+  &__content {
+    padding: 24px 16px;
+    padding-top: calc(72px + var(--van-safe-area-top, 0px));
+    box-sizing: border-box;
+  }
 
-.apps__icon {
-  width: 48px;
-  height: 48px;
-}
+  // 覆盖 van-grid-item 内边距
+  :deep(.van-grid-item),
+  :deep(.van-grid-item__content) {
+    padding: 0;
+  }
 
-.apps__label {
-  display: inline-block;
-  margin-top: 8px;
-  color: #323233;
-  font-size: 14px;
+  &__grid {
+    background: var(--dc-card-bg);
+    border-radius: var(--dc-radius);
+    padding: 12px 0;
+
+    // 小的悬浮与按压反馈
+    :deep(.van-grid-item__content) {
+      border-radius: 12px;
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+      }
+
+      &:active {
+        transform: translateY(0);
+        box-shadow: none;
+      }
+    }
+  }
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    display: block;
+    margin: 0 auto;
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #585b61;
+  }
 }
 </style>
