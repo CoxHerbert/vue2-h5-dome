@@ -22,10 +22,10 @@
 </template>
 
 <script setup>
-import { reactive, toRefs, watch, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import cacheRequest from './../../util/request';
 // import ComponentApi from './../../api/index';
-// import store from '@/store/';
-// import cacheData from './../../constant/cacheData';
+import cacheData from './../../constant/cacheData';
 
 const props = defineProps({
   // 展示类型：'text' | 'tag'
@@ -45,13 +45,11 @@ const props = defineProps({
   showLabel: { type: String, default: null },
 });
 
-const componentData = reactive({
-  // 拉取后得到的条目（对象或原始 id）
-  iptTagData: [],
-  // 当前对象配置（含 url、defaultLabel 等）
-  currentObject: null,
-});
-const { iptTagData, currentObject } = toRefs(componentData);
+// 拉取后得到的条目（对象或原始 id）
+const iptTagData = ref([]);
+
+// 当前对象配置（含 url、defaultLabel 等）
+const currentObject = computed(() => cacheData?.[props.objectName] ?? null);
 
 // 根据 modelValue 解析成 id 数组
 const parseIds = (val) => {
@@ -63,34 +61,31 @@ const parseIds = (val) => {
 };
 
 watch(
-  () => props.modelValue,
-  async (newVal) => {
+  [() => props.modelValue, currentObject],
+  async ([newVal, object]) => {
     try {
-      componentData.currentObject = cacheData?.[props.objectName] ?? null;
-      if (!componentData.currentObject) {
-        componentData.iptTagData = [];
+      if (!object) {
+        iptTagData.value = [];
         return;
       }
 
       const ids = parseIds(newVal);
       if (!ids.length) {
-        componentData.iptTagData = [];
+        iptTagData.value = [];
         return;
       }
 
       // 触发缓存/视图接口预取（维持你的原始逻辑）
-      await ComponentApi.cache.getView({
-        url: componentData.currentObject.url,
+      const viewData = await cacheRequest.getView({
+        url: object.url,
         data: ids,
       });
 
-      const currentGlobalData = store.getters?.globalData?.[componentData.currentObject.url] || {};
-
       // 将 id 映射为对象（或保留原始 id）
-      componentData.iptTagData = ids.map((id) => currentGlobalData[id] ?? id);
+      iptTagData.value = Array.isArray(viewData) ? viewData : [];
     } catch (error) {
       console.error(error);
-      componentData.iptTagData = [];
+      iptTagData.value = [];
     }
   },
   { deep: true, immediate: true }
@@ -98,7 +93,7 @@ watch(
 
 // 计算展示字段名
 const labelKey = computed(() => {
-  return props.showLabel || componentData.currentObject?.defaultLabel || null;
+  return props.showLabel || currentObject.value?.defaultLabel || null;
 });
 
 // 供标签模式使用的数组

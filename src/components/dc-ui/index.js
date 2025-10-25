@@ -38,6 +38,12 @@ export default {
     Object.entries(dcComponents).forEach(([tag, comp]) => {
       const finalTag = prefix === 'dc-' ? tag : tag.replace(/^dc-/, prefix);
       app.component(finalTag, comp);
+      const aliases = Array.isArray(comp.dcAliases) ? comp.dcAliases : [];
+      aliases.forEach((alias) => {
+        if (typeof alias === 'string' && alias) {
+          app.component(alias, comp);
+        }
+      });
     });
   },
 };
