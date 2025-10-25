@@ -48,75 +48,86 @@
         <span class="dc-select-dialog__title">{{ popupTitle }}</span>
       </div>
 
-      <div class="dc-select-dialog__body">
-        <div v-if="searchFields.length" class="dc-select-dialog__search">
-          <div class="dc-select-dialog__search-grid">
-            <van-field
-              v-for="field in searchFields"
-              :key="field.prop"
-              v-model="searchState[field.prop]"
-              :label="field.label"
-              :placeholder="field.searchProps?.placeholder || `请输入${field.label}`"
-              clearable
-              label-width="auto"
-              @clear="onSearch"
-            />
-          </div>
-          <div class="dc-select-dialog__search-actions">
-            <van-button type="default" size="small" @click="resetSearch">重置</van-button>
-            <van-button type="primary" size="small" @click="onSearch">查询</van-button>
-          </div>
-        </div>
-
-        <div v-if="selectedRows.length" class="dc-select-dialog__selected">
-          <div class="dc-select-dialog__selected-header">
-            <span>已选 {{ selectedRows.length }}</span>
-            <van-button v-if="clearable" text type="danger" size="small" @click="clearSelection">
-              清空
-            </van-button>
-          </div>
-          <div class="dc-select-dialog__selected-tags">
-            <van-tag
-              v-for="row in selectedRows"
-              :key="getKey(row)"
-              type="danger"
-              plain
-              size="small"
-              :closeable="clearable"
-              @close.stop="removeTag(getKey(row))"
-            >
-              {{ getDisplayLabel(row) }}
-            </van-tag>
-          </div>
-        </div>
-
+      <div v-loading="loading" class="dc-select-dialog__body">
         <div class="dc-select-dialog__list">
-          <van-pull-refresh v-model="refreshing" @refresh="handleRefresh">
-            <div v-if="loading && !refreshing" class="dc-select-dialog__loading">
-              <van-loading size="24px" vertical>加载中...</van-loading>
-            </div>
-            <van-empty v-else-if="!tableData.length" description="暂无数据" />
-            <van-list
-              v-else
-              v-model:loading="listLoading"
-              :finished="finished"
-              finished-text="没有更多了"
-              :immediate-check="false"
-              @load="loadMore"
-            >
+          <DcPagination
+            ref="pagerRef"
+            class="dc-select-dialog__pagination"
+            :fetcher="paginationFetcher"
+            :page-size="pageSize"
+            :offset="120"
+            :add-visible="false"
+            :immediate="false"
+            :back-top-threshold="Infinity"
+            :get-nav-el="getNavElement"
+          >
+            <template #sticky="{ resetAndLoad }">
+              <div class="dc-select-dialog__sticky">
+                <div v-if="searchFields.length" class="dc-select-dialog__search">
+                  <div class="dc-select-dialog__search-grid">
+                    <van-field
+                      v-for="field in searchFields"
+                      :key="field.prop"
+                      v-model="searchState[field.prop]"
+                      :label="field.label"
+                      :placeholder="field.searchProps?.placeholder || `请输入${field.label}`"
+                      clearable
+                      label-width="auto"
+                      @clear="() => onSearch(resetAndLoad)"
+                    />
+                  </div>
+                  <div class="dc-select-dialog__search-actions">
+                    <van-button type="default" size="small" @click="() => resetSearch(false, resetAndLoad)">
+                      重置
+                    </van-button>
+                    <van-button type="primary" size="small" @click="() => onSearch(resetAndLoad)">
+                      查询
+                    </van-button>
+                  </div>
+                </div>
+
+                <div v-if="selectedRows.length" class="dc-select-dialog__selected">
+                  <div class="dc-select-dialog__selected-header">
+                    <span>已选 {{ selectedRows.length }}</span>
+                    <van-button
+                      v-if="clearable"
+                      text
+                      type="danger"
+                      size="small"
+                      @click="clearSelection"
+                    >
+                      清空
+                    </van-button>
+                  </div>
+                  <div class="dc-select-dialog__selected-tags">
+                    <van-tag
+                      v-for="row in selectedRows"
+                      :key="getKey(row)"
+                      type="danger"
+                      plain
+                      size="small"
+                      :closeable="clearable"
+                      @close.stop="removeTag(getKey(row))"
+                    >
+                      {{ getDisplayLabel(row) }}
+                    </van-tag>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <template #item="{ item }">
               <div
-                v-for="row in tableData"
-                :key="getKey(row)"
                 class="dc-select-dialog__row"
-                :class="{ active: isSelected(row) }"
-                @click="toggleRow(row)"
+                :class="{ active: isSelected(item) }"
+                @click="toggleRow(item)"
               >
                 <van-checkbox
                   v-if="multiple"
-                  :model-value="isSelected(row)"
-                  @click.stop="toggleRow(row)"
+                  :model-value="isSelected(item)"
+                  @click.stop="toggleRow(item)"
                 />
-                <van-radio v-else :model-value="isSelected(row)" @click.stop="toggleSingle(row)" />
+                <van-radio v-else :model-value="isSelected(item)" @click.stop="toggleSingle(item)" />
                 <div class="dc-select-dialog__row-content">
                   <div
                     v-for="col in modelColumns"
@@ -127,7 +138,7 @@
                     <span class="dc-select-dialog__cell-value">
                       <template v-if="col.component === 'dc-view'">
                         <dc-view
-                          v-model="row[col.prop]"
+                          v-model="item[col.prop]"
                           type="text"
                           :object-name="col.objectName"
                           :show-label="col.showKey || col.prop"
@@ -136,26 +147,30 @@
                       <template v-else-if="col.component === 'dc-dict'">
                         <dc-dict
                           type="text"
-                          :value="row[col.prop]"
+                          :value="item[col.prop]"
                           :options="dictMaps[col.dictData]"
                         />
                       </template>
                       <template v-else-if="col.component === 'dc-dict-key'">
                         <dc-dict
                           type="text"
-                          :value="row[col.prop]"
+                          :value="item[col.prop]"
                           :options="dictMaps[col.dictData]"
                         />
                       </template>
                       <template v-else>
-                        {{ formatCell(row, col) }}
+                        {{ formatCell(item, col) }}
                       </template>
                     </span>
                   </div>
                 </div>
               </div>
-            </van-list>
-          </van-pull-refresh>
+            </template>
+
+            <template #empty>
+              <van-empty description="暂无数据" />
+            </template>
+          </DcPagination>
         </div>
       </div>
 
@@ -172,6 +187,7 @@ import { useGlobalCacheStore } from '@/store/global-cache';
 import { useDictStore } from '@/store/dict';
 import cacheRequest from '@/components/dc-ui/util/request';
 import cacheData from '@/components/dc-ui/constant/cacheData';
+import DcPagination from '@/components/dc-ui/components/Pagination/index.vue';
 
 defineOptions({ name: 'SelectDialog' });
 
@@ -206,21 +222,20 @@ if (instance?.type) {
 
 const open = ref(false);
 const loading = ref(false);
-const listLoading = ref(false);
-const refreshing = ref(false);
-const finished = ref(false);
-const total = ref(0);
-const tableData = ref([]);
+const pagerRef = ref(null);
+const pageSize = ref(20);
 const selectedRows = ref([]);
 const dictMaps = reactive({});
-const queryParams = reactive({ current: 1, size: 20 });
 const searchState = reactive({});
 const initDefaultSearch = ref(true);
 const model = ref(null);
 const rowKeyRef = ref('id');
 
+const zeroNavEl = { getBoundingClientRect: () => ({ height: 0 }) };
+
 const cacheStore = useGlobalCacheStore();
 const dictStore = useDictStore();
+const getNavElement = () => zeroNavEl;
 
 const popupHeight = computed(() => '100vh');
 const popupTitle = computed(() => props.title || model.value?.title || '请选择');
@@ -271,12 +286,10 @@ watch(
     if (model.value?.rowKey) {
       rowKeyRef.value = model.value.rowKey;
     }
-    queryParams.current = 1;
-    queryParams.size = 20;
+    const sizeFromModel =
+      Number(model.value?.search?.params?.size ?? model.value?.pageSize ?? 0) || 20;
+    pageSize.value = sizeFromModel;
     initDefaultSearch.value = true;
-    if (model.value?.search?.params && initDefaultSearch.value) {
-      Object.assign(queryParams, model.value.search.params);
-    }
     resetSearch(true);
   },
   { immediate: true }
@@ -338,90 +351,121 @@ const multiple = computed(() => props.multiple !== false);
 function openPopup() {
   if (props.disabled) return;
   open.value = true;
-  fetchData({ reset: true }).catch(() => {});
+  triggerReload();
 }
 
 function handleClose() {
-  total.value = 0;
-  tableData.value = [];
-  queryParams.current = 1;
-  finished.value = false;
+  loading.value = false;
+  pagerRef.value?.scrollToTop?.();
 }
 
-async function fetchData({ reset = false, append = false } = {}) {
-  if (!model.value?.dialogGet) return;
-  if (reset) {
-    queryParams.current = 1;
-    finished.value = false;
-    if (!append) {
-      tableData.value = [];
+function triggerReload() {
+  nextTick(() => {
+    pagerRef.value?.resetAndLoad?.();
+  });
+}
+
+function mergeSelectionWithRows(rows) {
+  if (!selectedRows.value.length || !Array.isArray(rows) || !rows.length) return;
+  const map = new Map(rows.map((row) => [getKey(row), row]));
+  let updated = false;
+  const next = selectedRows.value.map((item) => {
+    const hit = map.get(getKey(item));
+    if (hit) {
+      updated = true;
+      return { ...hit };
     }
+    return item;
+  });
+  if (updated) {
+    selectedRows.value = next;
+  }
+}
+
+function normalizeResponse(res, fallbackPageNo, fallbackSize) {
+  const raw = model.value?.callBack ? model.value.callBack(res) : res?.data?.data ?? res?.data ?? {};
+  let records = [];
+  let total = 0;
+  let current = fallbackPageNo;
+  let pages;
+  let size = fallbackSize;
+
+  if (Array.isArray(raw)) {
+    records = raw;
+    total = raw.length;
+  } else if (raw && typeof raw === 'object') {
+    if (Array.isArray(raw.records)) {
+      records = raw.records;
+    } else if (Array.isArray(raw.list)) {
+      records = raw.list;
+    } else if (Array.isArray(raw.rows)) {
+      records = raw.rows;
+    }
+
+    total =
+      raw.total ??
+      raw.count ??
+      raw.totalCount ??
+      raw.recordsTotal ??
+      (Array.isArray(records) ? records.length : 0);
+    current = raw.current ?? raw.pageNo ?? raw.page ?? raw.currentPage ?? current;
+    pages = raw.pages ?? raw.pageCount ?? raw.totalPage ?? raw.pagesCount;
+    size = raw.size ?? raw.pageSize ?? raw.limit ?? size;
   }
 
-  if (append && finished.value) return;
+  const normalizedRecords = Array.isArray(records) ? records.map((item) => ({ ...item })) : [];
 
-  if (append) {
-    listLoading.value = true;
-  } else {
+  return {
+    records: normalizedRecords,
+    total,
+    current,
+    pages,
+    size,
+  };
+}
+
+async function paginationFetcher({ pageNo, pageSize: sizeParam }) {
+  if (!model.value?.dialogGet) {
+    return { current: pageNo, pages: 0, total: 0, size: sizeParam || pageSize.value, records: [] };
+  }
+
+  const size = Number(sizeParam || pageSize.value || 20) || 20;
+  if (pageNo === 1) {
     loading.value = true;
   }
 
   const paginationParams = props.query?.currentPage
-    ? { currentPage: queryParams.current, pageSize: queryParams.size }
-    : {};
+    ? { currentPage: pageNo, pageSize: size }
+    : { current: pageNo, size };
+  const requestPayload = {
+    ...(props.query || {}),
+    ...paginationParams,
+    ...searchState,
+  };
+
   try {
-    const res = await model.value.dialogGet({
-      ...queryParams,
-      ...(props.query || {}),
-      ...paginationParams,
-      ...searchState,
-    });
-    const callBack = model.value?.callBack
-      ? model.value.callBack(res)
-      : res?.data?.data ?? res?.data ?? {};
-    const records = callBack?.records || [];
-    const list = Array.isArray(records)
-      ? records
-      : Array.isArray(callBack)
-      ? callBack
-      : [];
-    const mappedList = list.map((item) => ({ ...item }));
-    if (append) {
-      tableData.value = [...tableData.value, ...mappedList];
-    } else {
-      tableData.value = mappedList;
+    const response = await model.value.dialogGet(requestPayload);
+    const normalized = normalizeResponse(response, pageNo, size);
+    mergeSelectionWithRows(normalized.records);
+    if (typeof normalized.size === 'number' && normalized.size > 0 && normalized.size !== pageSize.value) {
+      pageSize.value = normalized.size;
     }
-
-    const responseTotal = callBack?.total ?? res?.data?.total;
-    if (typeof responseTotal === 'number') {
-      total.value = responseTotal;
-    } else if (append) {
-      total.value = tableData.value.length;
-    } else {
-      total.value = mappedList.length;
-    }
-
-    const size = Number(queryParams.size) || 20;
-    const current = queryParams.current;
-    let isLastPage = mappedList.length < size;
-    if (!isLastPage && typeof total.value === 'number' && total.value > 0) {
-      isLastPage = current * size >= total.value;
-    }
-    finished.value = Boolean(isLastPage);
-    syncSelectionFromTable();
+    return {
+      current: normalized.current ?? pageNo,
+      pages: normalized.pages,
+      total:
+        typeof normalized.total === 'number' && normalized.total > 0
+          ? normalized.total
+          : normalized.records.length,
+      size: normalized.size ?? size,
+      records: normalized.records,
+    };
   } catch (error) {
-    console.error(error);
-    if (!append) {
-      tableData.value = [];
-      total.value = 0;
-      finished.value = true;
-    }
+    console.error('Failed to fetch dialog data:', error);
     throw error;
   } finally {
-    loading.value = false;
-    listLoading.value = false;
-    if (refreshing.value) {
-      refreshing.value = false;
+    if (pageNo === 1) {
+      loading.value = false;
     }
   }
 }
@@ -471,16 +515,6 @@ function getKey(row) {
   return row?.[key] != null ? `${row[key]}` : '';
 }
 
-function syncSelectionFromTable() {
-  if (!selectedRows.value.length || !tableData.value.length) return;
-  const map = new Map(tableData.value.map((row) => [getKey(row), row]));
-  selectedRows.value = selectedRows.value.map((item) => {
-    const key = getKey(item);
-    const hit = map.get(key);
-    return hit ? { ...hit } : item;
-  });
-}
-
 function getDisplayLabel(row) {
   const labelKey = props.showKey || model.value?.defaultLabel || keyField.value;
   return row?.[labelKey];
@@ -524,11 +558,15 @@ function confirmSelection() {
   open.value = false;
 }
 
-function onSearch() {
-  fetchData({ reset: true }).catch(() => {});
+function onSearch(resetFn) {
+  if (typeof resetFn === 'function') {
+    resetFn();
+  } else {
+    triggerReload();
+  }
 }
 
-function resetSearch(force = false) {
+function resetSearch(force = false, resetFn) {
   if (!force && !searchFields.value.length) return;
   Object.keys(searchState).forEach((key) => {
     delete searchState[key];
@@ -540,24 +578,12 @@ function resetSearch(force = false) {
     Object.assign(searchState, model.value.search.params);
     initDefaultSearch.value = false;
   } else if (!force) {
-    fetchData({ reset: true }).catch(() => {});
+    if (typeof resetFn === 'function') {
+      resetFn();
+    } else {
+      triggerReload();
+    }
   }
-}
-
-function handleRefresh() {
-  refreshing.value = true;
-  fetchData({ reset: true }).catch(() => {
-    refreshing.value = false;
-  });
-}
-
-function loadMore() {
-  if (listLoading.value || finished.value) return;
-  queryParams.current += 1;
-  fetchData({ append: true }).catch(() => {
-    queryParams.current = Math.max(1, queryParams.current - 1);
-    finished.value = false;
-  });
 }
 </script>
 
@@ -632,11 +658,49 @@ function loadMore() {
 
 .dc-select-dialog__body {
   flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.dc-select-dialog__list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dc-select-dialog__pagination {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.dc-select-dialog__pagination :deep(.dc-paged-infinite-list) {
+  background: transparent;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dc-select-dialog__pagination :deep(.dc-sticky-header) {
+  position: sticky !important;
+  top: 0 !important;
+  left: 0;
+  right: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.dc-select-dialog__sticky {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
+  padding: 16px 16px 12px;
+  background: #fff;
+  border-bottom: 1px solid #f5f6f7;
 }
 
 .dc-select-dialog__search {
@@ -689,30 +753,29 @@ function loadMore() {
   gap: 6px;
 }
 
-.dc-select-dialog__list {
+.dc-select-dialog__pagination :deep(.dc-content) {
+  position: relative !important;
+  top: 0 !important;
+  bottom: auto;
+  left: 0;
+  right: 0;
   flex: 1;
-  min-height: 200px;
-  overflow: hidden;
-}
-
-.dc-select-dialog__list :deep(.van-pull-refresh) {
-  height: 100%;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px 80px;
 }
 
-.dc-select-dialog__loading {
-  display: flex;
-  justify-content: center;
+.dc-select-dialog__pagination :deep(.dc-content .van-pull-refresh) {
+  min-height: 100%;
+}
+
+.dc-select-dialog__pagination :deep(.dc-content .van-empty) {
   padding: 40px 0;
 }
 
-.dc-select-dialog__list :deep(.van-empty) {
-  padding: 32px 0;
-}
-
-.dc-select-dialog__list :deep(.van-list__finished-text) {
-  color: #969799;
-  font-size: 12px;
+.dc-select-dialog__pagination :deep(.dc-back-top),
+.dc-select-dialog__pagination :deep(.dc-fab-add) {
+  display: none !important;
 }
 
 .dc-select-dialog__row {
