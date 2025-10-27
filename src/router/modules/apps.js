@@ -48,7 +48,7 @@ export default {
       path: 'site-planning',
       name: 'appsSitePlanning',
       meta: { title: '现场计划单', requiresAuth: true },
-      component: () => import('@/views/apps/SitePlanning.vue'),
+      component: () => import('@/views/apps/SitePlanning/Create.vue'),
     },
     {
       path: 'work-report',
