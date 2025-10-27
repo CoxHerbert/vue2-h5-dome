@@ -5,26 +5,36 @@
     <div class="base-wrapper mtop20">
       <div class="title">{{ form.orderCode || '-' }}</div>
       <div class="baseinfo">
-        <van-cell-group inset>
-          <van-field label="阶段编码" :model-value="form.phaseCode || ''" readonly />
-          <van-field label="阶段名称" :model-value="form.phaseName || ''" readonly />
-          <van-field label="开始时间" :model-value="form.startDate || ''" readonly />
-          <van-field label="结束时间" :model-value="form.endDate || ''" readonly />
-          <van-field
-            v-model="form.overdueExplanation"
-            label="延期说明"
-            type="textarea"
-            rows="2"
-            autosize
-            maxlength="200"
-            show-word-limit
-            placeholder="请输入"
-          />
-        </van-cell-group>
+        <van-card class="info-card" :border="false">
+          <template #title>
+            <div class="info-card__title">基础信息</div>
+          </template>
 
-        <van-button block type="primary" class="save-btn" :loading="submitting" @click="handleSave">
-          保存
-        </van-button>
+          <template #desc>
+            <van-cell-group>
+              <van-field label="阶段编码" :model-value="form.phaseCode || ''" readonly />
+              <van-field label="阶段名称" :model-value="form.phaseName || ''" readonly />
+              <van-field label="开始时间" :model-value="form.startDate || ''" readonly />
+              <van-field label="结束时间" :model-value="form.endDate || ''" readonly />
+              <van-field
+                v-model="form.overdueExplanation"
+                label="延期说明"
+                type="textarea"
+                rows="2"
+                autosize
+                maxlength="200"
+                show-word-limit
+                placeholder="请输入"
+              />
+            </van-cell-group>
+          </template>
+
+          <template #footer>
+            <van-button block type="primary" class="save-btn" :loading="submitting" @click="handleSave">
+              保存
+            </van-button>
+          </template>
+        </van-card>
       </div>
     </div>
   </div>
@@ -68,7 +78,6 @@ async function fetchDetail() {
       phaseName: '',
       startDate: '',
       endDate: '',
-      overdueExplanation: '',
       ...data,
       overdueExplanation: data?.overdueExplanation ?? '',
     });
@@ -140,11 +149,41 @@ async function handleSave() {
     box-sizing: border-box;
 
     .baseinfo {
-      padding: 32rpx 24rpx 48rpx;
+      padding-bottom: 48rpx;
       box-sizing: border-box;
-      border-radius: 20rpx;
-      background-color: #fff;
-      position: relative;
+
+      .info-card {
+        --van-card-background: #fff;
+        border-radius: 20rpx;
+        overflow: hidden;
+        box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
+
+        :deep(.van-card__header) {
+          padding: 32rpx 24rpx 0;
+        }
+
+        :deep(.van-card__content) {
+          padding: 0 24rpx 32rpx;
+        }
+
+        :deep(.van-card__desc) {
+          margin-top: 24rpx;
+        }
+
+        :deep(.van-cell-group) {
+          background-color: transparent;
+        }
+
+        :deep(.van-card__footer) {
+          padding: 0 24rpx 32rpx;
+        }
+      }
+
+      .info-card__title {
+        font-size: 28rpx;
+        font-weight: 600;
+        color: #222;
+      }
 
       .save-btn {
         margin-top: 32rpx;
