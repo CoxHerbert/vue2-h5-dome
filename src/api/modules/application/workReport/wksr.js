@@ -1,5 +1,10 @@
 import request from '@/utils/http';
 
+const unwrap = (res) => {
+  const { code, data, msg, message } = res?.data || {};
+  return { code, data, msg, message: message ?? msg };
+};
+
 const wksr = {
   // 明细列表
   planList(params) {
@@ -7,7 +12,7 @@ const wksr = {
       url: '/blade-bip/mps/Wksr/plan-list',
       method: 'get',
       params,
-    });
+    }).then(unwrap);
   },
   // 计划明细
   planDetail(params) {
@@ -15,7 +20,7 @@ const wksr = {
       url: '/blade-bip/mps/Wksr/plan-detail',
       method: 'get',
       params,
-    });
+    }).then(unwrap);
   },
   // 计划提交
   reportSave(data, params) {
@@ -24,7 +29,7 @@ const wksr = {
       method: 'post',
       data,
       params,
-    });
+    }).then(unwrap);
   },
 };
 

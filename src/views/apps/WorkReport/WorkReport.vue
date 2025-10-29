@@ -86,10 +86,13 @@ const resetData = () => {
 };
 
 const fetchPlanId = async () => {
-  const { data } = await Api.application.workReport.plan.getPlanId({
+  const { code, data, message } = await Api.application.workReport.plan.getPlanId({
     sn: snCode.value.trim(),
   });
-  return data;
+  if (code === 200) {
+    return data;
+  }
+  throw new Error(message || '查询失败 / Tra cứu thất bại');
 };
 
 const fetchPlanDetail = async (planId) => {
