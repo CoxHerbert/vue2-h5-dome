@@ -4,16 +4,19 @@ import vantZhCN from 'vant/es/locale/lang/zh-CN';
 import vantEnUS from 'vant/es/locale/lang/en-US';
 import zhCN from './zh-CN';
 import enUS from './en-US';
+import viVN from './vi-VN';
 
 const defaultLocale = 'zh-CN';
 const messages = {
   'zh-CN': zhCN,
   'en-US': enUS,
+  'vi-VN': viVN,
 };
 
 const vantMessages = {
   'zh-CN': vantZhCN,
   'en-US': vantEnUS,
+  'vi-VN': vantEnUS,
 };
 
 const LOCALE_STORAGE_KEY = 'app-locale';
@@ -25,7 +28,7 @@ function readStoredLocale() {
     if (stored && Object.prototype.hasOwnProperty.call(messages, stored)) {
       return stored;
     }
-  } catch (err) {
+  } catch (_err) {
     // 忽略 storage 读取异常
   }
   return null;
@@ -38,6 +41,7 @@ function detectBrowserLocale() {
   const normalized = language.toLowerCase();
   if (normalized.startsWith('zh')) return 'zh-CN';
   if (normalized.startsWith('en')) return 'en-US';
+  if (normalized.startsWith('vi')) return 'vi-VN';
   return null;
 }
 
@@ -82,7 +86,7 @@ export function changeLocale(nextLocale) {
   if (typeof window !== 'undefined') {
     try {
       window.localStorage?.setItem(LOCALE_STORAGE_KEY, nextLocale);
-    } catch (err) {
+  } catch (_err) {
       // 忽略 storage 写入异常
     }
   }

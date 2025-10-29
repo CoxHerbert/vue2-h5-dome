@@ -216,6 +216,8 @@ export default {
     profile: {
       unnamed: 'Unnamed User',
       account: 'Account',
+      expandRoles: 'Show more ({count})',
+      collapseRoles: 'Show less',
     },
     cells: {
       position: 'Position',

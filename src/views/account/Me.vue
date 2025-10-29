@@ -30,7 +30,20 @@
               </div>
             </div>
             <div v-if="roleTags.length" class="tags">
-              <span v-for="(tag, idx) in roleTags" :key="idx" class="tag">{{ tag }}</span>
+              <span v-for="(tag, idx) in roleTagsToRender" :key="idx" class="tag">{{ tag }}</span>
+              <button
+                v-if="hasExtraRoleTags"
+                type="button"
+                class="tag tag-toggle"
+                :aria-expanded="showAllRoleTags"
+                @click="toggleRoleTags"
+              >
+                {{
+                  showAllRoleTags
+                    ? t('me.profile.collapseRoles')
+                    : t('me.profile.expandRoles', { count: hiddenRoleTagCount })
+                }}
+              </button>
             </div>
           </div>
           <div class="points-card" @click="navigateToRoute('mePoints')">
@@ -163,7 +176,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, onMounted, getCurrentInstance } from 'vue';
+import { computed, reactive, ref, watch, onMounted, getCurrentInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
@@ -279,6 +292,34 @@ const roleTags = computed(() => {
   if (tags.length) return tags;
   return toArrayValue(user.value.roleName);
 });
+
+const ROLE_TAG_LIMIT = 3;
+const showAllRoleTags = ref(false);
+const hasExtraRoleTags = computed(() => roleTags.value.length > ROLE_TAG_LIMIT);
+const hiddenRoleTagCount = computed(() =>
+  hasExtraRoleTags.value ? roleTags.value.length - ROLE_TAG_LIMIT : 0
+);
+const roleTagsToRender = computed(() => {
+  if (!hasExtraRoleTags.value || showAllRoleTags.value) {
+    return roleTags.value;
+  }
+  return roleTags.value.slice(0, ROLE_TAG_LIMIT);
+});
+
+watch(
+  roleTags,
+  (tags) => {
+    if (tags.length <= ROLE_TAG_LIMIT) {
+      showAllRoleTags.value = false;
+    }
+  },
+  { immediate: true }
+);
+
+function toggleRoleTags() {
+  if (!hasExtraRoleTags.value) return;
+  showAllRoleTags.value = !showAllRoleTags.value;
+}
 
 const roleText = computed(
   () => toNiceText(user.value.roleNames) || toNiceText(user.value.roleName) || '-'
@@ -508,6 +549,30 @@ onMounted(() => {
   background: #baccff;
   color: #3060ed;
   font-size: 12px;
+}
+
+.tag-toggle {
+  appearance: none;
+  border: 1px dashed rgba(48, 96, 237, 0.4);
+  background: rgba(48, 96, 237, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 500;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.tag-toggle:hover {
+  background: rgba(48, 96, 237, 0.2);
+  border-color: rgba(48, 96, 237, 0.6);
+}
+
+.tag-toggle:focus-visible {
+  outline: 2px solid rgba(48, 96, 237, 0.45);
+  outline-offset: 2px;
 }
 
 .points-card {

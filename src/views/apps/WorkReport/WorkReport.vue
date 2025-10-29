@@ -1,18 +1,18 @@
 <template>
   <div class="work-report page">
-    <dc-nav-bar title="工时汇报 / Báo cáo giờ làm" fixed left-arrow @click-left="handleBack" />
+    <dc-nav-bar title="工时汇报" fixed left-arrow @click-left="handleBack" />
 
     <div class="work-report__content">
       <div class="work-report__search">
         <van-search
           v-model="snCode"
-          placeholder="请输入SN码查询 / Vui lòng nhập SN để tra cứu"
+          placeholder="请输入SN码查询"
           shape="square"
           :show-action="false"
           @search="handleSearch"
         />
         <van-button type="success" class="work-report__button" @click="handleSearch">
-          <van-icon name="search" size="18" /> 查询 / Tra cứu
+          <van-icon name="search" size="18" /> 查询
         </van-button>
         <van-button type="primary" class="work-report__button" @click="openScan">
           <van-icon name="scan" size="18" />
@@ -20,14 +20,14 @@
       </div>
 
       <van-tabs v-model:active="activeTab" class="work-report__tabs">
-        <van-tab title="专案详情 / Chi tiết dự án" name="detail">
+        <van-tab title="专案详情" name="detail">
           <ProjectOverview
             :plan-info="planInfo"
             :color-enum="colorEnum"
             @jump="handleJump"
           />
         </van-tab>
-        <van-tab title="填报工时 / Báo cáo giờ" name="report">
+        <van-tab title="填报工时" name="report">
           <div class="work-report__list">
             <template v-if="workRoutes.length">
               <WorkRouteCard
@@ -39,7 +39,7 @@
                 @change-report-qty="updateReportQty"
               />
             </template>
-            <van-empty v-else description="暂无数据 / Chưa có dữ liệu" />
+            <van-empty v-else description="暂无数据" />
           </div>
         </van-tab>
       </van-tabs>
@@ -47,7 +47,7 @@
 
     <div v-if="activeTab === 'report'" class="work-report__footer">
       <van-button block type="success" @click="handleSubmit">
-        <van-icon name="passed" size="18" /> 提交 / Gửi
+        <van-icon name="passed" size="18" /> 提交
       </van-button>
     </div>
 
@@ -92,7 +92,7 @@ const fetchPlanId = async () => {
   if (code === 200) {
     return data;
   }
-  throw new Error(message || '查询失败 / Tra cứu thất bại');
+  throw new Error(message || '查询失败');
 };
 
 const fetchPlanDetail = async (planId) => {
@@ -131,21 +131,21 @@ const fetchPlanDetail = async (planId) => {
 
 const handleSearch = async () => {
   if (!snCode.value.trim()) {
-    showFailToast('请输入需要查询的SN码 / Vui lòng nhập SN cần tra cứu');
+    showFailToast('请输入需要查询的SN码');
     return;
   }
   activeTab.value = 'detail';
   resetData();
-  const toast = showLoadingToast({ message: '加载中… / Đang tải…', duration: 0, forbidClick: true });
+  const toast = showLoadingToast({ message: '加载中…', duration: 0, forbidClick: true });
   try {
     const planId = await fetchPlanId();
     if (!planId) {
-      showFailToast('未找到相关专案 / Không tìm thấy dự án liên quan');
+      showFailToast('未找到相关专案');
       return;
     }
     await fetchPlanDetail(planId);
   } catch (error) {
-    showFailToast(error?.message || '查询失败 / Tra cứu thất bại');
+    showFailToast(error?.message || '查询失败');
   } finally {
     toast.close();
   }
@@ -212,11 +212,11 @@ const hourToSecond = (hours, precision = 0) => {
 
 const handleSubmit = async () => {
   if (!snCode.value.trim()) {
-    showFailToast('请先查询SN码 / Vui lòng tra cứu SN trước');
+    showFailToast('请先查询SN码');
     return;
   }
   if (!hasRouteData.value) {
-    showFailToast('无可提交数据 / Không có dữ liệu để gửi');
+    showFailToast('无可提交数据');
     return;
   }
   const payload = workRoutes.value.flatMap((route) =>
@@ -227,21 +227,21 @@ const handleSubmit = async () => {
     }))
   );
   if (!payload.length) {
-    showFailToast('无可提交数据 / Không có dữ liệu để gửi');
+    showFailToast('无可提交数据');
     return;
   }
-  const toast = showLoadingToast({ message: '提交中… / Đang gửi…', duration: 0, forbidClick: true });
+  const toast = showLoadingToast({ message: '提交中…', duration: 0, forbidClick: true });
   try {
     const res = await Api.application.workReport.wksr.reportSave(payload);
     if (res.code === 200) {
       snCode.value = '';
       resetData();
-      showSuccessToast('保存成功 / Lưu thành công');
+      showSuccessToast('保存成功');
     } else {
-      showFailToast(res.message || '提交失败 / Gửi thất bại');
+      showFailToast(res.message || '提交失败');
     }
   } catch (error) {
-    showFailToast(error?.message || '提交失败 / Gửi thất bại');
+    showFailToast(error?.message || '提交失败');
   } finally {
     toast.close();
   }
