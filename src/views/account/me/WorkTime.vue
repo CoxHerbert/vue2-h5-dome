@@ -77,16 +77,26 @@
       </section>
 
       <!-- 分组数据 -->
-      <section v-for="group in groups" :key="group.key" class="card">
-        <div class="card__title">{{ group.label }}</div>
-        <div class="card__content card__content--grid">
-          <div v-for="col in group.columns" :key="col.prop" class="field">
-            <div class="field__label">{{ col.label }}</div>
-            <div class="field__value" :class="{ 'field__value--zero': isZeroValue(col.prop) }">
-              {{ formatValue(col.prop) }}
+      <section v-for="group in groups" :key="group.key" class="card card--collapsible" :class="{ 'is-collapsed': !isGroupExpanded(group.key) }">
+        <button
+          class="card__title card__title--toggle"
+          type="button"
+          :aria-expanded="isGroupExpanded(group.key)"
+          @click="toggleGroup(group.key)"
+        >
+          <span>{{ group.label }}</span>
+          <van-icon :name="isGroupExpanded(group.key) ? 'arrow-up' : 'arrow-down'" />
+        </button>
+        <transition name="collapse">
+          <div v-show="isGroupExpanded(group.key)" class="card__content card__content--grid">
+            <div v-for="col in group.columns" :key="col.prop" class="field">
+              <div class="field__label">{{ col.label }}</div>
+              <div class="field__value" :class="{ 'field__value--zero': isZeroValue(col.prop) }">
+                {{ formatValue(col.prop) }}
+              </div>
             </div>
           </div>
-        </div>
+        </transition>
       </section>
     </main>
 
@@ -243,6 +253,25 @@ const groups = computed(() => [
 ]);
 
 const punchTime = computed(() => pageInfo.value?.punchCardData || t('me.workTime.emptyValue'));
+
+const expandedGroups = ref({
+  attendance: true,
+  overtime: true,
+  abnormal: true,
+  correction: true,
+});
+
+function isGroupExpanded(key) {
+  const state = expandedGroups.value?.[key];
+  return state !== false;
+}
+
+function toggleGroup(key) {
+  expandedGroups.value = {
+    ...expandedGroups.value,
+    [key]: !isGroupExpanded(key),
+  };
+}
 
 /** ===== 日历计算（周起始：周一） ===== */
 function buildMonthWeeks(baseMonth /* dayjs startOf('month') */) {
@@ -448,6 +477,33 @@ onMounted(() => {
   }
 }
 
+.card--collapsible {
+  .card__title--toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    .van-icon {
+      color: #848488;
+      font-size: 18px;
+    }
+  }
+
+  &.is-collapsed {
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+  }
+}
+
 /* ===== 日历样式 ===== */
 .dc-cal__header {
   display: flex;
@@ -601,5 +657,15 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>
