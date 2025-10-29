@@ -22,9 +22,9 @@
           <div class="dc-cal__header">
             <van-icon name="arrow-left" class="dc-cal__arrow" @click="goPrevMonth" />
             <div class="dc-cal__title">
-              <span class="dc-cal__month">{{ visibleMonth.format('M') }}月</span>
+              <span class="dc-cal__month">{{ currentMonthLabel }}</span>
               <button class="dc-cal__year" type="button" @click="showYearPicker = true">
-                {{ visibleMonth.format('YYYY') }}年
+                {{ currentYearLabel }}
                 <van-icon name="arrow-down" />
               </button>
             </div>
@@ -61,9 +61,7 @@
 
           <!-- 展开/收起开关 -->
           <div class="dc-cal__toggle" @click="isCollapsed = !isCollapsed">
-            <span>{{
-              isCollapsed ? t('common.expand') || '展开' : t('common.collapse') || '收起'
-            }}</span>
+            <span>{{ isCollapsed ? t('common.expand') : t('common.collapse') }}</span>
             <van-icon :name="isCollapsed ? 'arrow-down' : 'arrow-up'" />
           </div>
         </div>
@@ -106,8 +104,8 @@
         :columns="yearColumns"
         :default-index="yearDefaultIndex"
         :visible-option-num="5"
-        :cancel-button-text="t('common.cancel') || '取消'"
-        :confirm-button-text="t('common.confirm') || '确定'"
+        :cancel-button-text="t('common.cancel')"
+        :confirm-button-text="t('common.confirm')"
         @confirm="onYearConfirm"
         @cancel="showYearPicker = false"
       />
@@ -124,7 +122,7 @@ import Api from '@/api/index';
 import { showToast } from 'vant';
 
 const router = useRouter();
-const { t } = useI18n();
+const { t, tm } = useI18n();
 
 const today = dayjs().format('YYYY-MM-DD');
 const selectedDate = ref(today); // 当前选中日期（字符串）
@@ -135,14 +133,47 @@ const showYearPicker = ref(false);
 const pageInfo = ref({});
 const loading = ref(false);
 
-const weekNames = ['一', '二', '三', '四', '五', '六', '日'];
+const defaultWeekNames = ['一', '二', '三', '四', '五', '六', '日'];
+
+const weekNames = computed(() => {
+  const names = typeof tm === 'function' ? tm('me.workTime.weekNames') : null;
+  if (Array.isArray(names) && names.length === 7) {
+    return names;
+  }
+  return defaultWeekNames;
+});
+
+function getTranslationWithFallback(key, params, fallback) {
+  const translated = t(key, params);
+  if (translated && translated !== key) {
+    return translated;
+  }
+  return fallback;
+}
+
+function formatMonthLabel(monthValue) {
+  return getTranslationWithFallback('me.workTime.monthLabel', { month: monthValue }, `${monthValue}月`);
+}
+
+function formatYearLabel(yearValue) {
+  return getTranslationWithFallback('me.workTime.yearLabel', { year: yearValue }, `${yearValue}年`);
+}
+
+function formatYearOption(yearValue) {
+  const fallback = formatYearLabel(yearValue);
+  return getTranslationWithFallback('me.workTime.yearOption', { year: yearValue }, fallback);
+}
+
+const currentMonthLabel = computed(() => formatMonthLabel(visibleMonth.value.format('M')));
+
+const currentYearLabel = computed(() => formatYearLabel(visibleMonth.value.format('YYYY')));
 
 // 年份列（以当前年为中心，向前后各 10 年）
 const yearColumns = computed(() => {
   const current = dayjs().year();
   const list = [];
   for (let y = current - 10; y <= current + 10; y++) {
-    list.push({ text: `${y}年`, value: y });
+    list.push({ text: formatYearOption(y), value: y });
   }
   return list;
 });

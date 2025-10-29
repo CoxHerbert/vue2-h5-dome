@@ -1,5 +1,9 @@
 export default {
   common: {
+    cancel: '取消',
+    confirm: '确定',
+    expand: '展开',
+    collapse: '收起',
     errors: {
       system: '系统错误',
       tokenExpired: '用户令牌过期，请重新登录',
@@ -261,6 +265,10 @@ export default {
       dateLabel: '查询日期',
       punchDetailTitle: '打卡明细',
       punchTimeLabel: '打卡时间',
+      weekNames: ['一', '二', '三', '四', '五', '六', '日'],
+      monthLabel: '{month}月',
+      yearLabel: '{year}年',
+      yearOption: '{year}年',
       groups: {
         attendance: '出勤数据',
         overtime: '加班数据',

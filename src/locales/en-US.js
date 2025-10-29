@@ -1,5 +1,9 @@
 export default {
   common: {
+    cancel: 'Cancel',
+    confirm: 'Confirm',
+    expand: 'Expand',
+    collapse: 'Collapse',
     errors: {
       system: 'A system error occurred',
       tokenExpired: 'Your session has expired. Please sign in again.',
@@ -261,6 +265,10 @@ export default {
       dateLabel: 'Attendance date',
       punchDetailTitle: 'Punch details',
       punchTimeLabel: 'Punch time',
+      weekNames: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      monthLabel: 'Month {month}',
+      yearLabel: 'Year {year}',
+      yearOption: 'Year {year}',
       groups: {
         attendance: 'Attendance data',
         overtime: 'Overtime data',
