@@ -4,12 +4,20 @@
       <div class="work-route-card__title">工艺: {{ route.produceRouteName || '-' }}</div>
       <div class="work-route-card__switch">
         <span>标记完工:</span>
-        <van-switch :model-value="Boolean(route.isComplete)" size="20" @change="handleCompleteChange" />
+        <van-switch
+          :model-value="Boolean(route.isComplete)"
+          size="20"
+          @change="handleCompleteChange"
+        />
       </div>
     </div>
 
     <div class="work-route-card__body">
-      <div v-for="material in route.children || []" :key="material.id" class="work-route-card__group">
+      <div
+        v-for="material in route.children || []"
+        :key="material.id"
+        class="work-route-card__group"
+      >
         <div class="work-route-card__group-title">{{ material.materialName || '-' }}</div>
         <div class="work-route-card__row">
           <span class="work-route-card__label">计划单号:</span>
@@ -148,7 +156,7 @@ const handleQtyChange = (materialId, value) => {
   }
 
   &__label {
-    width: 90px;
+    margin-right: 5px;
     font-weight: 600;
     color: #1f1f1f;
   }

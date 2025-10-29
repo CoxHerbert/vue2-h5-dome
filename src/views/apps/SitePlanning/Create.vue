@@ -2,20 +2,35 @@
   <div class="site-planning-create">
     <dc-nav-bar title="现场计划单" fixed left-arrow @click-left="handleBack" />
 
-    <div class="base-wrapper mtop20">
-      <div class="title">{{ form.orderCode || '-' }}</div>
+    <div class="base-wrapper ptop56">
       <div class="baseinfo">
         <van-card class="info-card" :border="false">
-          <template #title>
-            <div class="info-card__title">基础信息</div>
-          </template>
-
           <template #desc>
             <van-cell-group>
-              <van-field label="阶段编码" :model-value="form.phaseCode || ''" readonly />
-              <van-field label="阶段名称" :model-value="form.phaseName || ''" readonly />
-              <van-field label="开始时间" :model-value="form.startDate || ''" readonly />
-              <van-field label="结束时间" :model-value="form.endDate || ''" readonly />
+              <van-field
+                label="阶段编码"
+                :model-value="form.phaseCode || ''"
+                placeholder="请输入阶段编码"
+                readonly
+              />
+              <van-field
+                label="阶段名称"
+                :model-value="form.phaseName || ''"
+                placeholder="请输入阶段名称"
+                readonly
+              />
+              <van-field
+                label="开始时间"
+                :model-value="form.startDate || ''"
+                placeholder="请输入开始时间"
+                readonly
+              />
+              <van-field
+                label="结束时间"
+                :model-value="form.endDate || ''"
+                placeholder="请输入结束时间"
+                readonly
+              />
               <van-field
                 v-model="form.overdueExplanation"
                 label="延期说明"
@@ -24,13 +39,19 @@
                 autosize
                 maxlength="200"
                 show-word-limit
-                placeholder="请输入"
+                placeholder="请输入延期说明"
               />
             </van-cell-group>
           </template>
 
           <template #footer>
-            <van-button block type="primary" class="save-btn" :loading="submitting" @click="handleSave">
+            <van-button
+              block
+              type="primary"
+              class="save-btn"
+              :loading="submitting"
+              @click="handleSave"
+            >
               保存
             </van-button>
           </template>
@@ -44,7 +65,6 @@
 import { reactive, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showToast, showConfirmDialog } from 'vant';
-
 import Api from '@/api';
 
 const route = useRoute();
@@ -128,46 +148,38 @@ async function handleSave() {
 
 <style lang="scss" scoped>
 .site-planning-create {
-  background: linear-gradient(180deg, #f7e9df 0%, rgba(255, 255, 255, 0) 12%) !important;
   min-height: 100vh;
-  padding-bottom: 200rpx;
+  padding-bottom: 100px;
   box-sizing: border-box;
 
-  .title {
-    font-weight: 600;
-    font-size: 30rpx;
-    line-height: 30rpx;
-    margin-bottom: 32rpx;
-  }
-
-  .mtop20 {
-    margin-top: 20rpx;
+  .ptop56 {
+    margin-top: 56px;
   }
 
   .base-wrapper {
-    padding: 0 26rpx;
+    padding: 0 13px;
     box-sizing: border-box;
 
     .baseinfo {
-      padding-bottom: 48rpx;
+      padding-bottom: 24px;
       box-sizing: border-box;
 
       .info-card {
         --van-card-background: #fff;
-        border-radius: 20rpx;
+        border-radius: 10px;
         overflow: hidden;
-        box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 
         :deep(.van-card__header) {
-          padding: 32rpx 24rpx 0;
+          padding: 16px 12px 0;
         }
 
         :deep(.van-card__content) {
-          padding: 0 24rpx 32rpx;
+          // padding: 0 12px 16px;
         }
 
         :deep(.van-card__desc) {
-          margin-top: 24rpx;
+          margin-top: 12px;
         }
 
         :deep(.van-cell-group) {
@@ -175,19 +187,19 @@ async function handleSave() {
         }
 
         :deep(.van-card__footer) {
-          padding: 0 24rpx 32rpx;
+          padding: 0 12px 16px;
         }
       }
 
       .info-card__title {
-        font-size: 28rpx;
+        font-size: 14px;
         font-weight: 600;
         color: #222;
       }
 
       .save-btn {
-        margin-top: 32rpx;
-        border-radius: 8rpx;
+        margin-top: 16px;
+        border-radius: 4px;
       }
     }
   }

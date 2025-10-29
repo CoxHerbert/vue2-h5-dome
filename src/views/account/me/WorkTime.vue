@@ -1,5 +1,6 @@
 <template>
   <div class="me-work-time">
+    <!-- 顶部固定导航 -->
     <dc-nav-bar
       class="me-work-time__nav"
       :title="t('me.workTime.title')"
@@ -10,11 +11,12 @@
       placeholder
       @click-left="handleBack"
     />
+    <!-- 占位：确保内容不被固定导航遮挡（若 dc-nav-bar 已内置 placeholder 可删除本行） -->
+    <div class="me-work-time__nav-spacer" aria-hidden="true"></div>
+
     <main class="me-work-time__body">
       <!-- 日期卡片：月视图 / 周视图（收起） -->
       <section class="card card--date">
-        <div class="card__title">{{ t('me.workTime.dateLabel') }}</div>
-
         <div class="card__content">
           <work-time-calendar v-model="selectedDate" />
         </div>
@@ -32,7 +34,12 @@
       </section>
 
       <!-- 分组数据 -->
-      <section v-for="group in groups" :key="group.key" class="card card--collapsible" :class="{ 'is-collapsed': !isGroupExpanded(group.key) }">
+      <section
+        v-for="group in groups"
+        :key="group.key"
+        class="card card--collapsible"
+        :class="{ 'is-collapsed': !isGroupExpanded(group.key) }"
+      >
         <button
           class="card__title card__title--toggle card__title--section"
           type="button"
@@ -60,7 +67,6 @@
         <van-loading size="28px" />
       </div>
     </transition>
-
   </div>
 </template>
 
@@ -207,11 +213,16 @@ watch(
   () => {
     fetchDetail();
   },
-  { immediate: true },
+  { immediate: true }
 );
 </script>
 
 <style scoped lang="scss">
+/* 统一定义导航高度，若你的 dc-nav-bar 高度不同，请在此处调整 */
+:root {
+  --dc-nav-height: 46px;
+}
+
 .me-work-time {
   min-height: 100vh;
   background: #f7f8fa;
@@ -221,12 +232,23 @@ watch(
   position: relative;
 
   &__nav {
-    background: transparent;
+    /* 强制固定到顶部（即使外层没正确传 fixed 或被覆盖也能兜底） */
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000; /* 覆盖下方内容与弹层 */
+    background: #fff; /* 若需要透明，可改为 transparent */
+  }
+
+  /* 占位，避免主内容被固定导航遮挡 */
+  &__nav-spacer {
+    height: calc(var(--dc-nav-height) + env(safe-area-inset-top));
+    height: calc(var(--dc-nav-height) + constant(safe-area-inset-top));
   }
 
   &__body {
-    margin-top: 16px;
-    padding: 0 16px 24px;
+    margin-top: 46px;
     display: flex;
     flex-direction: column;
     row-gap: 12px;
@@ -239,7 +261,7 @@ watch(
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1100;
   }
 }
 
@@ -279,13 +301,15 @@ watch(
     color: inherit;
     text-align: left;
     cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
 
     .van-icon {
       color: #848488;
       font-size: 18px;
     }
   }
-
 }
 
 .card__title--section {
@@ -293,7 +317,6 @@ watch(
   font-weight: 600;
   color: #333;
 }
-
 
 /* 其它字段 */
 .field {
@@ -329,7 +352,9 @@ watch(
 
 .collapse-enter-active,
 .collapse-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 .collapse-enter-from,
 .collapse-leave-to {

@@ -35,14 +35,8 @@
       </div>
     </div>
 
-    <button
-      class="dc-cal__bar"
-      type="button"
-      :aria-expanded="!isCollapsed"
-      @click="toggleCollapse"
-    >
+    <button class="dc-cal__bar" type="button" :aria-expanded="!isCollapsed" @click="toggleCollapse">
       <span class="dc-cal__bar-handle"></span>
-      <van-icon class="dc-cal__bar-icon" :name="isCollapsed ? 'arrow-down' : 'arrow-up'" />
     </button>
 
     <van-popup v-model:show="showYearPicker" round position="bottom" :safe-area-inset-bottom="true">
@@ -92,7 +86,7 @@ watch(
       internalSelectedDate.value = val;
       visibleMonth.value = dayjs(val).startOf('month');
     }
-  },
+  }
 );
 
 const defaultWeekNames = ['一', '二', '三', '四', '五', '六', '日'];
@@ -114,7 +108,11 @@ function getTranslationWithFallback(key, params, fallback) {
 }
 
 function formatMonthLabel(monthValue) {
-  return getTranslationWithFallback('me.workTime.monthLabel', { month: monthValue }, `${monthValue}月`);
+  return getTranslationWithFallback(
+    'me.workTime.monthLabel',
+    { month: monthValue },
+    `${monthValue}月`
+  );
 }
 
 function formatYearLabel(yearValue) {
@@ -195,7 +193,9 @@ const activeWeekIndex = computed(() => {
   return idx >= 0 ? Math.floor(idx / 7) : 0;
 });
 
-const displayWeeks = computed(() => (isCollapsed.value ? [allWeeks.value[activeWeekIndex.value] || allWeeks.value[0]] : allWeeks.value));
+const displayWeeks = computed(() =>
+  isCollapsed.value ? [allWeeks.value[activeWeekIndex.value] || allWeeks.value[0]] : allWeeks.value
+);
 
 function emitSelectedDate(nextDate) {
   const formatted = dayjs(nextDate).format('YYYY-MM-DD');
@@ -402,9 +402,8 @@ watch(visibleMonth, (m) => {
 .dc-cal__bar-handle {
   width: 54px;
   height: 4px;
-  background: #333;
+  background: #000;
   border-radius: 999px;
-  opacity: 0.3;
 }
 
 .dc-cal__bar-icon {

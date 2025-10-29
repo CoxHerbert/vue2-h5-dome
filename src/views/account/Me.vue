@@ -409,7 +409,7 @@ $shadow-card: 0 12px 36px rgba(25, 81, 230, 0.08);
 
   .profile-card {
     position: relative;
-    margin: 40px 16px 0;
+    margin: 40px 12px 0;
     background: #fff;
     border-radius: 12px;
     box-shadow: $shadow-card;
@@ -576,6 +576,7 @@ $shadow-card: 0 12px 36px rgba(25, 81, 230, 0.08);
       background-image: url('/public/images/me/join-strip.svg');
       background-repeat: no-repeat;
       background-size: cover;
+      border-radius: 0 0 12px 12px;
 
       .join-strip-tail {
         position: absolute;
@@ -623,7 +624,7 @@ $shadow-card: 0 12px 36px rgba(25, 81, 230, 0.08);
     align-items: center;
     justify-content: space-between;
     .card-title {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 600;
       color: $text-main;
     }

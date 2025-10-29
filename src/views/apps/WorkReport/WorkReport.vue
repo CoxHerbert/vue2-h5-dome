@@ -3,30 +3,49 @@
     <dc-nav-bar title="工时汇报" fixed left-arrow @click-left="handleBack" />
 
     <div class="work-report__content">
-      <div class="work-report__search">
-        <van-search
-          v-model="snCode"
-          placeholder="请输入SN码查询"
-          shape="square"
-          :show-action="false"
-          @search="handleSearch"
-        />
-        <van-button type="success" class="work-report__button" @click="handleSearch">
-          <van-icon name="search" size="18" /> 查询
-        </van-button>
-        <van-button type="primary" class="work-report__button" @click="openScan">
-          <van-icon name="scan" size="18" />
-        </van-button>
+      <!-- 吸顶白卡：搜索 + 扫码 -->
+      <div ref="searchRef" class="work-report__search-card">
+        <div class="search-row">
+          <van-search
+            v-model="snCode"
+            placeholder="请输入SN码查询"
+            shape="round"
+            background="transparent"
+            :show-action="false"
+            @search="handleSearch"
+          />
+          <div class="btns">
+            <van-button class="search-btn" round type="primary" size="small" @click="handleSearch">
+              搜索
+            </van-button>
+            <van-button
+              class="scan-btn"
+              round
+              size="small"
+              plain
+              type="primary"
+              icon="scan"
+              @click="openScan"
+            />
+          </div>
+        </div>
       </div>
 
-      <van-tabs v-model:active="activeTab" class="work-report__tabs">
+      <!-- Tabs：与白卡连体视觉，吸顶在搜索卡下面 -->
+      <van-tabs
+        v-model:active="activeTab"
+        class="work-report__tabs work-report__tabs--card"
+        sticky
+        :offset-top="stickyTop"
+        swipeable
+        color="#3060ED"
+        title-active-color="#3060ED"
+        :line-height="2"
+      >
         <van-tab title="专案详情" name="detail">
-          <ProjectOverview
-            :plan-info="planInfo"
-            :color-enum="colorEnum"
-            @jump="handleJump"
-          />
+          <ProjectOverview :plan-info="planInfo" :color-enum="colorEnum" @jump="handleJump" />
         </van-tab>
+
         <van-tab title="填报工时" name="report">
           <div class="work-report__list">
             <template v-if="workRoutes.length">
@@ -56,7 +75,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, onMounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { showFailToast, showLoadingToast, showSuccessToast } from 'vant';
 import Api from '@/api';
@@ -72,19 +91,30 @@ const workRoutes = ref([]);
 const showScan = ref(false);
 const scanCodeRef = ref();
 
+// 颜色枚举
 const colorEnum = {
   延期: '#e12137',
   完成: 'green',
   进行中: '#1d65f3',
 };
 
-const hasRouteData = computed(() => workRoutes.value.some((route) => (route.children || []).length));
+const hasRouteData = computed(() =>
+  workRoutes.value.some((route) => (route.children || []).length)
+);
 
+// 吸顶偏移：导航高度 + 搜索卡高度
+const NAV_HEIGHT = 62; // 与样式中的 --nav-h 对齐，如需微调可改这里
+const searchRef = ref(null);
+const stickyTop = computed(() => NAV_HEIGHT + (searchRef.value?.offsetHeight || 56));
+onMounted(() => nextTick(() => searchRef.value?.offsetHeight));
+
+// 数据重置
 const resetData = () => {
   Object.keys(planInfo).forEach((key) => delete planInfo[key]);
   workRoutes.value = [];
 };
 
+// 接口
 const fetchPlanId = async () => {
   const { code, data, message } = await Api.application.workReport.plan.getPlanId({
     sn: snCode.value.trim(),
@@ -129,6 +159,7 @@ const fetchPlanDetail = async (planId) => {
   }
 };
 
+// 事件
 const handleSearch = async () => {
   if (!snCode.value.trim()) {
     showFailToast('请输入需要查询的SN码');
@@ -262,43 +293,100 @@ const handleBack = () => {
 
 <style scoped lang="scss">
 .work-report {
+  --nav-h: 62px; /* 与脚本中的 NAV_HEIGHT 保持一致 */
   min-height: 100vh;
   background: #f7f8fa;
   padding-bottom: calc(16px + var(--van-safe-area-bottom, 0px));
 
   &__content {
-    padding: calc(72px + var(--van-safe-area-top, 0px)) 16px 80px;
+    padding: calc(var(--nav-h) + var(--van-safe-area-top, 0px)) 16px 80px;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
   }
 
-  &__search {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  /* 吸顶白卡：搜索 + 扫码 */
+  .work-report__search-card {
+    position: sticky;
+    top: calc(var(--van-safe-area-top, 0px) + var(--nav-h));
+    z-index: 21;
+    background: #fff;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    padding: 12px;
 
-    :deep(.van-search) {
-      flex: 1;
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      :deep(.van-search) {
+        flex: 1;
+        padding: 0; /* 去掉 van-search 外层默认内边距 */
+      }
+      :deep(.van-search__content) {
+        background: #f3f5f7;
+        border-radius: 999px;
+        height: 36px;
+        min-height: 36px;
+      }
+
+      .btns {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .search-btn {
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 18px;
+        :deep(.van-button__text) {
+          font-size: 14px;
+        }
+        &.van-button--primary {
+          background: #3060ed;
+          border-color: #3060ed;
+        }
+      }
+
+      .scan-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border-radius: 50%;
+        &.van-button--plain {
+          color: #3060ed;
+          border-color: #3060ed;
+          background: transparent;
+        }
+        :deep(.van-icon) {
+          font-size: 18px;
+        }
+      }
     }
   }
 
-  &__button {
-    height: 40px;
-  }
-
-  &__tabs {
-    background: transparent;
+  /* Tabs 导航：与白卡连体视觉 */
+  .work-report__tabs.work-report__tabs--card {
+    margin-top: 0;
 
     :deep(.van-tabs__wrap) {
-      border-radius: 12px;
-      overflow: hidden;
+      background: #fff;
+      border-radius: 0 0 12px 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      border-top: 1px solid #f0f2f5;
+      z-index: 20; /* 比搜索卡略低，避免覆盖 */
     }
 
+    :deep(.van-tab) {
+      font-size: 14px;
+    }
+    :deep(.van-tabs__line) {
+      height: 2px;
+      background: #3060ed;
+    }
     :deep(.van-tab__pane) {
       padding: 16px 0 0;
+      background: transparent;
     }
   }
 
