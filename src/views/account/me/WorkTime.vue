@@ -22,7 +22,7 @@
 
       <!-- 打卡明细 -->
       <section class="card sign-detail">
-        <div class="card__title">{{ t('me.workTime.punchDetailTitle') }}</div>
+        <div class="card__title card__title--section">{{ t('me.workTime.punchDetailTitle') }}</div>
         <div class="card__content">
           <div class="field">
             <div class="field__label">{{ t('me.workTime.punchTimeLabel') }}</div>
@@ -34,7 +34,7 @@
       <!-- 分组数据 -->
       <section v-for="group in groups" :key="group.key" class="card card--collapsible" :class="{ 'is-collapsed': !isGroupExpanded(group.key) }">
         <button
-          class="card__title card__title--toggle"
+          class="card__title card__title--toggle card__title--section"
           type="button"
           :aria-expanded="isGroupExpanded(group.key)"
           @click="toggleGroup(group.key)"
@@ -229,7 +229,7 @@ watch(
     padding: 0 16px 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    row-gap: 12px;
   }
 
   &__loading {
@@ -245,8 +245,8 @@ watch(
 
 .card {
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(35, 44, 80, 0.08);
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
 
   &__title {
@@ -286,10 +286,12 @@ watch(
     }
   }
 
-  &.is-collapsed {
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-  }
+}
+
+.card__title--section {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
 }
 
 

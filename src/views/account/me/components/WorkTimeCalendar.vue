@@ -33,14 +33,17 @@
           <span class="dc-cal__text">{{ cell.day }}</span>
         </div>
       </div>
-
-      <div v-if="isCollapsed" class="dc-cal__bar"></div>
     </div>
 
-    <div class="dc-cal__toggle" @click="isCollapsed = !isCollapsed">
-      <span>{{ isCollapsed ? t('common.expand') : t('common.collapse') }}</span>
-      <van-icon :name="isCollapsed ? 'arrow-down' : 'arrow-up'" />
-    </div>
+    <button
+      class="dc-cal__bar"
+      type="button"
+      :aria-expanded="!isCollapsed"
+      @click="toggleCollapse"
+    >
+      <span class="dc-cal__bar-handle"></span>
+      <van-icon class="dc-cal__bar-icon" :name="isCollapsed ? 'arrow-down' : 'arrow-up'" />
+    </button>
 
     <van-popup v-model:show="showYearPicker" round position="bottom" :safe-area-inset-bottom="true">
       <van-picker
@@ -222,6 +225,10 @@ function goNextMonth() {
   visibleMonth.value = visibleMonth.value.add(1, 'month');
 }
 
+function toggleCollapse() {
+  isCollapsed.value = !isCollapsed.value;
+}
+
 function onYearConfirm({ selectedOptions }) {
   const y = selectedOptions?.[0]?.value;
   if (typeof y === 'number') {
@@ -375,21 +382,32 @@ watch(visibleMonth, (m) => {
 }
 
 .dc-cal__bar {
+  margin: 6px auto 0;
+  padding: 6px 0 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: #848488;
+  font-size: 13px;
+}
+
+.dc-cal__bar:active {
+  opacity: 0.8;
+}
+
+.dc-cal__bar-handle {
   width: 54px;
   height: 4px;
   background: #333;
   border-radius: 999px;
   opacity: 0.3;
-  margin: 6px auto 0;
 }
 
-.dc-cal__toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 0 2px;
-  color: #848488;
-  font-size: 13px;
+.dc-cal__bar-icon {
+  font-size: 14px;
 }
 </style>
