@@ -13,7 +13,7 @@ export default {
     {
       path: 'social',
       name: 'LOGIN_SOCIAL',
-      component: () => import('@/views/login/social.vue'),
+      component: () => import('@/views/login/Social.vue'),
       meta: { requiresAuth: false },
     },
     {
