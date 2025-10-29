@@ -10,68 +10,19 @@
       placeholder
       @click-left="handleBack"
     />
-    <div class="me-work-time__top-bg"></div>
-
     <main class="me-work-time__body">
       <!-- 日期卡片：月视图 / 周视图（收起） -->
       <section class="card card--date">
         <div class="card__title">{{ t('me.workTime.dateLabel') }}</div>
 
         <div class="card__content">
-          <!-- 日历头部 -->
-          <div class="dc-cal__header">
-            <van-icon name="arrow-left" class="dc-cal__arrow" @click="goPrevMonth" />
-            <div class="dc-cal__title">
-              <span class="dc-cal__month">{{ visibleMonth.format('M') }}月</span>
-              <button class="dc-cal__year" type="button" @click="showYearPicker = true">
-                {{ visibleMonth.format('YYYY') }}年
-                <van-icon name="arrow-down" />
-              </button>
-            </div>
-            <van-icon name="arrow" class="dc-cal__arrow" @click="goNextMonth" />
-          </div>
-
-          <!-- 星期标题 -->
-          <div class="dc-cal__week">
-            <div v-for="w in weekNames" :key="w" class="dc-cal__week-item">{{ w }}</div>
-          </div>
-
-          <!-- 日期网格：展开=整月；收起=仅选中的那一行 -->
-          <div class="dc-cal__grid" :class="{ 'is-collapsed': isCollapsed }">
-            <div v-for="(week, wIdx) in displayWeeks" :key="wIdx" class="dc-cal__row">
-              <div
-                v-for="cell in week"
-                :key="cell.date"
-                class="dc-cal__cell"
-                :class="{
-                  'is-out': !cell.inMonth,
-                  'is-today': cell.date === today,
-                  'is-selected': cell.date === selectedDate,
-                }"
-                @click="onCellClick(cell)"
-              >
-                <div v-if="cell.date === today" class="dc-cal__dot"></div>
-                <span class="dc-cal__text">{{ cell.day }}</span>
-              </div>
-            </div>
-
-            <!-- 收起态的小滑块装饰（示意） -->
-            <div v-if="isCollapsed" class="dc-cal__bar"></div>
-          </div>
-
-          <!-- 展开/收起开关 -->
-          <div class="dc-cal__toggle" @click="isCollapsed = !isCollapsed">
-            <span>{{
-              isCollapsed ? t('common.expand') || '展开' : t('common.collapse') || '收起'
-            }}</span>
-            <van-icon :name="isCollapsed ? 'arrow-down' : 'arrow-up'" />
-          </div>
+          <work-time-calendar v-model="selectedDate" />
         </div>
       </section>
 
       <!-- 打卡明细 -->
       <section class="card sign-detail">
-        <div class="card__title">{{ t('me.workTime.punchDetailTitle') }}</div>
+        <div class="card__title card__title--section">{{ t('me.workTime.punchDetailTitle') }}</div>
         <div class="card__content">
           <div class="field">
             <div class="field__label">{{ t('me.workTime.punchTimeLabel') }}</div>
@@ -81,16 +32,26 @@
       </section>
 
       <!-- 分组数据 -->
-      <section v-for="group in groups" :key="group.key" class="card">
-        <div class="card__title">{{ group.label }}</div>
-        <div class="card__content card__content--grid">
-          <div v-for="col in group.columns" :key="col.prop" class="field">
-            <div class="field__label">{{ col.label }}</div>
-            <div class="field__value" :class="{ 'field__value--zero': isZeroValue(col.prop) }">
-              {{ formatValue(col.prop) }}
+      <section v-for="group in groups" :key="group.key" class="card card--collapsible" :class="{ 'is-collapsed': !isGroupExpanded(group.key) }">
+        <button
+          class="card__title card__title--toggle card__title--section"
+          type="button"
+          :aria-expanded="isGroupExpanded(group.key)"
+          @click="toggleGroup(group.key)"
+        >
+          <span>{{ group.label }}</span>
+          <van-icon :name="isGroupExpanded(group.key) ? 'arrow-up' : 'arrow-down'" />
+        </button>
+        <transition name="collapse">
+          <div v-show="isGroupExpanded(group.key)" class="card__content card__content--grid">
+            <div v-for="col in group.columns" :key="col.prop" class="field">
+              <div class="field__label">{{ col.label }}</div>
+              <div class="field__value" :class="{ 'field__value--zero': isZeroValue(col.prop) }">
+                {{ formatValue(col.prop) }}
+              </div>
             </div>
           </div>
-        </div>
+        </transition>
       </section>
     </main>
 
@@ -100,56 +61,31 @@
       </div>
     </transition>
 
-    <!-- 年份选择器 -->
-    <van-popup v-model:show="showYearPicker" round position="bottom" :safe-area-inset-bottom="true">
-      <van-picker
-        :columns="yearColumns"
-        :default-index="yearDefaultIndex"
-        :visible-option-num="5"
-        :cancel-button-text="t('common.cancel') || '取消'"
-        :confirm-button-text="t('common.confirm') || '确定'"
-        @confirm="onYearConfirm"
-        @cancel="showYearPicker = false"
-      />
-    </van-popup>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
 import Api from '@/api/index';
 import { showToast } from 'vant';
+import WorkTimeCalendar from './components/WorkTimeCalendar.vue';
 
 const router = useRouter();
 const { t } = useI18n();
 
 const today = dayjs().format('YYYY-MM-DD');
-const selectedDate = ref(today); // 当前选中日期（字符串）
-const visibleMonth = ref(dayjs(today).startOf('month')); // 当前视图所在月份
-const isCollapsed = ref(false); // 默认先展示整月，可点击收起
-const showYearPicker = ref(false);
-
+const selectedDate = ref(today);
 const pageInfo = ref({});
 const loading = ref(false);
 
-const weekNames = ['一', '二', '三', '四', '五', '六', '日'];
-
-// 年份列（以当前年为中心，向前后各 10 年）
-const yearColumns = computed(() => {
-  const current = dayjs().year();
-  const list = [];
-  for (let y = current - 10; y <= current + 10; y++) {
-    list.push({ text: `${y}年`, value: y });
-  }
-  return list;
-});
-const yearDefaultIndex = computed(() => {
-  const y = visibleMonth.value.year();
-  const idx = yearColumns.value.findIndex((i) => i.value === y);
-  return idx >= 0 ? idx : 10;
+const expandedGroups = ref({
+  attendance: true,
+  overtime: true,
+  abnormal: true,
+  correction: true,
 });
 
 const groups = computed(() => [
@@ -215,117 +151,22 @@ const groups = computed(() => [
 
 const punchTime = computed(() => pageInfo.value?.punchCardData || t('me.workTime.emptyValue'));
 
-/** ===== 日历计算（周起始：周一） ===== */
-function buildMonthWeeks(baseMonth /* dayjs startOf('month') */) {
-  const first = baseMonth.startOf('month');
-  const last = baseMonth.endOf('month');
-  const monthStr = first.format('YYYY-MM');
-
-  // day()：0=周日...6=周六；转为周一为一周起点的偏移
-  const mondayOffset = (first.day() + 6) % 7; // 周一=0，周日=6
-  const daysInMonth = last.date();
-
-  const cells = [];
-  // 前导占位
-  for (let i = 0; i < mondayOffset; i++) {
-    const d = first.subtract(mondayOffset - i, 'day');
-    cells.push({
-      date: d.format('YYYY-MM-DD'),
-      day: d.date(),
-      inMonth: false,
-    });
-  }
-  // 当月
-  for (let i = 1; i <= daysInMonth; i++) {
-    const d = dayjs(`${monthStr}-${String(i).padStart(2, '0')}`);
-    cells.push({
-      date: d.format('YYYY-MM-DD'),
-      day: i,
-      inMonth: true,
-    });
-  }
-  // 补齐到 7 的倍数
-  const remain = (7 - (cells.length % 7)) % 7;
-  for (let i = 1; i <= remain; i++) {
-    const d = last.add(i, 'day');
-    cells.push({
-      date: d.format('YYYY-MM-DD'),
-      day: d.date(),
-      inMonth: false,
-    });
-  }
-
-  // 分周
-  const weeks = [];
-  for (let i = 0; i < cells.length; i += 7) {
-    weeks.push(cells.slice(i, i + 7));
-  }
-  return weeks;
+function isGroupExpanded(key) {
+  const state = expandedGroups.value?.[key];
+  return state !== false;
 }
 
-const allWeeks = computed(() => buildMonthWeeks(visibleMonth.value));
-
-const activeWeekIndex = computed(() => {
-  const idx = allWeeks.value.flat().findIndex((c) => c.date === selectedDate.value);
-  return idx >= 0 ? Math.floor(idx / 7) : 0;
-});
-
-const displayWeeks = computed(() => {
-  return isCollapsed.value
-    ? [allWeeks.value[activeWeekIndex.value] || allWeeks.value[0]]
-    : allWeeks.value;
-});
-
-/** ===== 交互 ===== */
-function onCellClick(cell) {
-  // 允许点击「非本月」单元直接跳转月份
-  if (!cell.inMonth) {
-    visibleMonth.value = dayjs(cell.date).startOf('month');
-  }
-  selectedDate.value = cell.date;
-  fetchDetail();
-  // 收起状态下，切换行
-  if (isCollapsed.value) {
-    // activeWeekIndex 是计算属性，selectedDate 变化后会自动更新
-  }
-}
-function goPrevMonth() {
-  visibleMonth.value = visibleMonth.value.subtract(1, 'month');
-}
-function goNextMonth() {
-  visibleMonth.value = visibleMonth.value.add(1, 'month');
-}
-function onYearConfirm({ selectedOptions }) {
-  const y = selectedOptions?.[0]?.value;
-  if (typeof y === 'number') {
-    const newMonth = visibleMonth.value.year(y);
-    // 修正日期越界（如 31 号 -> 小月）
-    const d = dayjs(selectedDate.value);
-    if (d.year() !== y) {
-      const safeDay = Math.min(d.date(), newMonth.endOf('month').date());
-      const nextSelected = newMonth.date(safeDay).format('YYYY-MM-DD');
-      selectedDate.value = nextSelected;
-      fetchDetail();
-    }
-    visibleMonth.value = newMonth.startOf('month');
-  }
-  showYearPicker.value = false;
+function toggleGroup(key) {
+  expandedGroups.value = {
+    ...expandedGroups.value,
+    [key]: !isGroupExpanded(key),
+  };
 }
 
-// 如果切换月份后，选中日期不在该月，默认把选中移动到该月的「同日或末日」
-watch(visibleMonth, (m) => {
-  const d = dayjs(selectedDate.value);
-  if (!d.isSame(m, 'month')) {
-    const safeDay = Math.min(d.date(), m.endOf('month').date());
-    selectedDate.value = m.date(safeDay).format('YYYY-MM-DD');
-    fetchDetail();
-  }
-});
-
-/** ===== 原有数据逻辑 ===== */
 function handleBack() {
   router.back();
 }
+
 function formatValue(prop) {
   const raw = pageInfo.value?.[prop];
   if (raw === undefined || raw === null || raw === '') return '0';
@@ -334,6 +175,7 @@ function formatValue(prop) {
   if (!Number.isNaN(num)) return num.toLocaleString();
   return raw;
 }
+
 function isZeroValue(prop) {
   const raw = pageInfo.value?.[prop];
   if (raw === undefined || raw === null || raw === '' || raw === '0') return true;
@@ -360,15 +202,19 @@ async function fetchDetail() {
   }
 }
 
-onMounted(() => {
-  fetchDetail();
-});
+watch(
+  selectedDate,
+  () => {
+    fetchDetail();
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped lang="scss">
 .me-work-time {
   min-height: 100vh;
-  background: linear-gradient(180deg, #3060ed 0%, rgba(48, 96, 237, 0) 200px), #f7f8fa;
+  background: #f7f8fa;
   padding: 0 0 24px;
   padding-bottom: calc(96px + constant(safe-area-inset-bottom));
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
@@ -377,17 +223,13 @@ onMounted(() => {
   &__nav {
     background: transparent;
   }
-  &__top-bg {
-    height: 160px;
-    background: #3060ed;
-  }
 
   &__body {
-    margin-top: -120px;
+    margin-top: 16px;
     padding: 0 16px 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    row-gap: 12px;
   }
 
   &__loading {
@@ -403,8 +245,8 @@ onMounted(() => {
 
 .card {
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(35, 44, 80, 0.08);
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
 
   &__title {
@@ -423,128 +265,35 @@ onMounted(() => {
   }
 }
 
-/* ===== 日历样式 ===== */
-.dc-cal__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 36px;
-  margin-bottom: 8px;
-  user-select: none;
-}
-.dc-cal__arrow {
-  font-size: 18px;
-  color: #333;
-  padding: 6px;
-  border-radius: 8px;
-  &:active {
-    background: #f2f3f5;
-  }
-}
-.dc-cal__title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-}
-.dc-cal__month {
-  font-size: 18px;
-  color: #333;
-}
-.dc-cal__year {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: 0;
-  background: transparent;
-  font-size: 14px;
-  color: #848488;
-}
+.card--collapsible {
+  .card__title--toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
 
-.dc-cal__week {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  padding: 6px 0;
-  color: #848488;
-  font-size: 12px;
-}
-.dc-cal__week-item {
-  text-align: center;
-}
-
-.dc-cal__grid {
-  position: relative;
-  display: grid;
-  grid-auto-rows: 44px; /* 每一行高度 */
-  gap: 6px;
-  margin-top: 4px;
-
-  &.is-collapsed {
-    grid-auto-rows: 44px;
-  }
-}
-.dc-cal__row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-}
-.dc-cal__cell {
-  position: relative;
-  height: 44px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #333;
-  font-size: 15px;
-  background: #fff;
-
-  &.is-out {
-    color: #c5c8ce;
-  }
-  &.is-today .dc-cal__text {
-    font-weight: 700;
-  }
-  &.is-selected {
-    background: rgba(48, 96, 237, 0.08);
-    box-shadow: inset 0 0 0 2px #3060ed;
-    color: #3060ed;
-    .dc-cal__text {
-      font-weight: 700;
+    .van-icon {
+      color: #848488;
+      font-size: 18px;
     }
   }
-}
-.dc-cal__dot {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #3060ed;
-}
-.dc-cal__text {
-  line-height: 1;
+
 }
 
-.dc-cal__bar {
-  width: 54px;
-  height: 4px;
-  background: #333;
-  border-radius: 999px;
-  opacity: 0.3;
-  margin: 6px auto 0;
+.card__title--section {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
 }
 
-.dc-cal__toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 0 2px;
-  color: #848488;
-  font-size: 13px;
-}
 
 /* 其它字段 */
 .field {
@@ -576,5 +325,15 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

@@ -1,5 +1,9 @@
 export default {
   common: {
+    cancel: 'Hủy',
+    confirm: 'Xác nhận',
+    expand: 'Mở rộng',
+    collapse: 'Thu gọn',
     errors: {
       system: 'Đã xảy ra lỗi hệ thống',
       tokenExpired: 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại',
@@ -261,6 +265,10 @@ export default {
       dateLabel: 'Ngày tra cứu',
       punchDetailTitle: 'Chi tiết chấm công',
       punchTimeLabel: 'Thời gian chấm công',
+      weekNames: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+      monthLabel: 'Tháng {month}',
+      yearLabel: 'Năm {year}',
+      yearOption: 'Năm {year}',
       groups: {
         attendance: 'Dữ liệu chấm công',
         overtime: 'Dữ liệu tăng ca',
