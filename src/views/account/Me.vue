@@ -12,54 +12,68 @@
       <div class="bg-index bg-index-2"></div>
       <div class="bg-index bg-index-1"></div>
 
-      <div class="profile-top">
-        <div class="userinfo-wrap">
-          <div class="userinfo-wrap-left">
-            <div class="avatar-and-userinfo">
-              <img
-                class="avatar"
-                :src="user.avatar || defaultAvatar"
-                alt="avatar"
-                @error="onAvatarError"
-              />
-              <div class="col">
-                <span class="name">{{
-                  user.realName || user.name || user.username || t('me.profile.unnamed')
-                }}</span>
-                <span class="uid">{{ user.account || '-' }}</span>
+      <!-- 合并后的容器：profile-top + stats -->
+      <div class="profile-meta">
+        <div class="profile-top">
+          <div class="userinfo-wrap">
+            <div class="userinfo-wrap-left">
+              <div class="avatar-and-userinfo">
+                <img
+                  class="avatar"
+                  :src="user.avatar || defaultAvatar"
+                  alt="avatar"
+                  @error="onAvatarError"
+                />
+                <div class="col">
+                  <span class="name">{{
+                    user.realName || user.name || user.username || t('me.profile.unnamed')
+                  }}</span>
+                  <span class="uid">{{ user.account || '-' }}</span>
+                </div>
+              </div>
+
+              <!-- ✨ 角色标签：超过4个显示“展开/收起” -->
+              <div v-if="roleTags.length" class="tags" :class="{ 'is-expanded': tagsExpanded }">
+                <span v-for="(tag, idx) in displayRoleTags" :key="idx" class="tag">{{ tag }}</span>
+
+                <!-- 展开/收起切换按钮（仅当超过最大显示数时出现） -->
+                <button v-if="hasMoreTags" type="button" class="tag tag-toggle" @click="toggleTags">
+                  <span>{{ tagsExpanded ? '收起' : '展开' }}</span>
+                  <van-icon :name="tagsExpanded ? 'arrow-up' : 'arrow-down'" size="12" />
+                </button>
               </div>
             </div>
-            <div v-if="roleTags.length" class="tags">
-              <span v-for="(tag, idx) in roleTags" :key="idx" class="tag">{{ tag }}</span>
+
+            <div class="points-card" @click="navigateToRoute('mePoints')">
+              <span class="points-label">{{ t('me.dashboard.pointsLabel') }}</span>
+              <span class="points-val">{{ stats.pointsDisplay }}</span>
             </div>
           </div>
-          <div class="points-card" @click="navigateToRoute('mePoints')">
-            <span class="points-label">{{ t('me.dashboard.pointsLabel') }}</span>
-            <span class="points-val">{{ stats.pointsDisplay }}</span>
-          </div>
+        </div>
+
+        <div class="stats">
+          <button
+            v-for="metric in metrics"
+            :key="metric.key"
+            type="button"
+            class="stat"
+            @click="navigateToRoute(metric.routeName)"
+          >
+            <span class="stat-label">{{ metric.label }}</span>
+            <span class="stat-num">{{ metric.display }}</span>
+          </button>
         </div>
       </div>
 
-      <div class="stats">
-        <button
-          v-for="metric in metrics"
-          :key="metric.key"
-          type="button"
-          class="stat"
-          @click="navigateToRoute(metric.routeName)"
-        >
-          <span class="stat-label">{{ metric.label }}</span>
-          <span class="stat-num">{{ metric.display }}</span>
-        </button>
+      <!-- ✅ 红框样式：胶囊条 + 右侧白色斜切缺口 -->
+      <div class="join-strip">
+        <span class="join-strip-text">{{ joinDaysText }}</span>
       </div>
-
-      <div class="join-strip" :style="joinStripStyle">{{ joinDaysText }}</div>
     </section>
 
     <section class="card punch-card" @click="navigateToRoute('mePunch')">
       <div class="card-title-row">
         <span class="card-title">{{ t('me.dashboard.todayPunch.title') }}</span>
-        <!-- <van-icon name="arrow" class="arrow" /> -->
       </div>
       <div v-if="punchRecords.length" class="timeline">
         <div v-for="(time, index) in punchRecords" :key="index" class="tl-item">
@@ -87,9 +101,7 @@
           class="func-item"
           @click="handleFunction(item)"
         >
-          <span class="func-icon">
-            <img :src="item.icon" :alt="item.label" class="func-icon__image" loading="lazy" />
-          </span>
+          <img class="func-icon" :src="item.icon" :alt="item.label" loading="lazy" />
           <span class="func-text">{{ item.label }}</span>
         </div>
       </div>
@@ -170,6 +182,7 @@ import { showConfirmDialog, showToast } from 'vant';
 import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
 import Api from '@/api';
+
 const { proxy } = getCurrentInstance();
 const workTimeIcon = proxy.$assetUrl('/images/me/worktime.svg');
 const punchRecordIcon = proxy.$assetUrl('/images/me/card.svg');
@@ -178,9 +191,8 @@ const auth = useAuthStore();
 const userStore = useUserStore();
 const { t } = useI18n();
 
-// 页面取用户信息：来自 user 仓库
 const user = computed(() => userStore.userInfo || {});
-const userH5 = reactive({});
+const userH5 = ref({});
 
 const stats = computed(() => {
   const info = userH5.value || {};
@@ -253,59 +265,49 @@ function navigateToRoute(name) {
   if (typeof router.hasRoute === 'function' && !router.hasRoute(name)) return;
   router.push({ name });
 }
-
 function handleFunction(item) {
-  if (!item) return;
-  navigateToRoute(item.routeName);
+  if (item) navigateToRoute(item.routeName);
 }
 
-// 工具：数组/逗号字符串 → 数组
 const toArrayValue = (v) => {
   if (!v) return [];
-  if (Array.isArray(v)) {
-    return v.map((item) => String(item).trim()).filter(Boolean);
-  }
+  if (Array.isArray(v)) return v.map((i) => String(i).trim()).filter(Boolean);
   return String(v)
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
 };
-
-// 展示文本
 const toNiceText = (v) => toArrayValue(v).join('、') || '';
 
 const roleTags = computed(() => {
   const tags = toArrayValue(user.value.roleNames);
-  if (tags.length) return tags;
-  return toArrayValue(user.value.roleName);
+  return tags.length ? tags : toArrayValue(user.value.roleName);
 });
-
 const roleText = computed(
   () => toNiceText(user.value.roleNames) || toNiceText(user.value.roleName) || '-'
 );
 const postText = computed(
   () => toNiceText(user.value.postNames) || toNiceText(user.value.postName) || '-'
 );
-const joinedDateText = computed(() => {
-  const s = user.value.joinedDate;
-  return s ? String(s).split(' ')[0] : '-';
-});
+const joinedDateText = computed(() =>
+  user.value.joinedDate ? String(user.value.joinedDate).split(' ')[0] : '-'
+);
 
-// 默认头像：/public/images/logo.png
 const defaultAvatar = proxy.$assetUrl('/images/logo.png');
-const onAvatarError = (e) => {
-  e.target.src = defaultAvatar;
-};
+const onAvatarError = (e) => (e.target.src = defaultAvatar);
 
-const joinStripUrl = proxy.$assetUrl('/images/me/join-strip.svg');
-const joinStripStyle = computed(() => ({
-  backgroundImage: `url(${joinStripUrl})`,
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: 'cover',
-}));
+/** ===== 角色标签展开/收起（阈值=4） ===== */
+const tagsExpanded = ref(false);
+const MAX_VISIBLE_TAGS = 3; // 仅改这一行为 4
+const hasMoreTags = computed(() => roleTags.value.length > MAX_VISIBLE_TAGS);
+const displayRoleTags = computed(() =>
+  tagsExpanded.value ? roleTags.value : roleTags.value.slice(0, MAX_VISIBLE_TAGS)
+);
+function toggleTags() {
+  tagsExpanded.value = !tagsExpanded.value;
+}
+/** ===== /角色标签展开/收起 ===== */
 
-// 修改密码
 const pwd = reactive({
   show: false,
   oldPassword: '',
@@ -314,6 +316,7 @@ const pwd = reactive({
   loading: false,
 });
 const pwdFormRef = ref();
+
 function openPwdPopup() {
   pwd.show = true;
 }
@@ -330,16 +333,12 @@ async function submitChangePwd() {
     return showToast(t('me.validation.confirmPassword'));
   try {
     pwd.loading = true;
-    await userStore.changePassword({
-      oldPassword: pwd.oldPassword,
-      newPassword: pwd.newPassword,
-    });
+    await userStore.changePassword({ oldPassword: pwd.oldPassword, newPassword: pwd.newPassword });
     showToast(t('me.toast.changePasswordSuccess'));
     pwd.show = false;
     pwd.oldPassword = '';
     pwd.newPassword = '';
     pwd.confirmPassword = '';
-    // await doLogout(true);
   } catch (err) {
     showToast(err?.message || t('me.toast.changePasswordFail'));
   } finally {
@@ -359,376 +358,382 @@ async function confirmLogout() {
   } catch {}
 }
 
-// 你的页面里
 async function doLogout(force = false) {
-  auth.logout(); // 清 token/refreshToken/用户信息:contentReference[oaicite:5]{index=5}
+  auth.logout();
   router.replace(force ? { path: '/login', query: { relogin: 1 } } : { path: '/login' });
 }
 
-// 若进入页面时本地无资料，则拉一次
 onMounted(() => {
   Api.user.getH5UserInfo().then((res) => {
     const { code, data } = res.data;
-    if (code === 200) {
-      userH5.value = data;
-    }
+    if (code === 200) userH5.value = data;
   });
-  // if (!userStore.userInfo && auth.isLogin) {
-  //   userStore.fetchUserInfo().catch(() => {});
-  // }
 });
 </script>
 
-<style scoped>
-.mine {
+<style lang="scss" scoped>
+$primary: #3060ed;
+$text-main: #1f2b3d;
+$text-sub: #8c9aaf;
+$shadow-card: 0 12px 36px rgba(25, 81, 230, 0.08);
+
+.page.mine {
   position: relative;
   margin: 0 auto;
-  /* min-height: 100vh; */
   max-width: 750px;
   padding: 56px 0 120px;
   padding-bottom: calc(120px + constant(safe-area-inset-bottom));
   padding-bottom: calc(120px + env(safe-area-inset-bottom));
   background: #f6f7fb;
-}
 
-.top-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 240px;
-  background: linear-gradient(
-    180deg,
-    #3060ed 0%,
-    rgba(48, 96, 237, 0.3) 64%,
-    rgba(48, 96, 237, 0) 100%
-  );
-  z-index: 0;
-}
+  .top-bg {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 240px;
+    background: linear-gradient(
+      180deg,
+      $primary 0%,
+      rgba(48, 96, 237, 0.3) 64%,
+      rgba(48, 96, 237, 0) 100%
+    );
+    z-index: 0;
+  }
 
-.mine-nav {
-  background: transparent;
-  color: #fff;
-  --van-nav-bar-title-text-color: #fff;
-  --van-nav-bar-icon-color: #fff;
-  --van-nav-bar-text-color: #fff;
-}
+  .mine-nav {
+    background: transparent;
+    color: #fff;
+    --van-nav-bar-title-text-color: #fff;
+    --van-nav-bar-icon-color: #fff;
+    --van-nav-bar-text-color: #fff;
+  }
 
-.profile-card {
-  position: relative;
-  margin: 40px 16px 0;
-  padding: 24px;
-  background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 12px 36px rgba(25, 81, 230, 0.08);
-  z-index: 1;
-}
+  .profile-card {
+    position: relative;
+    margin: 40px 16px 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: $shadow-card;
+    z-index: 1;
 
-.bg-index {
-  position: absolute;
-  top: -12px;
-  left: 0;
-  width: calc(100% - 16px);
-  height: 260px;
-  background: rgba(255, 255, 255, 0.35);
-  border-radius: 24px;
-  transform-origin: center;
-}
+    .bg-index {
+      position: absolute;
+      top: -12px;
+      left: 0;
+      width: calc(100% - 16px);
+      height: 230px;
+      background: rgba(255, 255, 255, 0.35);
+      border-radius: 12px;
+      transform-origin: center;
 
-.bg-index-1 {
-  z-index: -1;
-  transform: rotate(-4deg);
-}
+      &-1 {
+        z-index: -1;
+        transform: rotate(-4deg);
+      }
+      &-2 {
+        z-index: -2;
+        transform: rotate(-8deg);
+      }
+    }
 
-.bg-index-2 {
-  z-index: -2;
-  transform: rotate(-8deg);
-}
+    .profile-meta {
+      padding: 20px;
+      padding-bottom: 0;
+      display: grid;
+      grid-template-rows: auto auto;
 
-.profile-top {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+      .profile-top {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
 
-.userinfo-wrap {
-  display: flex;
-  align-items: stretch;
-  gap: 16px;
-}
+        .userinfo-wrap {
+          display: flex;
+          align-items: stretch;
+          gap: 16px;
 
-.userinfo-wrap-left {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+          .userinfo-wrap-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
 
-.avatar-and-userinfo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+            .avatar-and-userinfo {
+              display: flex;
+              align-items: center;
+              gap: 12px;
 
-.avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  object-fit: cover;
-  border: 1px solid #dadbe0;
-  background: #f2f3f5;
-}
+              .avatar {
+                width: 44px;
+                height: 44px;
+                border-radius: 9px;
+                object-fit: cover;
+                border: 1px solid #dadbe0;
+                background: #f2f3f5;
+              }
 
-.col {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+              .col {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                .name {
+                  font-size: 18px;
+                  font-weight: 700;
+                  color: $text-main;
+                }
+                .uid {
+                  font-size: 13px;
+                  color: $text-sub;
+                }
+              }
+            }
 
-.name {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1f2b3d;
-}
+            /* ===== 角色标签（支持展开/收起） ===== */
+            .tags {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 6px;
+              .tag {
+                padding: 4px 10px;
+                border-radius: 12px;
+                background: #baccff;
+                color: $primary;
+                font-size: 12px;
+                line-height: 1;
+              }
+              .tag-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                background: rgba(48, 96, 237, 0.12);
+                border: 1px solid rgba(48, 96, 237, 0.25);
+              }
+            }
+            /* ===== /角色标签 ===== */
+          }
 
-.uid {
-  font-size: 13px;
-  color: #8c9aaf;
-}
+          .points-card {
+            width: 66px;
+            min-width: 66px;
+            height: 66px;
+            border-radius: 12px;
+            background: $primary;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: none;
+            cursor: pointer;
+            .points-label {
+              font-size: 12px;
+              opacity: 0.85;
+            }
+            .points-val {
+              font-size: 24px;
+              font-weight: 700;
+            }
+          }
+        }
+      }
 
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: 0;
 
-.tag {
-  padding: 4px 10px;
-  border-radius: 12px;
-  background: #baccff;
-  color: #3060ed;
-  font-size: 12px;
-}
+        .stat {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 8px;
+          padding: 16px 0;
+          background: transparent;
+          border-radius: 16px;
+          border: none;
+          color: $text-main;
+          cursor: pointer;
+          .stat-label {
+            font-size: 13px;
+            color: $text-sub;
+            text-align: center;
+          }
+          .stat-num {
+            font-size: 26px;
+            font-weight: 700;
+          }
+        }
+      }
+    }
 
-.points-card {
-  width: 102px;
-  min-width: 102px;
-  height: 102px;
-  border-radius: 24px;
-  background: #3060ed;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  border: none;
-  cursor: pointer;
-}
+    /* ===== 红框样式：join-strip ===== */
+    .join-strip {
+      position: relative;
+      width: 100%;
+      height: 30px;
+      overflow: hidden;
+      background-image: url('/public/images/me/join-strip.svg');
+      background-repeat: no-repeat;
+      background-size: cover;
 
-.points-label {
-  font-size: 12px;
-  opacity: 0.85;
-}
+      .join-strip-tail {
+        position: absolute;
+        right: 6px;
+        top: 0;
+        width: 14px;
+        height: 100%;
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+        z-index: 3;
+        pointer-events: none;
+      }
 
-.points-val {
-  font-size: 24px;
-  font-weight: 700;
-}
+      .join-strip-text {
+        position: relative;
+        z-index: 4;
+        height: 100%;
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        color: #fff;
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+    /* ===== /join-strip ===== */
+  }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 24px;
-}
+  .card {
+    position: relative;
+    margin: 12px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: $shadow-card;
+    padding: 20px 24px;
+  }
+  .punch-card {
+    cursor: pointer;
+  }
 
-.stat {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 0;
-  background: #f7f8ff;
-  border-radius: 16px;
-  border: none;
-  color: #1f2b3d;
-  cursor: pointer;
-}
+  .card-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: $text-main;
+    }
+    .arrow {
+      color: #c5ccda;
+    }
+  }
 
-.stat-label {
-  font-size: 13px;
-  color: #8c9aaf;
-  text-align: center;
-}
+  .timeline {
+    margin-top: 16px;
 
-.stat-num {
-  font-size: 26px;
-  font-weight: 700;
-}
+    .tl-item {
+      display: flex;
+      gap: 12px;
+      & + .tl-item {
+        margin-top: 12px;
+      }
 
-.join-strip {
-  margin-top: 20px;
-  padding: 16px 24px;
-  border-radius: 20px;
-  background-color: #3060ed;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-}
+      .tl-left {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        .dot {
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: #1d65f3;
+          border: 4px solid #b4cdff;
+          box-sizing: border-box;
+        }
+        .line {
+          flex: 1;
+          width: 2px;
+          margin-top: 6px;
+          border-left: 1px dashed #bbbbbb;
+        }
+      }
 
-.card {
-  position: relative;
-  margin: 16px;
-  background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 12px 36px rgba(25, 81, 230, 0.08);
-  padding: 20px 24px;
-}
+      .tl-content {
+        flex: 1;
+        .tl-title {
+          font-size: 13px;
+          color: #5f6b7a;
+        }
+        .tl-time {
+          margin-top: 4px;
+          font-size: 16px;
+          color: $text-main;
+          font-weight: 500;
+        }
+      }
+    }
 
-.punch-card {
-  cursor: pointer;
-}
+    .timeline-empty {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #9aa2b1;
+    }
+  }
 
-.card-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+  .func-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
 
-.card-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1f2b3d;
-}
+    .func-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+      .func-icon {
+        width: 28px;
+        height: 28px;
+        color: $primary;
+        object-fit: contain;
+      }
+      .func-text {
+        font-size: 14px;
+        color: #353638;
+      }
+    }
+  }
 
-.arrow {
-  color: #c5ccda;
-}
+  .mt12 {
+    margin: 12px 16px 0;
+  }
 
-.timeline {
-  margin-top: 16px;
-}
-
-.tl-item {
-  display: flex;
-  gap: 12px;
-}
-
-.tl-item + .tl-item {
-  margin-top: 12px;
-}
-
-.tl-left {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #1d65f3;
-  border: 4px solid #b4cdff;
-  box-sizing: border-box;
-}
-
-.line {
-  flex: 1;
-  width: 2px;
-  margin-top: 6px;
-  border-left: 1px dashed #bbbbbb;
-}
-
-.tl-content {
-  flex: 1;
-}
-
-.tl-title {
-  font-size: 13px;
-  color: #5f6b7a;
-}
-
-.tl-time {
-  margin-top: 4px;
-  font-size: 16px;
-  color: #1f2b3d;
-  font-weight: 500;
-}
-
-.timeline-empty {
-  margin-top: 16px;
-  font-size: 13px;
-  color: #9aa2b1;
-}
-
-.func-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.func-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  border-radius: 16px;
-  border: none;
-  cursor: pointer;
-}
-
-.func-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  background: #e4ebff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #3060ed;
-  font-size: 24px;
-}
-
-.func-icon__image {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-.func-text {
-  font-size: 14px;
-  color: #353638;
-}
-
-.mt12 {
-  margin: 12px 16px 0;
-}
-
-.sheet {
-  padding: 16px;
-}
-
-.sheet-title {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.action {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin: 16px 0 8px;
-}
-
-.mr8 {
-  margin-right: 0;
+  .sheet {
+    padding: 16px;
+    .sheet-title {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .action {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0 8px;
+      .mr8 {
+        margin-right: 0;
+      }
+    }
+  }
 }
 
 button {
