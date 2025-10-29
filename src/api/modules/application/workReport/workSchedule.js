@@ -4,7 +4,7 @@ export default {
   // 缺料查询接口
   getMaterialInfo(params) {
     return request({
-      url: '/api/blade-bip/mps/work-schedule/get-material-info',
+      url: '/blade-bip/mps/work-schedule/get-material-info',
       method: 'get',
       params,
     });

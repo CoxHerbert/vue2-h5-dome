@@ -4,7 +4,7 @@ export default {
   // 明细列表
   getPlanId(params) {
     return request({
-      url: '/api/blade-bip/plan/find-plan-id-by-sn',
+      url: '/blade-bip/plan/find-plan-id-by-sn',
       method: 'get',
       params,
     });
@@ -12,7 +12,7 @@ export default {
   // 详情
   getPlanDetail(params) {
     return request({
-      url: '/api/blade-bip/plan/find-plan-id-by-plan',
+      url: '/blade-bip/plan/find-plan-id-by-plan',
       method: 'get',
       params,
     });

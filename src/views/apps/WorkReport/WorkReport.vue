@@ -229,7 +229,7 @@ const handleSubmit = async () => {
   }
   const toast = showLoadingToast({ message: '提交中… / Đang gửi…', duration: 0, forbidClick: true });
   try {
-    const res = await Api.application.workReport.wksr.reporSavetSubmit(payload);
+    const res = await Api.application.workReport.wksr.reportSave(payload);
     if (res.code === 200) {
       snCode.value = '';
       resetData();
