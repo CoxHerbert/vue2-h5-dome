@@ -10,8 +10,6 @@
       placeholder
       @click-left="handleBack"
     />
-    <div class="me-work-time__top-bg"></div>
-
     <main class="me-work-time__body">
       <!-- 日期卡片：月视图 / 周视图（收起） -->
       <section class="card card--date">
@@ -399,7 +397,7 @@ onMounted(() => {
 <style scoped lang="scss">
 .me-work-time {
   min-height: 100vh;
-  background: linear-gradient(180deg, #3060ed 0%, rgba(48, 96, 237, 0) 200px), #f7f8fa;
+  background: #f7f8fa;
   padding: 0 0 24px;
   padding-bottom: calc(96px + constant(safe-area-inset-bottom));
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
@@ -408,13 +406,9 @@ onMounted(() => {
   &__nav {
     background: transparent;
   }
-  &__top-bg {
-    height: 160px;
-    background: #3060ed;
-  }
 
   &__body {
-    margin-top: -120px;
+    margin-top: 16px;
     padding: 0 16px 24px;
     display: flex;
     flex-direction: column;
