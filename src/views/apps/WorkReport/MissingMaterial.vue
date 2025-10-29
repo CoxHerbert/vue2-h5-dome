@@ -46,7 +46,9 @@ const fetchData = async () => {
   if (!billNumber.value) return;
   const toast = showLoadingToast({ message: '加载中…', duration: 0, forbidClick: true });
   try {
-    const res = await Api.mps.workSchedule.getMaterialInfo({ billNumber: billNumber.value });
+    const res = await Api.application.workReport.workSchedule.getMaterialInfo({
+      billNumber: billNumber.value,
+    });
     if (res.code === 200 && Array.isArray(res.data)) {
       dataList.value = res.data;
     } else {

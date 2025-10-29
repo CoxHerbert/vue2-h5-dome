@@ -5,7 +5,6 @@ import auth from './modules/auth';
 import user from './modules/user';
 import urlMatch from './modules/urlMatch';
 import application from './modules/application/index';
-import mps from './modules/mps';
 
 export default {
   recruit,
@@ -15,5 +14,4 @@ export default {
   user,
   urlMatch,
   application,
-  mps,
 };

@@ -86,14 +86,16 @@ const resetData = () => {
 };
 
 const fetchPlanId = async () => {
-  const { data } = await Api.mps.plan.getPlanId({ sn: snCode.value.trim() });
+  const { data } = await Api.application.workReport.plan.getPlanId({
+    sn: snCode.value.trim(),
+  });
   return data;
 };
 
 const fetchPlanDetail = async (planId) => {
   const [planRes, detailRes] = await Promise.all([
-    Api.mps.plan.getPlanDetail({ id: planId }),
-    Api.mps.wksr.planDetail({ planId }),
+    Api.application.workReport.plan.getPlanDetail({ id: planId }),
+    Api.application.workReport.wksr.planDetail({ planId }),
   ]);
   if (planRes.code === 200 && planRes.data) {
     Object.assign(planInfo, planRes.data || {});
@@ -227,7 +229,7 @@ const handleSubmit = async () => {
   }
   const toast = showLoadingToast({ message: '提交中…', duration: 0, forbidClick: true });
   try {
-    const res = await Api.mps.wksr.reporSavetSubmit(payload);
+    const res = await Api.application.workReport.wksr.reporSavetSubmit(payload);
     if (res.code === 200) {
       snCode.value = '';
       resetData();

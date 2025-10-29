@@ -1,9 +1,11 @@
 // src/modules/inventory.js
 import request from '@/utils/http';
 import planSheep from './planSheep';
+import workReport from './workReport';
 
 export default {
   planSheep,
+  workReport,
   // 入库单列表
   inventoryList(params) {
     return request({
