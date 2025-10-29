@@ -126,19 +126,21 @@ function formatYearOption(yearValue) {
 const currentMonthLabel = computed(() => formatMonthLabel(visibleMonth.value.format('M')));
 const currentYearLabel = computed(() => formatYearLabel(visibleMonth.value.format('YYYY')));
 
+const currentYear = computed(() => dayjs().year());
+
 const yearColumns = computed(() => {
-  const current = dayjs().year();
   const list = [];
-  for (let y = current - 10; y <= current + 10; y++) {
+  const maxYear = currentYear.value;
+  const minYear = maxYear - 10;
+  for (let y = minYear; y <= maxYear; y++) {
     list.push({ text: formatYearOption(y), value: y });
   }
   return list;
 });
 
 const yearDefaultIndex = computed(() => {
-  const y = visibleMonth.value.year();
-  const idx = yearColumns.value.findIndex((i) => i.value === y);
-  return idx >= 0 ? idx : 10;
+  const idx = yearColumns.value.findIndex((i) => i.value === currentYear.value);
+  return idx >= 0 ? idx : yearColumns.value.length - 1;
 });
 
 function buildMonthWeeks(baseMonth) {
