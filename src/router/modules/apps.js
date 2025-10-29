@@ -54,13 +54,13 @@ export default {
       path: 'work-report',
       name: 'appsWorkReport',
       meta: { title: '工时汇报', requiresAuth: true },
-      component: () => import('@/views/apps/SNReportWork/WorkReport.vue'),
+      component: () => import('@/views/apps/WorkReport/WorkReport.vue'),
     },
     {
       path: 'work-report/missing-material',
       name: 'appsWorkReportMissingMaterial',
       meta: { title: '缺料明细', requiresAuth: true },
-      component: () => import('@/views/apps/SNReportWork/MissingMaterial.vue'),
+      component: () => import('@/views/apps/WorkReport/MissingMaterial.vue'),
     },
     {
       path: 'picking-confirmation',
