@@ -216,6 +216,8 @@ export default {
     profile: {
       unnamed: 'Người dùng chưa đặt tên',
       account: 'Tài khoản',
+      expandRoles: 'Hiển thị thêm ({count})',
+      collapseRoles: 'Thu gọn',
     },
     cells: {
       position: 'Chức vụ',

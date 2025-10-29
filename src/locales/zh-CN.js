@@ -216,6 +216,8 @@ export default {
     profile: {
       unnamed: '未命名用户',
       account: '账号',
+      expandRoles: '展开更多({count})',
+      collapseRoles: '收起',
     },
     cells: {
       position: '职位',
