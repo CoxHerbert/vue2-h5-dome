@@ -1,9 +1,9 @@
 <template>
   <div class="work-route-card">
     <div class="work-route-card__header">
-      <div class="work-route-card__title">工艺 / Quy trình: {{ route.produceRouteName || '-' }}</div>
+      <div class="work-route-card__title">{{ t('workReport.routeCard.title') }}: {{ route.produceRouteName || '-' }}</div>
       <div class="work-route-card__switch">
-        <span>标记完工 / Đánh dấu hoàn thành:</span>
+        <span>{{ t('workReport.routeCard.complete') }}:</span>
         <van-switch :model-value="Boolean(route.isComplete)" size="20" @change="handleCompleteChange" />
       </div>
     </div>
@@ -12,24 +12,24 @@
       <div v-for="material in route.children || []" :key="material.id" class="work-route-card__group">
         <div class="work-route-card__group-title">{{ material.materialName || '-' }}</div>
         <div class="work-route-card__row">
-          <span class="work-route-card__label">计划单号 / Mã kế hoạch:</span>
+          <span class="work-route-card__label">{{ t('workReport.routeCard.planNumber') }}:</span>
           <span class="work-route-card__value">{{ material.billNumber || '-' }}</span>
         </div>
         <div class="work-route-card__row">
-          <span class="work-route-card__label">工时统计 / Thống kê giờ:</span>
+          <span class="work-route-card__label">{{ t('workReport.routeCard.hourStats') }}:</span>
           <span class="work-route-card__value">
-            {{ formatHour(material.reportWorkingHours) }}/{{ formatHour(material.processTime) }}时 / giờ
+            {{ formatHour(material.reportWorkingHours) }}/{{ formatHour(material.processTime) }}{{ t('workReport.routeCard.units.hour') }}
           </span>
         </div>
         <div class="work-route-card__row">
-          <span class="work-route-card__label">数量工时 / Số lượng giờ:</span>
+          <span class="work-route-card__label">{{ t('workReport.routeCard.quantityStats') }}:</span>
           <span class="work-route-card__value">
-            {{ toNumber(material.reportNumber) }}/{{ toNumber(material.number) }}个 / cái
+            {{ toNumber(material.reportNumber) }}/{{ toNumber(material.number) }}{{ t('workReport.routeCard.units.piece') }}
           </span>
         </div>
         <div class="work-route-card__edit">
           <div class="work-route-card__field">
-            <span class="work-route-card__label">工时 / Giờ:</span>
+            <span class="work-route-card__label">{{ t('workReport.routeCard.hour') }}:</span>
             <van-stepper
               :model-value="material.reportHour"
               :min="0"
@@ -39,7 +39,7 @@
             />
           </div>
           <div class="work-route-card__field">
-            <span class="work-route-card__label">数量 / Số lượng:</span>
+            <span class="work-route-card__label">{{ t('workReport.routeCard.quantity') }}:</span>
             <van-stepper
               integer
               :model-value="material.reportQty"
@@ -55,6 +55,8 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
 const props = defineProps({
   route: {
     type: Object,
@@ -63,6 +65,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['toggle-complete', 'change-report-hour', 'change-report-qty']);
+
+const { t } = useI18n();
 
 const formatHour = (seconds) => {
   const value = Number(seconds);

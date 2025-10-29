@@ -43,6 +43,7 @@ import { changeLocale } from '@/locales';
 const LANGUAGE_OPTIONS = [
   { value: 'zh-CN', label: '简体中文' },
   { value: 'en-US', label: 'English' },
+  { value: 'vi-VN', label: 'Tiếng Việt' },
 ];
 
 const props = defineProps({

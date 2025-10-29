@@ -1,15 +1,15 @@
 <template>
   <div class="missing-material page">
-    <dc-nav-bar title="缺料明细 / Chi tiết thiếu liệu" fixed left-arrow @click-left="handleBack" />
+    <dc-nav-bar :title="t('workReport.missingMaterial.navTitle')" fixed left-arrow @click-left="handleBack" />
 
     <div class="missing-material__content">
       <div v-if="dataList.length" class="missing-material__table">
         <div class="missing-material__row missing-material__row--head">
-          <span class="col-index">序号 / STT</span>
-          <span class="col-code">物料编码 / Mã vật liệu</span>
-          <span class="col-name">物料名称 / Tên vật liệu</span>
-          <span class="col-qty">库存/需求 / Tồn kho/Nhu cầu</span>
-          <span class="col-date">预计交货日 / Ngày giao dự kiến</span>
+          <span class="col-index">{{ t('workReport.missingMaterial.columns.index') }}</span>
+          <span class="col-code">{{ t('workReport.missingMaterial.columns.code') }}</span>
+          <span class="col-name">{{ t('workReport.missingMaterial.columns.name') }}</span>
+          <span class="col-qty">{{ t('workReport.missingMaterial.columns.inventory') }}</span>
+          <span class="col-date">{{ t('workReport.missingMaterial.columns.date') }}</span>
         </div>
         <div v-for="(item, index) in dataList" :key="item.id || index" class="missing-material__row">
           <span class="col-index">{{ index + 1 }}</span>
@@ -19,7 +19,7 @@
           <span class="col-date">{{ item.deliveryDate || '-' }}</span>
         </div>
       </div>
-      <van-empty v-else description="暂无缺料信息 / Chưa có thông tin thiếu liệu" />
+      <van-empty v-else :description="t('workReport.missingMaterial.empty')" />
     </div>
   </div>
 </template>
@@ -28,10 +28,12 @@
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showFailToast, showLoadingToast } from 'vant';
+import { useI18n } from 'vue-i18n';
 import Api from '@/api';
 
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
 
 const dataList = ref([]);
 
@@ -44,7 +46,7 @@ const formatNumber = (value) => {
 
 const fetchData = async () => {
   if (!billNumber.value) return;
-  const toast = showLoadingToast({ message: '加载中… / Đang tải…', duration: 0, forbidClick: true });
+  const toast = showLoadingToast({ message: t('workReport.toast.loading'), duration: 0, forbidClick: true });
   try {
     const res = await Api.application.workReport.workSchedule.getMaterialInfo({
       billNumber: billNumber.value,
@@ -53,10 +55,10 @@ const fetchData = async () => {
       dataList.value = res.data;
     } else {
       dataList.value = [];
-      showFailToast(res.message || '未获取到缺料信息 / Không lấy được thông tin thiếu liệu');
+      showFailToast(res.message || t('workReport.missingMaterial.toast.loadFail'));
     }
   } catch (error) {
-    showFailToast(error?.message || '获取失败 / Lấy thất bại');
+    showFailToast(error?.message || t('workReport.missingMaterial.toast.fetchFail'));
   } finally {
     toast.close();
   }
@@ -68,7 +70,7 @@ onMounted(() => {
     billNumber.value = queryBillNumber;
     fetchData();
   } else {
-    showFailToast('缺少单号信息 / Thiếu thông tin mã đơn');
+    showFailToast(t('workReport.missingMaterial.toast.missingBillNumber'));
   }
 });
 
