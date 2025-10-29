@@ -1,15 +1,15 @@
 <template>
   <div class="missing-material page">
-    <dc-nav-bar :title="t('workReport.missingMaterial.navTitle')" fixed left-arrow @click-left="handleBack" />
+    <dc-nav-bar title="缺料明细" fixed left-arrow @click-left="handleBack" />
 
     <div class="missing-material__content">
       <div v-if="dataList.length" class="missing-material__table">
         <div class="missing-material__row missing-material__row--head">
-          <span class="col-index">{{ t('workReport.missingMaterial.columns.index') }}</span>
-          <span class="col-code">{{ t('workReport.missingMaterial.columns.code') }}</span>
-          <span class="col-name">{{ t('workReport.missingMaterial.columns.name') }}</span>
-          <span class="col-qty">{{ t('workReport.missingMaterial.columns.inventory') }}</span>
-          <span class="col-date">{{ t('workReport.missingMaterial.columns.date') }}</span>
+          <span class="col-index">序号</span>
+          <span class="col-code">物料编码</span>
+          <span class="col-name">物料名称</span>
+          <span class="col-qty">库存/需求</span>
+          <span class="col-date">预计交货日</span>
         </div>
         <div v-for="(item, index) in dataList" :key="item.id || index" class="missing-material__row">
           <span class="col-index">{{ index + 1 }}</span>
@@ -19,7 +19,7 @@
           <span class="col-date">{{ item.deliveryDate || '-' }}</span>
         </div>
       </div>
-      <van-empty v-else :description="t('workReport.missingMaterial.empty')" />
+      <van-empty v-else description="暂无缺料信息" />
     </div>
   </div>
 </template>
@@ -28,13 +28,10 @@
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showFailToast, showLoadingToast } from 'vant';
-import { useI18n } from 'vue-i18n';
 import Api from '@/api';
 
 const router = useRouter();
 const route = useRoute();
-const { t } = useI18n();
-
 const dataList = ref([]);
 
 const billNumber = ref('');
@@ -46,7 +43,7 @@ const formatNumber = (value) => {
 
 const fetchData = async () => {
   if (!billNumber.value) return;
-  const toast = showLoadingToast({ message: t('workReport.toast.loading'), duration: 0, forbidClick: true });
+  const toast = showLoadingToast({ message: '加载中…', duration: 0, forbidClick: true });
   try {
     const res = await Api.application.workReport.workSchedule.getMaterialInfo({
       billNumber: billNumber.value,
@@ -55,10 +52,10 @@ const fetchData = async () => {
       dataList.value = res.data;
     } else {
       dataList.value = [];
-      showFailToast(res.message || t('workReport.missingMaterial.toast.loadFail'));
+      showFailToast(res.message || '未获取到缺料信息');
     }
   } catch (error) {
-    showFailToast(error?.message || t('workReport.missingMaterial.toast.fetchFail'));
+    showFailToast(error?.message || '获取失败');
   } finally {
     toast.close();
   }
@@ -70,7 +67,7 @@ onMounted(() => {
     billNumber.value = queryBillNumber;
     fetchData();
   } else {
-    showFailToast(t('workReport.missingMaterial.toast.missingBillNumber'));
+    showFailToast('缺少单号信息');
   }
 });
 
