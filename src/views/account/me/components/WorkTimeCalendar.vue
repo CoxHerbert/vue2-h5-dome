@@ -135,7 +135,7 @@ const yearColumns = computed(() => {
   const list = [];
   const maxYear = currentYear.value;
   const minYear = maxYear - 10;
-  for (let y = minYear; y <= maxYear; y++) {
+  for (let y = maxYear; y >= minYear; y -= 1) {
     list.push({ text: formatYearOption(y), value: y });
   }
   return list;
