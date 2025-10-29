@@ -1,9 +1,9 @@
 <template>
   <div class="work-route-card">
     <div class="work-route-card__header">
-      <div class="work-route-card__title">工艺：{{ route.produceRouteName || '-' }}</div>
+      <div class="work-route-card__title">工艺 / Quy trình: {{ route.produceRouteName || '-' }}</div>
       <div class="work-route-card__switch">
-        <span>标记完工：</span>
+        <span>标记完工 / Đánh dấu hoàn thành:</span>
         <van-switch :model-value="Boolean(route.isComplete)" size="20" @change="handleCompleteChange" />
       </div>
     </div>
@@ -12,24 +12,24 @@
       <div v-for="material in route.children || []" :key="material.id" class="work-route-card__group">
         <div class="work-route-card__group-title">{{ material.materialName || '-' }}</div>
         <div class="work-route-card__row">
-          <span class="work-route-card__label">计划单号：</span>
+          <span class="work-route-card__label">计划单号 / Mã kế hoạch:</span>
           <span class="work-route-card__value">{{ material.billNumber || '-' }}</span>
         </div>
         <div class="work-route-card__row">
-          <span class="work-route-card__label">工时统计：</span>
+          <span class="work-route-card__label">工时统计 / Thống kê giờ:</span>
           <span class="work-route-card__value">
-            {{ formatHour(material.reportWorkingHours) }}/{{ formatHour(material.processTime) }}时
+            {{ formatHour(material.reportWorkingHours) }}/{{ formatHour(material.processTime) }}时 / giờ
           </span>
         </div>
         <div class="work-route-card__row">
-          <span class="work-route-card__label">数量工时：</span>
+          <span class="work-route-card__label">数量工时 / Số lượng giờ:</span>
           <span class="work-route-card__value">
-            {{ toNumber(material.reportNumber) }}/{{ toNumber(material.number) }}个
+            {{ toNumber(material.reportNumber) }}/{{ toNumber(material.number) }}个 / cái
           </span>
         </div>
         <div class="work-route-card__edit">
           <div class="work-route-card__field">
-            <span class="work-route-card__label">工时：</span>
+            <span class="work-route-card__label">工时 / Giờ:</span>
             <van-stepper
               :model-value="material.reportHour"
               :min="0"
@@ -39,7 +39,7 @@
             />
           </div>
           <div class="work-route-card__field">
-            <span class="work-route-card__label">数量：</span>
+            <span class="work-route-card__label">数量 / Số lượng:</span>
             <van-stepper
               integer
               :model-value="material.reportQty"

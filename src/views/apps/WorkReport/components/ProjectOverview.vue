@@ -2,26 +2,26 @@
   <section v-if="hasPlan" class="project-overview">
     <div class="project-overview__card">
       <div class="project-overview__row">
-        <span class="project-overview__label">专案号：</span>
+        <span class="project-overview__label">专案号 / Mã dự án:</span>
         <span class="project-overview__value">{{ planInfo.mtono || '-' }}</span>
       </div>
       <div class="project-overview__row">
-        <span class="project-overview__label">物料名称：</span>
+        <span class="project-overview__label">物料名称 / Tên vật liệu:</span>
         <span class="project-overview__value">{{ planInfo.materialCode || '-' }}</span>
       </div>
       <div class="project-overview__row">
-        <span class="project-overview__label">数量：</span>
+        <span class="project-overview__label">数量 / Số lượng:</span>
         <span class="project-overview__value">{{ quantityLabel }}</span>
       </div>
     </div>
 
     <div v-if="Array.isArray(planInfo.milestones) && planInfo.milestones.length" class="project-overview__table">
       <div class="project-overview__table-row project-overview__table-row--head">
-        <span>阶段</span>
-        <span>负责人</span>
-        <span>结束时间</span>
-        <span>完成状态</span>
-        <span>进度</span>
+        <span>阶段 / Giai đoạn</span>
+        <span>负责人 / Phụ trách</span>
+        <span>结束时间 / Thời gian kết thúc</span>
+        <span>完成状态 / Trạng thái</span>
+        <span>进度 / Tiến độ</span>
       </div>
       <div
         v-for="item in planInfo.milestones"
@@ -46,9 +46,9 @@
         </span>
       </div>
     </div>
-    <van-empty v-else description="暂无阶段信息" class="project-overview__empty" />
+    <van-empty v-else description="暂无阶段信息 / Chưa có thông tin giai đoạn" class="project-overview__empty" />
   </section>
-  <van-empty v-else description="暂无专案信息" class="project-overview__empty" />
+  <van-empty v-else description="暂无专案信息 / Chưa có thông tin dự án" class="project-overview__empty" />
 </template>
 
 <script setup>
