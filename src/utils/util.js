@@ -619,9 +619,7 @@ export const convertTime = ({ value, from, to, decimal = 3 }) => {
 
   if (!unitToSeconds[from] || !unitToSeconds[to]) {
     const fallbackMessage = `不支持的时间单位: ${from} 或 ${to}`;
-    throw new Error(
-      translate('common.time.unsupportedUnit', fallbackMessage, { from, to })
-    );
+    throw new Error(translate('common.time.unsupportedUnit', fallbackMessage, { from, to }));
   }
 
   const valueInSeconds = value * unitToSeconds[from];
@@ -655,3 +653,5 @@ export function getUrlCode(name) {
     ) || null
   );
 }
+
+export const withBase = (p) => import.meta.env.BASE_URL + p.replace(/^\/+/, '');

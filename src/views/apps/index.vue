@@ -12,7 +12,7 @@
           @click="handleClick(app)"
         >
           <template #icon>
-            <img :src="app.icon" :alt="app.label" class="dc-apps__icon" loading="lazy" />
+            <img :src="withBase(app.icon)" :alt="app.label" class="dc-apps__icon" loading="lazy" />
           </template>
           <template #text>
             <span class="dc-apps__label">{{ app.label }}</span>
@@ -25,6 +25,7 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import { withBase } from '@/utils/util';
 
 const { t } = useI18n();
 
@@ -40,7 +41,7 @@ const handleClick = (app) => {
     window.open(app.url, '_blank', 'noopener,noreferrer');
   }
 };
-
+import.meta.env.BASE_URL;
 const apps = [
   { label: '流程中心', icon: '/images/apps/流程中心.svg', routeName: 'appsWorkflowCenter' },
   {
