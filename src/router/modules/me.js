@@ -1,12 +1,28 @@
 export default {
   path: 'me',
   component: () => import('@/views/account/me/Layout.vue'),
-  meta: { title: 'routes.me', icon: 'user-o', tabbar: true, requiresAuth: true },
+  meta: {
+    title: 'routes.me',
+    icon: {
+      active: '/images/layouts/icon-tabbar-我的-选中.svg',
+      inactive: '/images/layouts/icon-tabbar-我的-未选中.svg',
+    },
+    tabbar: true,
+    requiresAuth: true,
+  },
   children: [
     {
       path: '',
       name: 'me',
-      meta: { title: 'routes.me', icon: 'user-o', tabbar: true, requiresAuth: true },
+      meta: {
+        title: 'routes.me',
+        icon: {
+          active: '/images/layouts/icon-tabbar-我的-选中.svg',
+          inactive: '/images/layouts/icon-tabbar-我的-未选中.svg',
+        },
+        tabbar: true,
+        requiresAuth: true,
+      },
       component: () => import('@/views/account/Me.vue'),
     },
     {

@@ -5,7 +5,15 @@ export default {
     {
       path: '',
       name: 'apps',
-      meta: { title: 'routes.apps', icon: 'todo-list-o', tabbar: true, requiresAuth: true },
+      meta: {
+        title: 'routes.apps',
+        icon: {
+          active: '/images/layouts/icon-tabbar-工作台-选中.svg',
+          inactive: '/images/layouts/icon-tabbar-工作台-未选中.svg',
+        },
+        tabbar: true,
+        requiresAuth: true,
+      },
       component: () => import('@/views/apps/index.vue'),
     },
     {

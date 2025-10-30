@@ -8,8 +8,15 @@
         v-for="r in tabRoutes"
         :key="r.name"
         :to="{ name: r.name }"
-        :icon="r.meta.icon"
+        :icon="isCustomIcon(r.meta.icon) ? undefined : r.meta.icon"
       >
+        <template v-if="isCustomIcon(r.meta.icon)" #icon="{ active }">
+          <img
+            :src="getTabbarIcon(r.meta.icon, active)"
+            class="tabbar-icon"
+            :alt="t(r.meta.title)"
+          />
+        </template>
         {{ t(r.meta.title) }}
       </van-tabbar-item>
     </van-tabbar>
@@ -31,6 +38,9 @@ const tabRoutes = computed(() => router.getRoutes().filter((r) => r.meta?.tabbar
 // 仅当当前路径 === /home 或 /me 或 /apps 时显示 TabBar（严格匹配）
 const ALLOW_PATHS = ['/home', '/me', '/apps', '/'];
 const showTabbar = computed(() => ALLOW_PATHS.some((p) => route.path === p));
+
+const isCustomIcon = (icon) => icon && typeof icon === 'object';
+const getTabbarIcon = (icon, isActive) => (isActive ? icon.active : icon.inactive);
 </script>
 
 <style scoped>
@@ -43,5 +53,9 @@ const showTabbar = computed(() => ALLOW_PATHS.some((p) => route.path === p));
   flex: 1;
   overflow: auto;
   background: #f7f8fa;
+}
+.tabbar-icon {
+  width: 24px;
+  height: 24px;
 }
 </style>
