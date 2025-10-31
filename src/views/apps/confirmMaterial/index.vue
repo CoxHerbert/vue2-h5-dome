@@ -2,9 +2,11 @@
   <div class="confirm-material">
     <dc-nav-bar ref="navRef" title="确认领料" fixed left-arrow @click-left="handleBack" />
     <div class="confirm-material__content">
-      <van-tabs v-model:active="activeTab" :swipeable="false" shrink class="confirm-material__tabs">
-        <van-tab v-for="tab in tabs" :key="tab.value" :name="tab.value" :title="tab.label" />
-      </van-tabs>
+      <van-sticky :offset-top="tabsOffsetTop">
+        <van-tabs v-model:active="activeTab" :swipeable="false" shrink class="confirm-material__tabs">
+          <van-tab v-for="tab in tabs" :key="tab.value" :name="tab.value" :title="tab.label" />
+        </van-tabs>
+      </van-sticky>
 
       <SearchPanel v-if="activeTab === 'search'" @search="handleSearch" />
       <PendingList
@@ -18,7 +20,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import SearchPanel from './components/SearchPanel.vue';
 import PendingList from './components/PendingList.vue';
@@ -28,6 +30,7 @@ const router = useRouter();
 const navRef = ref(null);
 const resultRef = ref(null);
 const activeTab = ref('search');
+const tabsOffsetTop = ref(46);
 const tabs = [
   { label: '查询条件', value: 'search' },
   { label: '待确认单据', value: 'pending' },
@@ -35,6 +38,13 @@ const tabs = [
 ];
 
 const getNavEl = () => navRef.value?.getNavEl?.();
+
+onMounted(() => {
+  const navEl = getNavEl();
+  if (navEl) {
+    tabsOffsetTop.value = navEl.offsetHeight ?? tabsOffsetTop.value;
+  }
+});
 
 function handleBack() {
   router.back();
