@@ -1,102 +1,79 @@
 <template>
-    <view class="page-container">
-        <u-navbar
-            v-if="showTitleBar"
-            :is-fixed="true"
-            :border-bottom="false"
-            back-icon-name="arrow-leftward"
-            title="确认领料"
-            :background="{ background: '#F7EEE8' }"
-            z-index="999"
-            title-color="#333333"
-        />
-        <view class="page-body">
-            <u-tabs :list="tabs" v-model="current" :current="current" @change="handleTabClick" height="70"></u-tabs>
+  <div class="confirm-material">
+    <dc-nav-bar ref="navRef" title="确认领料" fixed left-arrow @click-left="handleBack" />
+    <div class="confirm-material__content">
+      <van-tabs v-model:active="activeTab" :swipeable="false" shrink class="confirm-material__tabs">
+        <van-tab v-for="tab in tabs" :key="tab.value" :name="tab.value" :title="tab.label" />
+      </van-tabs>
 
-            <search v-show="current === 0" @search="(e) => handleSearch('code', e)" />
-            <list v-if="current === 1" @search="(e) => handleSearch('click', e)" />
-            <result v-show="current === 2" ref="resultRef" />
-        </view>
-    </view>
+      <SearchPanel v-if="activeTab === 'search'" @search="handleSearch" />
+      <PendingList
+        v-else-if="activeTab === 'pending'"
+        :get-nav-el="getNavEl"
+        @select="handleSelectOrder"
+      />
+      <ResultPanel v-else ref="resultRef" />
+    </div>
+  </div>
 </template>
-<script>
-import { needHideTitleBar } from '@/utils/utils';
-import search from './components/search';
-import list from './components/list';
-import result from './components/result';
 
-export default {
-    name: 'ConfirmMaterial',
-    data() {
-        return {
-            current: 0,
-            tabs: [
-                {
-                    name: '查询条件',
-                },
-                {
-                    name: '待确认单据',
-                },
-                {
-                    name: '结果提示',
-                },
-            ],
-        };
-    },
-    created() {
-        this.showTitleBar = !needHideTitleBar();
-    },
-    methods: {
-        // 点击tab
-        handleTabClick(e) {
-            this.current = e;
-        },
-        // 处理查询
-        handleSearch(action, data) {
-            switch (action) {
-                case 'click':
-                    this.current = 2;
-                    this.$refs.resultRef.getData(data.outStockCode);
-                    break;
-                case 'code':
-                    this.current = 2;
-                    this.$refs.resultRef.getData(data);
-                    break;
-                default:
-                    break;
-            }
-        },
-    },
-    components: {
-        search,
-        list,
-        result,
-    },
-};
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import SearchPanel from './components/SearchPanel.vue';
+import PendingList from './components/PendingList.vue';
+import ResultPanel from './components/ResultPanel.vue';
+
+const router = useRouter();
+const navRef = ref(null);
+const resultRef = ref(null);
+const activeTab = ref('search');
+const tabs = [
+  { label: '查询条件', value: 'search' },
+  { label: '待确认单据', value: 'pending' },
+  { label: '结果提示', value: 'result' },
+];
+
+const getNavEl = () => navRef.value?.getNavEl?.();
+
+function handleBack() {
+  router.back();
+}
+
+function handleSearch(code) {
+  if (!code) return;
+  activeTab.value = 'result';
+  resultRef.value?.fetchByCode(code);
+}
+
+function handleSelectOrder(order) {
+  if (!order) return;
+  activeTab.value = 'result';
+  resultRef.value?.fetchByCode(order.outStockCode || order.code);
+}
 </script>
-<style lang="scss" scoped>
-.page-container {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
 
-    .page-body {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        overflow: hidden;
-        .table {
-            position: relative;
-            height: 100%;
-            overflow: auto;
-        }
-        .u-td {
-            height: unset;
-        }
-    }
+<style scoped>
+.confirm-material {
+  min-height: 100vh;
+  background: #f7f8fa;
+}
+
+.confirm-material__content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 96px);
+  padding: 0 16px 16px;
+  box-sizing: border-box;
+}
+
+.confirm-material__tabs {
+  --van-tabs-line-height: 2px;
+  margin: 12px 0;
+  background: transparent;
+}
+
+:deep(.van-tab) {
+  font-size: 14px;
 }
 </style>
