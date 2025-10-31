@@ -2,8 +2,13 @@
   <div class="confirm-material">
     <dc-nav-bar ref="navRef" title="确认领料" fixed left-arrow @click-left="handleBack" />
     <div class="confirm-material__content">
-      <van-sticky :offset-top="tabsOffsetTop">
-        <van-tabs v-model:active="activeTab" :swipeable="false" shrink class="confirm-material__tabs">
+      <van-sticky :offset-top="tabsOffsetTop" class="confirm-material__sticky">
+        <van-tabs
+          v-model:active="activeTab"
+          :swipeable="false"
+          shrink
+          class="confirm-material__tabs"
+        >
           <van-tab v-for="tab in tabs" :key="tab.value" :name="tab.value" :title="tab.label" />
         </van-tabs>
       </van-sticky>
@@ -73,17 +78,44 @@ function handleSelectOrder(order) {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 96px);
-  padding: 0 16px 16px;
+  padding: 12px 16px 16px;
   box-sizing: border-box;
 }
 
+.confirm-material__sticky {
+  padding-bottom: 12px;
+  background: #f7f8fa;
+  box-sizing: border-box;
+  z-index: 9;
+}
+
 .confirm-material__tabs {
-  --van-tabs-line-height: 2px;
-  margin: 12px 0;
-  background: transparent;
+  --van-tabs-bottom-bar-color: transparent;
+  --van-tabs-line-height: 0;
+  background: #fff;
+  border-radius: 999px;
+  padding: 4px;
+  box-shadow: 0 6px 16px rgba(31, 35, 41, 0.08);
+}
+
+:deep(.van-tabs__wrap) {
+  height: auto;
+}
+
+:deep(.van-tabs__nav--line) {
+  padding-bottom: 0;
 }
 
 :deep(.van-tab) {
   font-size: 14px;
+  color: #646566;
+  padding: 6px 18px;
+  border-radius: 999px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+:deep(.van-tab--active) {
+  background: linear-gradient(135deg, #1989fa, #1668dc);
+  color: #fff;
 }
 </style>
