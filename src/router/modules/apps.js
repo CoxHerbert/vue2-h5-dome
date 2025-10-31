@@ -74,7 +74,7 @@ export default {
       path: 'picking-confirmation',
       name: 'appsPickingConfirmation',
       meta: { title: '确认领料', requiresAuth: true },
-      component: () => import('@/views/apps/PickingConfirmation.vue'),
+      component: () => import('@/views/apps/PickingConfirmation/index.vue'),
     },
     {
       path: 'material-maintenance',
