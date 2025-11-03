@@ -1,6 +1,6 @@
 <template>
   <div class="confirm-material">
-    <dc-nav-bar ref="navRef" title="确认领料" fixed left-arrow @click-left="handleBack" />
+    <dc-nav-bar ref="navRef" title="确认领料" left-arrow @click-left="handleBack" />
     <div class="confirm-material__content">
       <van-sticky
         v-if="showTabs"
@@ -45,11 +45,11 @@ const router = useRouter();
 const navRef = ref(null);
 const resultRef = ref(null);
 const activeTab = ref('search');
-const tabsOffsetTop = ref(46);
+const tabsOffsetTop = ref(0);
 const tabsRef = ref(null);
 const stickyRef = ref(null);
 const stickyInnerRef = ref(null);
-const navHeight = ref(46);
+const navHeight = ref(0);
 const stickyHeight = ref(0);
 const tabs = [
   { label: '查询条件', value: 'search' },
@@ -64,10 +64,8 @@ const paginationStickyTop = computed(
 );
 
 const measureNavHeight = () => {
-  const navEl = getNavEl();
-  const height = navEl?.offsetHeight ?? 46;
-  navHeight.value = height;
-  tabsOffsetTop.value = height;
+  navHeight.value = 0;
+  tabsOffsetTop.value = 0;
 };
 
 const resolveElement = (target) => {
@@ -162,34 +160,37 @@ function handleSelectOrder(order) {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .confirm-material {
-  min-height: 100vh;
-  background: #f7f8fa;
-}
-
-.confirm-material__content {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 96px);
-  padding: 12px 16px 16px;
-  box-sizing: border-box;
-}
-
-.confirm-material__sticky {
-  padding-bottom: 12px;
+  min-height: 100vh;
   background: #f7f8fa;
-  box-sizing: border-box;
-  z-index: 9;
-}
 
-.confirm-material__tabs {
-  --van-tabs-bottom-bar-color: transparent;
-  --van-tabs-line-height: 0;
-  background: #fff;
-  border-radius: 999px;
-  padding: 4px;
-  box-shadow: 0 6px 16px rgba(31, 35, 41, 0.08);
+  &__content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px 16px;
+    box-sizing: border-box;
+  }
+
+  &__sticky {
+    padding-bottom: 12px;
+    background: #f7f8fa;
+    box-sizing: border-box;
+    z-index: 9;
+  }
+
+  &__tabs {
+    --van-tabs-bottom-bar-color: transparent;
+    --van-tabs-line-height: 0;
+    background: #fff;
+    border-radius: 999px;
+    padding: 4px;
+    box-shadow: 0 6px 16px rgba(31, 35, 41, 0.08);
+  }
 }
 
 :deep(.van-tabs__wrap) {
