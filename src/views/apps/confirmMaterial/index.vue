@@ -29,6 +29,7 @@
         @select="handleSelectOrder"
       />
       <ResultPanel v-else ref="resultRef" />
+      <van-number-keyboard safe-area-inset-bottom />
     </div>
   </div>
 </template>
@@ -58,7 +59,9 @@ const tabs = [
 
 const getNavEl = () => navRef.value?.getNavEl?.();
 const showTabs = computed(() => activeTab.value !== 'pending');
-const paginationStickyTop = computed(() => navHeight.value + (showTabs.value ? stickyHeight.value : 0));
+const paginationStickyTop = computed(
+  () => navHeight.value + (showTabs.value ? stickyHeight.value : 0)
+);
 
 const measureNavHeight = () => {
   const navEl = getNavEl();
@@ -202,7 +205,9 @@ function handleSelectOrder(order) {
   color: #646566;
   padding: 6px 18px;
   border-radius: 999px;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 :deep(.van-tab--active) {

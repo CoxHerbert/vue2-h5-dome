@@ -3,8 +3,8 @@
     <dc-nav-bar title="工时汇报" fixed left-arrow @click-left="handleBack" />
 
     <div class="work-report__content">
-      <!-- 吸顶白卡：搜索 + 扫码 -->
-      <div ref="searchRef" class="work-report__search-card">
+      <!-- 普通白卡：搜索 + 扫码（不吸顶） -->
+      <div class="work-report__search-card">
         <div class="search-row">
           <van-search
             v-model="snCode"
@@ -31,12 +31,10 @@
         </div>
       </div>
 
-      <!-- Tabs：与白卡连体视觉，吸顶在搜索卡下面 -->
+      <!-- Tabs：不吸顶 -->
       <van-tabs
         v-model:active="activeTab"
         class="work-report__tabs work-report__tabs--card"
-        sticky
-        :offset-top="stickyTop"
         swipeable
         color="#3060ED"
         title-active-color="#3060ED"
@@ -63,19 +61,18 @@
         </van-tab>
       </van-tabs>
     </div>
-
     <div v-if="activeTab === 'report'" class="work-report__footer">
       <van-button block type="success" @click="handleSubmit">
         <van-icon name="passed" size="18" /> 提交
       </van-button>
     </div>
-
+    <van-back-top />
     <dc-scan-code v-if="showScan" ref="scanCodeRef" @confirm="handleScanConfirm" />
   </div>
 </template>
 
 <script setup>
-import { computed, reactive, ref, onMounted, nextTick } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { showFailToast, showLoadingToast, showSuccessToast } from 'vant';
 import Api from '@/api';
@@ -101,12 +98,6 @@ const colorEnum = {
 const hasRouteData = computed(() =>
   workRoutes.value.some((route) => (route.children || []).length)
 );
-
-// 吸顶偏移：导航高度 + 搜索卡高度
-const NAV_HEIGHT = 62; // 与样式中的 --nav-h 对齐，如需微调可改这里
-const searchRef = ref(null);
-const stickyTop = computed(() => NAV_HEIGHT + (searchRef.value?.offsetHeight || 56));
-onMounted(() => nextTick(() => searchRef.value?.offsetHeight));
 
 // 数据重置
 const resetData = () => {
@@ -293,25 +284,25 @@ const handleBack = () => {
 
 <style scoped lang="scss">
 .work-report {
-  --nav-h: 62px; /* 与脚本中的 NAV_HEIGHT 保持一致 */
+  --nav-h: 62px; /* 与导航高度对齐 */
   min-height: 100vh;
   background: #f7f8fa;
   padding-bottom: calc(16px + var(--van-safe-area-bottom, 0px));
 
   &__content {
+    /* 仍然为固定导航预留顶部空间；底部统一留 80px 防止被提交栏挡住 */
     padding: calc(var(--nav-h) + var(--van-safe-area-top, 0px)) 16px 80px;
     box-sizing: border-box;
   }
 
-  /* 吸顶白卡：搜索 + 扫码 */
+  /* 普通白卡：搜索 + 扫码（不吸顶） */
   .work-report__search-card {
-    position: sticky;
-    top: calc(var(--van-safe-area-top, 0px) + var(--nav-h));
-    z-index: 21;
     background: #fff;
-    border-radius: 12px 12px 0 0;
+    border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     padding: 12px;
+    /* 去掉吸顶相关属性 */
+    /* top / z-index / position: sticky 均不需要 */
 
     .search-row {
       display: flex;
@@ -365,16 +356,16 @@ const handleBack = () => {
     }
   }
 
-  /* Tabs 导航：与白卡连体视觉 */
+  /* Tabs 导航样式（视觉保持“连体”风格，但不吸顶） */
   .work-report__tabs.work-report__tabs--card {
-    margin-top: 0;
+    margin-top: 12px;
 
     :deep(.van-tabs__wrap) {
       background: #fff;
-      border-radius: 0 0 12px 12px;
+      border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
       border-top: 1px solid #f0f2f5;
-      z-index: 20; /* 比搜索卡略低，避免覆盖 */
+      /* 去掉 z-index 叠加需求 */
     }
 
     :deep(.van-tab) {

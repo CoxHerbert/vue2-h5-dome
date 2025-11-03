@@ -1,62 +1,10 @@
 <template>
   <div class="dc-page" :class="{ 'dc-page--footer-fixed': footerFixed }" :style="cssVars">
-    <!-- 头部：整块插槽；未提供时回退到 NavBar -->
-    <div
-      v-if="showHeader"
-      ref="headerRef"
-      class="dc-header"
-      :class="{ 'dc-header--fixed': fixedHeader, 'dc-header--safe': headerSafeArea }"
-      :style="{ zIndex: headerZIndex }"
-    >
-      <slot name="header">
-        <dc-nav-bar :title="t('routes.apps')" fixed />
-        <van-nav-bar
-          :title="title"
-          :left-arrow="showBack"
-          :border="headerBorder"
-          :fixed="false"
-          @click-left="onBack"
-        >
-          <template #left><slot name="nav-left"></slot></template>
-          <template #title>
-            <slot name="nav-title">{{ title }}</slot>
-          </template>
-          <template #right><slot name="nav-right"></slot></template>
-        </van-nav-bar>
-      </slot>
-    </div>
-
-    <!-- 主体滚动区（注意：滚动绑定在 .dc-body） -->
-    <main ref="bodyRef" class="dc-body" :style="bodyStyle" @scroll.passive="handleScroll">
-      <!-- 搜索区（吸顶到头部下方） -->
-      <div
-        v-if="$slots.search"
-        class="dc-search"
-        :class="{ 'dc-search--sticky': searchSticky }"
-        :style="searchSticky ? { top: fixedHeader ? headerH + 'px' : '0px' } : undefined"
-      >
-        <slot name="search"></slot>
-      </div>
-
-      <!-- 可滚动内容（不再单独设置 overflow，保持由 .dc-body 统一滚动） -->
-      <section class="dc-content" :style="contentStyle">
-        <slot></slot>
-      </section>
-    </main>
-
-    <!-- 底部操作区 -->
-    <footer
-      v-if="$slots.footer"
-      class="dc-footer"
-      :class="{ 'dc-footer--fixed': footerFixed, 'dc-footer--safe': footerSafeArea }"
-      :style="footerStyle"
-    >
-      <slot name="footer"></slot>
-      <div v-if="footerFixed && footerSafeArea" class="dc-footer__safe"></div>
-    </footer>
-
-    <!-- 占位：footer + tabbar -->
-    <div v-if="footerFixed" class="dc-footer-spacer" :style="footerSpacerStyle"></div>
+    <slot name="nav"></slot>
+    <slot></slot>
+    <section class="dc-content">
+      <slot></slot>
+    </section>
   </div>
 </template>
 
@@ -98,9 +46,6 @@ const props = defineProps({
   reachOffset: { type: Number, default: 40 },
 });
 
-const emit = defineEmits(['back', 'scroll', 'reach-top', 'reach-bottom']);
-const onBack = () => emit('back');
-
 /* 头部高度测量 */
 const headerRef = ref(null);
 const headerH = ref(0);
@@ -128,13 +73,6 @@ onBeforeUnmount(() => {
   window.removeEventListener?.('resize', measure);
 });
 
-/* 统一底部 inset（footer + tabbar） */
-const bottomInset = computed(() => {
-  const footer = props.footerFixed ? props.footerHeight : 0;
-  const tabbar = props.tabbarInset ? props.tabbarHeight : 0;
-  return footer + tabbar;
-});
-
 /* CSS 变量 */
 const cssVars = computed(() => ({
   '--dc-page-bg': props.pageBg,
@@ -142,39 +80,6 @@ const cssVars = computed(() => ({
 
 /* 滚动区样式（把滚动与底部 inset 放在 .dc-body 上） */
 const bodyRef = ref(null);
-const bodyStyle = computed(() => ({
-  paddingTop: props.fixedHeader ? `${headerH.value}px` : undefined,
-  paddingBottom: `${bottomInset.value}px`,
-  overflowY: props.scrollY ? 'auto' : 'hidden',
-  // overflowX: props.scrollX ? 'auto' : 'hidden',
-  WebkitOverflowScrolling: props.scrollY ? 'touch' : undefined,
-}));
-
-/* 内容区仅负责内边距 */
-const contentStyle = computed(() => ({
-  padding: `${props.contentPadding}px`,
-}));
-
-const footerStyle = computed(() =>
-  props.footerFixed ? { height: `${props.footerHeight}px` } : null
-);
-
-const footerSpacerStyle = computed(() => ({
-  height: `${
-    props.footerFixed ? props.footerHeight + (props.tabbarInset ? props.tabbarHeight : 0) : 0
-  }px`,
-}));
-
-/* 滚动事件与触顶/触底判定 */
-const handleScroll = (e) => {
-  const el = e.target;
-  const top = el.scrollTop;
-  const max = el.scrollHeight - el.clientHeight;
-  emit('scroll', { top, max });
-
-  if (top <= props.reachOffset) emit('reach-top', { top });
-  if (max - top <= props.reachOffset) emit('reach-bottom', { top, max });
-};
 
 /* 对外暴露方法 */
 const scrollToTop = (smooth = true) => {

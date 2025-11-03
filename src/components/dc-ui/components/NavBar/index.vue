@@ -1,6 +1,5 @@
 <template>
   <van-nav-bar
-    v-if="!hideByEnv"
     v-bind="attrs"
     :class="['scroll-aware-nav-bar', { 'scroll-aware-nav-bar--hidden': isHidden }]"
   >

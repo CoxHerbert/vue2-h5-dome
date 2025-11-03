@@ -1,8 +1,11 @@
 <template>
   <router-view />
 </template>
-<script setup>
-</script>
+<script setup></script>
 <style>
-html, body, #app { height: 100%; }
+html,
+body,
+#app {
+  height: 100%;
+}
 </style>
