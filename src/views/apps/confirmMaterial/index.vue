@@ -2,7 +2,12 @@
   <div class="confirm-material">
     <dc-nav-bar ref="navRef" title="确认领料" fixed left-arrow @click-left="handleBack" />
     <div class="confirm-material__content">
-      <van-sticky ref="stickyRef" :offset-top="tabsOffsetTop" class="confirm-material__sticky">
+      <van-sticky
+        v-if="showTabs"
+        ref="stickyRef"
+        :offset-top="tabsOffsetTop"
+        class="confirm-material__sticky"
+      >
         <div ref="stickyInnerRef">
           <van-tabs
             ref="tabsRef"
@@ -52,7 +57,8 @@ const tabs = [
 ];
 
 const getNavEl = () => navRef.value?.getNavEl?.();
-const paginationStickyTop = computed(() => navHeight.value + stickyHeight.value);
+const showTabs = computed(() => activeTab.value !== 'pending');
+const paginationStickyTop = computed(() => navHeight.value + (showTabs.value ? stickyHeight.value : 0));
 
 const measureNavHeight = () => {
   const navEl = getNavEl();
@@ -80,12 +86,18 @@ const measureStickyHeight = () => {
 
 const handleResize = () => {
   measureNavHeight();
-  measureStickyHeight();
+  if (showTabs.value) {
+    measureStickyHeight();
+  } else {
+    stickyHeight.value = 0;
+  }
 };
 
 onMounted(() => {
   measureNavHeight();
-  measureStickyHeight();
+  if (showTabs.value) {
+    measureStickyHeight();
+  }
   window.addEventListener('resize', handleResize);
   window.addEventListener('orientationchange', handleResize);
 });
@@ -96,13 +108,25 @@ onBeforeUnmount(() => {
 });
 
 watch(activeTab, () => {
-  if (activeTab.value === 'pending') {
+  if (showTabs.value) {
     measureStickyHeight();
+  } else {
+    stickyHeight.value = 0;
   }
 });
 
 watch(tabsRef, () => {
-  measureStickyHeight();
+  if (showTabs.value) {
+    measureStickyHeight();
+  }
+});
+
+watch(showTabs, (visible) => {
+  if (visible) {
+    measureStickyHeight();
+  } else {
+    stickyHeight.value = 0;
+  }
 });
 
 function handleBack() {
