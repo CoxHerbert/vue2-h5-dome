@@ -2,12 +2,7 @@
   <div class="confirm-material">
     <dc-nav-bar ref="navRef" title="确认领料" left-arrow @click-left="handleBack" />
     <div class="confirm-material__content">
-      <van-sticky
-        v-if="showTabs"
-        ref="stickyRef"
-        :offset-top="tabsOffsetTop"
-        class="confirm-material__sticky"
-      >
+      <van-sticky ref="stickyRef" :offset-top="tabsOffsetTop" class="confirm-material__sticky">
         <div ref="stickyInnerRef">
           <van-tabs
             ref="tabsRef"
@@ -172,12 +167,10 @@ function handleSelectOrder(order) {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding: 12px 16px 16px;
     box-sizing: border-box;
   }
 
   &__sticky {
-    padding-bottom: 12px;
     background: #f7f8fa;
     box-sizing: border-box;
     z-index: 9;
@@ -187,7 +180,6 @@ function handleSelectOrder(order) {
     --van-tabs-bottom-bar-color: transparent;
     --van-tabs-line-height: 0;
     background: #fff;
-    border-radius: 999px;
     padding: 4px;
     box-shadow: 0 6px 16px rgba(31, 35, 41, 0.08);
   }

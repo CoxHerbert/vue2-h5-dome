@@ -2,10 +2,12 @@
 import request from '@/utils/http';
 import planSheep from './planSheep';
 import workReport from './workReport';
+import materialMaintenance from './materialMaintenance';
 
 export default {
   planSheep,
   workReport,
+  materialMaintenance,
   // 入库单列表
   inventoryList(params) {
     return request({

@@ -1,54 +1,78 @@
 <template>
   <div class="pending-list">
-    <dc-pagination
-      class="pending-list__pagination"
-      :fetcher="fetcher"
-      :page-size="8"
-      :offset="150"
-      :add-visible="false"
-      search-placeholder="搜索出库单据编号"
-      :get-nav-el="props.getNavEl"
-      :style="stickyStyle"
-    >
-      <template #item="{ item }">
-        <div class="pending-card" @click="handleSelect(item)">
-          <div class="pending-card__header">
-            <div class="title">{{ item.outStockCode ?? '-' }}</div>
-            <div class="badge">{{ renderOutType(item.outStockType) }}</div>
+    <!-- 吸顶搜索条 -->
+    <van-sticky :offset-top="props.stickyTop">
+      <div class="pending-list__search-bar">
+        <van-search
+          v-model="keyword"
+          placeholder="搜索出库单据编号"
+          shape="round"
+          :clearable="true"
+          :show-action="false"
+          @search="onSearch"
+        />
+      </div>
+    </van-sticky>
+
+    <!-- 下拉刷新 + 无限滚动 -->
+    <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+      <van-list
+        v-model:loading="loading"
+        :finished="finished"
+        :immediate-check="false"
+        finished-text="没有更多了"
+        @load="onLoad"
+      >
+        <template v-if="list.length">
+          <div
+            v-for="item in list"
+            :key="item.id ?? item.outStockCode"
+            class="pending-card"
+            @click="handleSelect(item)"
+          >
+            <div class="pending-card__header">
+              <div class="title">{{ item.outStockCode ?? '-' }}</div>
+              <div class="badge">{{ renderOutType(item.outStockType) }}</div>
+            </div>
+
+            <div class="pending-card__body">
+              <div class="row">
+                <span class="label">申请人</span>
+                <span class="value">
+                  <!-- TODO: 如需通过ID换姓名，可在此接入你的用户字典/接口 -->
+                  <dc-view v-model="item.applicantId" object-name="user" />
+                </span>
+              </div>
+              <div class="row">
+                <span class="label">处理人</span>
+                <span class="value">
+                  <dc-view v-model="item.processingPersonnel" object-name="user" />
+                </span>
+              </div>
+              <div class="row">
+                <span class="label">登记时间</span>
+                <span class="value">{{ item.createTime ?? '—' }}</span>
+              </div>
+            </div>
+
+            <van-icon class="pending-card__icon" name="arrow" size="16" />
           </div>
-          <div class="pending-card__body">
-            <div class="row">
-              <span class="label">申请人</span>
-              <span class="value">
-                <dc-view :value="item.applicantId" object-name="user" />
-              </span>
-            </div>
-            <div class="row">
-              <span class="label">处理人</span>
-              <span class="value">
-                <dc-view :value="item.processingPersonnel" object-name="user" />
-              </span>
-            </div>
-            <div class="row">
-              <span class="label">登记时间</span>
-              <span class="value">{{ item.createTime ?? '-' }}</span>
-            </div>
-          </div>
-          <van-icon class="pending-card__icon" name="arrow" size="16" />
-        </div>
-      </template>
-    </dc-pagination>
+        </template>
+
+        <van-empty v-else image="search" description="暂无数据" class="pending-list__empty" />
+      </van-list>
+    </van-pull-refresh>
+    <van-back-top />
   </div>
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { showFailToast } from 'vant';
 import Api from '@/api';
 import { useDictStore } from '@/store/dict';
 
 const props = defineProps({
-  getNavEl: { type: Function, default: null },
   stickyTop: { type: Number, default: 0 },
 });
 
@@ -56,10 +80,16 @@ const emit = defineEmits(['select']);
 
 const dictStore = useDictStore();
 const outTypeDict = ref([]);
+const keyword = ref('');
 
-const stickyStyle = computed(() => ({
-  '--nav-top': `${props.stickyTop}px`,
-}));
+// 列表状态
+const list = ref([]);
+const pageNo = ref(1);
+const pageSize = ref(8);
+const total = ref(0);
+const loading = ref(false);
+const finished = ref(false);
+const refreshing = ref(false);
 
 function handleSelect(item) {
   emit('select', item);
@@ -71,6 +101,8 @@ onMounted(async () => {
   } catch (error) {
     console.error('获取出库类型字典失败', error);
   }
+  // 首次加载
+  onRefresh();
 });
 
 function renderOutType(value) {
@@ -78,7 +110,69 @@ function renderOutType(value) {
   return option?.label ?? '—';
 }
 
-const fetcher = async ({ pageNo, pageSize, keyword }) => {
+function onSearch() {
+  onRefresh();
+}
+
+const listRef = ref(null);
+
+async function onRefresh() {
+  finished.value = false;
+  loading.value = false;
+  pageNo.value = 1;
+  list.value = [];
+  await nextTick();
+  listRef.value?.check?.();
+  onLoad();
+}
+
+async function onLoad() {
+  if (finished.value) return; // 只判断 finished，别再判断 loading
+
+  try {
+    const { items, totalCount } = await fetchPage({
+      pageNo: pageNo.value,
+      pageSize: pageSize.value,
+      keyword: keyword.value,
+    });
+
+    // 叠加
+    list.value.push(...items);
+
+    // 记录总数（如果后端给了）
+    if (Number.isFinite(totalCount)) {
+      total.value = Number(totalCount);
+    }
+
+    // 结束条件更稳妥
+    const hasTotal = Number.isFinite(total.value) && total.value > 0;
+    const hitTotal = hasTotal ? list.value.length >= total.value : false;
+    const hitTailByPage = items.length < pageSize.value;
+    const firstPageEmpty = pageNo.value === 1 && items.length === 0;
+
+    finished.value = hitTotal || hitTailByPage || firstPageEmpty;
+
+    // 下一页
+    pageNo.value += 1;
+  } catch (e) {
+    console.error(e);
+    showFailToast('获取待确认单据失败');
+    finished.value = true;
+  } finally {
+    // 关键：一定要在 finally 里关闭 loading / refreshing
+    loading.value = false;
+    if (refreshing.value) refreshing.value = false;
+  }
+}
+
+/**
+ * 后端兼容处理：
+ * - 可能返回 { records, total, current, size }
+ * - 或 { rows, total }
+ * - 或 { list, total }
+ * - 或 直接数组
+ */
+async function fetchPage({ pageNo, pageSize, keyword }) {
   const params = {
     current: pageNo,
     size: pageSize,
@@ -90,21 +184,57 @@ const fetcher = async ({ pageNo, pageSize, keyword }) => {
 
   const res = await Api.wms?.wmsOutStock?.list(params);
   const payload = res?.data ?? res;
-  const { code: respCode, data } = payload ?? {};
+  const respCode = payload?.code ?? res?.code ?? 200;
+  const data = payload?.data ?? payload?.rows ?? payload?.records ?? payload;
 
   if (respCode !== 200 || !data) {
-    showFailToast('获取待确认单据失败');
     throw new Error('请求失败');
   }
 
-  return data;
-};
+  // 归一化
+  let items = [];
+  let totalCount = 0;
+
+  if (Array.isArray(data)) {
+    items = data;
+    totalCount = payload?.total ?? data.length; // 无 total 时用本页长度推断
+  } else if (data?.records) {
+    items = data.records ?? [];
+    totalCount = Number(data.total ?? items.length);
+  } else if (data?.rows) {
+    items = data.rows ?? [];
+    totalCount = Number(data.total ?? items.length);
+  } else if (data?.list) {
+    items = data.list ?? [];
+    totalCount = Number(data.total ?? items.length);
+  } else {
+    // 兜底：不识别结构，尝试当作数组
+    items = Array.isArray(data?.data) ? data.data : [];
+    totalCount = Number(data?.total ?? items.length);
+  }
+
+  return {
+    items,
+    totalCount,
+    pageCount: Math.ceil((totalCount || 0) / pageSize) || 0,
+  };
+}
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .pending-list {
   flex: 1;
   min-height: 0;
+  background: var(--dc-page-bg, #f7f8fa);
+
+  &__search-bar {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  }
+
+  &__empty {
+    margin-top: 24px;
+  }
 }
 
 .pending-card {
@@ -112,54 +242,68 @@ const fetcher = async ({ pageNo, pageSize, keyword }) => {
   background: #fff;
   border-radius: 12px;
   padding: 12px 16px;
-  margin-bottom: 12px;
+  margin: 12px;
+  margin-bottom: 0;
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
-}
+  transition: transform 0.12s ease;
 
-.pending-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
+  &:active {
+    transform: scale(0.996);
+  }
 
-.pending-card__header .title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1d2939;
-}
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
 
-.pending-card__header .badge {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #f4f4f5;
-  color: #475467;
-}
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1d2939;
+    }
 
-.pending-card__body {
-  font-size: 13px;
-  color: #475467;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+    .badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f4f4f5;
+      color: #475467;
+      white-space: nowrap;
+    }
+  }
 
-.pending-card__body .row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
+  &__body {
+    margin-right: 20px;
+    font-size: 13px;
+    color: #475467;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 
-.pending-card__body .label {
-  color: #98a2b3;
-}
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
 
-.pending-card__icon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #98a2b3;
+      .label {
+        color: #98a2b3;
+      }
+
+      .value {
+        max-width: 60%;
+        text-align: right;
+        word-break: break-all;
+      }
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #98a2b3;
+  }
 }
 </style>

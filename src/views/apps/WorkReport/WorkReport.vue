@@ -1,6 +1,6 @@
 <template>
   <div class="work-report page">
-    <dc-nav-bar title="工时汇报" fixed left-arrow @click-left="handleBack" />
+    <dc-nav-bar title="工时汇报" left-arrow @click-left="handleBack" />
 
     <div class="work-report__content">
       <!-- 普通白卡：搜索 + 扫码（不吸顶） -->
@@ -291,7 +291,7 @@ const handleBack = () => {
 
   &__content {
     /* 仍然为固定导航预留顶部空间；底部统一留 80px 防止被提交栏挡住 */
-    padding: calc(var(--nav-h) + var(--van-safe-area-top, 0px)) 16px 80px;
+    // padding: calc(var(--nav-h) + var(--van-safe-area-top, 0px)) 16px 80px;
     box-sizing: border-box;
   }
 
@@ -358,8 +358,6 @@ const handleBack = () => {
 
   /* Tabs 导航样式（视觉保持“连体”风格，但不吸顶） */
   .work-report__tabs.work-report__tabs--card {
-    margin-top: 12px;
-
     :deep(.van-tabs__wrap) {
       background: #fff;
       border-radius: 12px;

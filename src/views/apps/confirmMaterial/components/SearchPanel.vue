@@ -13,12 +13,10 @@
         <van-icon name="search" size="18" />
         查询
       </van-button>
+      <van-button class="search-panel__scan" type="success" block @click="handleScan">
+        <van-icon name="scan" size="18" />
+      </van-button>
     </div>
-
-    <van-button class="search-panel__scan" type="success" block @click="handleScan">
-      <van-icon name="scan" size="18" />
-      扫描出库单据编号
-    </van-button>
 
     <dc-scan-code v-if="showScanner" ref="scannerRef" @confirm="handleScanResult" />
   </div>
@@ -74,6 +72,7 @@ function handleScanResult(code) {
   display: flex;
   gap: 8px;
   align-items: center;
+  background: #fff;
 }
 
 .search-panel__btn {
@@ -86,6 +85,7 @@ function handleScanResult(code) {
 }
 
 .search-panel__scan {
+  width: 60px;
   height: 44px;
   border-radius: 8px;
   display: inline-flex;

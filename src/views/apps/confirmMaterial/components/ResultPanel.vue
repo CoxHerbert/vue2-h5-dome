@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <div class="result-panel__list" v-if="pageData.list.length">
+    <div v-if="pageData.list.length" class="result-panel__list">
       <div
         v-for="item in pageData.list"
         :key="item.id ?? item.productCode"
@@ -70,6 +70,7 @@
     </van-dialog>
 
     <dc-scan-code v-if="showScanner" ref="scannerRef" @confirm="handleScanResult" />
+    <van-number-keyboard safe-area-inset-bottom />
   </div>
 </template>
 
@@ -232,39 +233,67 @@ defineExpose({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+:deep(.van-tabs__line) {
+  display: none;
+}
 .result-panel {
   display: flex;
   flex-direction: column;
   gap: 16px;
   flex: 1;
   min-height: 0;
-}
 
-.result-panel__toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
+  &__toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
 
-.result-panel__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+  &__actions {
+    display: flex;
+    align-items: center;
+  }
 
-.result-panel__tabs {
-  --van-tabs-line-height: 2px;
-}
+  &__tabs {
+    --van-tabs-line-height: 2px;
+  }
 
-.result-panel__list {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  &__list {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #fff;
+
+    .statistics {
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 600;
+      color: #475467;
+    }
+
+    .submit {
+      width: 120px;
+      height: 44px;
+      border-radius: 12px;
+    }
+  }
 }
 
 .result-card {
@@ -273,56 +302,37 @@ defineExpose({
   border-radius: 16px;
   background: #fff;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-}
 
-.result-card__checkbox {
-  position: absolute;
-  left: 16px;
-  top: 18px;
-}
+  &__checkbox {
+    position: absolute;
+    left: 16px;
+    top: 18px;
+  }
 
-.result-card__title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #1d2939;
-}
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1d2939;
+  }
 
-.result-card__meta {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 13px;
-  color: #475467;
-}
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+    color: #475467;
 
-.result-card__meta .row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
 
-.result-card__meta .label {
-  color: #98a2b3;
-}
-
-.result-panel__footer {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.result-panel__footer .statistics {
-  background: #fff;
-  border-radius: 12px;
-  padding: 12px;
-  font-weight: 600;
-  color: #475467;
-}
-
-.result-panel__footer .submit {
-  height: 44px;
-  border-radius: 12px;
+    .label {
+      color: #98a2b3;
+    }
+  }
 }
 
 .dialog-list {
