@@ -62,7 +62,7 @@
 
                 <!-- ✅ Vant 选择（字典）: van-field + van-popup + van-picker -->
                 <van-field
-                  v-else-if="item.type === 'dc-select-dict'"
+                  v-else-if="item.type === 'select-dict'"
                   :label="item.label"
                   is-link
                   readonly
@@ -82,9 +82,9 @@
                   @click="openOptionsPicker(item)"
                 />
 
-                <!-- ✅ Vant 数字：替代 dc-number -->
+                <!-- ✅ Vant 数字：替代 number -->
                 <van-field
-                  v-else-if="item.type === 'dc-number'"
+                  v-else-if="item.type === 'number'"
                   :label="item.label"
                   type="number"
                   :name="item.prop"
@@ -96,9 +96,9 @@
                   @update:model-value="(val) => onNumberInput(item, val)"
                 />
 
-                <!-- ✅ Vant 数字（重量）：替代 dc-weight -->
+                <!-- ✅ Vant 数字（重量）：替代 weight -->
                 <van-field
-                  v-else-if="item.type === 'dc-weight'"
+                  v-else-if="item.type === 'weight'"
                   :label="item.label"
                   type="number"
                   :name="item.prop"
@@ -197,7 +197,7 @@ const groups = ref([
       {
         label: '单位',
         prop: 'unitDict',
-        type: 'dc-select-dict',
+        type: 'select-dict',
         props: {
           disabled: true,
           dictKey: 'DC_ERP_UNIT',
@@ -216,7 +216,7 @@ const groups = ref([
       {
         label: '尺寸单位',
         prop: 'sizeUnit',
-        type: 'dc-select-dict',
+        type: 'select-dict',
         props: {
           dictKey: 'DC_ERP_UNIT',
           labelKey: 'dictValue',
@@ -224,9 +224,9 @@ const groups = ref([
           placeholder: '请选择',
         },
       },
-      { label: '长', prop: 'length', type: 'dc-number', props: { min: 0, precision: 4 } },
-      { label: '宽', prop: 'width', type: 'dc-number', props: { min: 0, precision: 4 } },
-      { label: '高', prop: 'height', type: 'dc-number', props: { min: 0, precision: 4 } },
+      { label: '长', prop: 'length', type: 'number', props: { min: 0, precision: 4 } },
+      { label: '宽', prop: 'width', type: 'number', props: { min: 0, precision: 4 } },
+      { label: '高', prop: 'height', type: 'number', props: { min: 0, precision: 4 } },
     ],
   },
   {
@@ -235,13 +235,13 @@ const groups = ref([
       {
         label: '数量',
         prop: 'qty',
-        type: 'dc-number',
+        type: 'number',
         props: { placeholder: '请输入', min: 1, precision: 0 },
       },
       {
         label: '重量单位',
         prop: 'weightUnit',
-        type: 'dc-select-dict',
+        type: 'select-dict',
         props: {
           dictKey: 'DC_ERP_UNIT',
           labelKey: 'dictValue',
@@ -252,13 +252,13 @@ const groups = ref([
       {
         label: '毛重',
         prop: 'grossWeight',
-        type: 'dc-weight',
+        type: 'weight',
         props: { placeholder: '请输入', min: 0, precision: 4 },
       },
       {
         label: '净重',
         prop: 'netWeight',
-        type: 'dc-weight',
+        type: 'weight',
         props: { placeholder: '请输入', min: 0, precision: 4 },
       },
     ],
@@ -377,7 +377,7 @@ function onPickerConfirm({ selectedValues, selectedOptions }) {
   picker.show = false;
 }
 
-// 数值输入（替代 dc-number / dc-weight）
+// 数值输入（替代 number / weight）
 function filterFieldProps(item) {
   const p = item.props || {};
   const { disabled, clearable, maxlength, inputAlign } = p;
