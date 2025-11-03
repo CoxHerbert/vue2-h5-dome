@@ -1,12 +1,14 @@
 <template>
   <div class="pending-list">
     <dc-pagination
+      class="pending-list__pagination"
       :fetcher="fetcher"
       :page-size="8"
       :offset="150"
       :add-visible="false"
       search-placeholder="搜索出库单据编号"
-      :get-nav-el="getNavEl"
+      :get-nav-el="props.getNavEl"
+      :style="stickyStyle"
     >
       <template #item="{ item }">
         <div class="pending-card" @click="handleSelect(item)">
@@ -40,19 +42,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { showFailToast } from 'vant';
 import Api from '@/api';
 import { useDictStore } from '@/store/dict';
 
-const { getNavEl } = defineProps({
+const props = defineProps({
   getNavEl: { type: Function, default: null },
+  stickyTop: { type: Number, default: 0 },
 });
 
 const emit = defineEmits(['select']);
 
 const dictStore = useDictStore();
 const outTypeDict = ref([]);
+
+const stickyStyle = computed(() => ({
+  '--nav-top': `${props.stickyTop}px`,
+}));
 
 function handleSelect(item) {
   emit('select', item);
