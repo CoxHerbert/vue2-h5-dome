@@ -152,6 +152,7 @@ import { ref, reactive, nextTick } from 'vue';
 import { closeToast, showToast } from 'vant';
 import WfUpload from '@/components/wf-ui/components/wf-upload/wf-upload.vue';
 import Api from '@/api';
+import { useDictSetup } from '@/directives';
 
 defineOptions({ name: 'MaterialInfo' });
 
@@ -172,9 +173,7 @@ const rules = reactive({
 });
 
 // 字典缓存
-const dictMap = reactive({
-  DC_ERP_UNIT: [],
-});
+const { dicts: dictMap, reloadDicts } = useDictSetup(['DC_ERP_UNIT']);
 
 // 统一 picker 状态（字典/普通下拉共用）
 const picker = reactive({
@@ -291,31 +290,10 @@ const groups = ref([
   },
 ]);
 
-/** ======= lifecycle (created) ======= */
-loadDicts(['DC_ERP_UNIT']);
-
 /** ======= methods（setup 版） ======= */
 // Sticky
 function onStickyScroll(e) {
   isSearchSticky.value = !!e?.isFixed;
-}
-
-// 字典与下拉
-async function loadDicts(keys = []) {
-  const tasks = keys.map(async (k) => {
-    try {
-      if (Api?.application?.materialMaintenance?.getDict) {
-        const res = await Api.application.materialMaintenance.getDict({ key: k });
-        const list = (res?.data?.data ?? res?.data ?? []).filter(Boolean);
-        dictMap[k] = Array.isArray(list) ? list : [];
-      } else {
-        dictMap[k] = [];
-      }
-    } catch (err) {
-      dictMap[k] = [];
-    }
-  });
-  await Promise.allSettled(tasks);
 }
 
 function displayDictText(item) {
@@ -345,7 +323,7 @@ function openDictPicker(item) {
   };
 
   if (!list.length) {
-    loadDicts([dictKey]).then(() => {
+    reloadDicts([dictKey], { force: true }).then(() => {
       const again = dictMap?.[dictKey] || [];
       if (!again.length) showToast({ message: '暂无可选项' });
       open(again);
