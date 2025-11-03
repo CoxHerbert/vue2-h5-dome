@@ -2,21 +2,30 @@
   <div class="confirm-material">
     <dc-nav-bar ref="navRef" title="确认领料" fixed left-arrow @click-left="handleBack" />
     <div class="confirm-material__content">
-      <van-sticky :offset-top="tabsOffsetTop" class="confirm-material__sticky">
-        <van-tabs
-          v-model:active="activeTab"
-          :swipeable="false"
-          shrink
-          class="confirm-material__tabs"
-        >
-          <van-tab v-for="tab in tabs" :key="tab.value" :name="tab.value" :title="tab.label" />
-        </van-tabs>
+      <van-sticky
+        v-if="showTabs"
+        ref="stickyRef"
+        :offset-top="tabsOffsetTop"
+        class="confirm-material__sticky"
+      >
+        <div ref="stickyInnerRef">
+          <van-tabs
+            ref="tabsRef"
+            v-model:active="activeTab"
+            :swipeable="false"
+            shrink
+            class="confirm-material__tabs"
+          >
+            <van-tab v-for="tab in tabs" :key="tab.value" :name="tab.value" :title="tab.label" />
+          </van-tabs>
+        </div>
       </van-sticky>
 
       <SearchPanel v-if="activeTab === 'search'" @search="handleSearch" />
       <PendingList
         v-else-if="activeTab === 'pending'"
         :get-nav-el="getNavEl"
+        :sticky-top="paginationStickyTop"
         @select="handleSelectOrder"
       />
       <ResultPanel v-else ref="resultRef" />
@@ -25,7 +34,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import SearchPanel from './components/SearchPanel.vue';
 import PendingList from './components/PendingList.vue';
@@ -36,6 +45,11 @@ const navRef = ref(null);
 const resultRef = ref(null);
 const activeTab = ref('search');
 const tabsOffsetTop = ref(46);
+const tabsRef = ref(null);
+const stickyRef = ref(null);
+const stickyInnerRef = ref(null);
+const navHeight = ref(46);
+const stickyHeight = ref(0);
 const tabs = [
   { label: '查询条件', value: 'search' },
   { label: '待确认单据', value: 'pending' },
@@ -43,11 +57,75 @@ const tabs = [
 ];
 
 const getNavEl = () => navRef.value?.getNavEl?.();
+const showTabs = computed(() => activeTab.value !== 'pending');
+const paginationStickyTop = computed(() => navHeight.value + (showTabs.value ? stickyHeight.value : 0));
+
+const measureNavHeight = () => {
+  const navEl = getNavEl();
+  const height = navEl?.offsetHeight ?? 46;
+  navHeight.value = height;
+  tabsOffsetTop.value = height;
+};
+
+const resolveElement = (target) => {
+  if (!target) return null;
+  if (target instanceof HTMLElement) return target;
+  if (target.$el instanceof HTMLElement) return target.$el;
+  if (target?.value) return resolveElement(target.value);
+  if (target?.$?.subTree?.el instanceof HTMLElement) return target.$?.subTree?.el;
+  return null;
+};
+
+const measureStickyHeight = () => {
+  nextTick(() => {
+    const el = resolveElement(stickyRef.value) || resolveElement(stickyInnerRef.value);
+    const rect = el?.getBoundingClientRect();
+    stickyHeight.value = rect?.height ?? 0;
+  });
+};
+
+const handleResize = () => {
+  measureNavHeight();
+  if (showTabs.value) {
+    measureStickyHeight();
+  } else {
+    stickyHeight.value = 0;
+  }
+};
 
 onMounted(() => {
-  const navEl = getNavEl();
-  if (navEl) {
-    tabsOffsetTop.value = navEl.offsetHeight ?? tabsOffsetTop.value;
+  measureNavHeight();
+  if (showTabs.value) {
+    measureStickyHeight();
+  }
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('orientationchange', handleResize);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize);
+  window.removeEventListener('orientationchange', handleResize);
+});
+
+watch(activeTab, () => {
+  if (showTabs.value) {
+    measureStickyHeight();
+  } else {
+    stickyHeight.value = 0;
+  }
+});
+
+watch(tabsRef, () => {
+  if (showTabs.value) {
+    measureStickyHeight();
+  }
+});
+
+watch(showTabs, (visible) => {
+  if (visible) {
+    measureStickyHeight();
+  } else {
+    stickyHeight.value = 0;
   }
 });
 
@@ -55,16 +133,29 @@ function handleBack() {
   router.back();
 }
 
-function handleSearch(code) {
+function showResultByCode(rawCode) {
+  const code = rawCode?.toString().trim();
   if (!code) return;
-  activeTab.value = 'result';
-  resultRef.value?.fetchByCode(code);
+
+  const invokeFetch = () => {
+    resultRef.value?.fetchByCode(code);
+  };
+
+  if (activeTab.value === 'result') {
+    invokeFetch();
+  } else {
+    activeTab.value = 'result';
+    nextTick(invokeFetch);
+  }
+}
+
+function handleSearch(code) {
+  showResultByCode(code);
 }
 
 function handleSelectOrder(order) {
   if (!order) return;
-  activeTab.value = 'result';
-  resultRef.value?.fetchByCode(order.outStockCode || order.code);
+  showResultByCode(order.outStockCode || order.code);
 }
 </script>
 
