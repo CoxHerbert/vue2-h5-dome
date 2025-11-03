@@ -109,16 +109,29 @@ function handleBack() {
   router.back();
 }
 
-function handleSearch(code) {
+function showResultByCode(rawCode) {
+  const code = rawCode?.toString().trim();
   if (!code) return;
-  activeTab.value = 'result';
-  resultRef.value?.fetchByCode(code);
+
+  const invokeFetch = () => {
+    resultRef.value?.fetchByCode(code);
+  };
+
+  if (activeTab.value === 'result') {
+    invokeFetch();
+  } else {
+    activeTab.value = 'result';
+    nextTick(invokeFetch);
+  }
+}
+
+function handleSearch(code) {
+  showResultByCode(code);
 }
 
 function handleSelectOrder(order) {
   if (!order) return;
-  activeTab.value = 'result';
-  resultRef.value?.fetchByCode(order.outStockCode || order.code);
+  showResultByCode(order.outStockCode || order.code);
 }
 </script>
 
