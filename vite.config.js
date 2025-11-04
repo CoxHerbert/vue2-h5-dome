@@ -64,7 +64,7 @@ export default ({ mode }) => {
       host: true,
       port: 5174,
       open: true,
-      // allowedHosts: ['test.eastwinbip.com', '.eastwinbip.com'],
+      allowedHosts: ['test.eastwinbip.com', '.eastwinbip.com'],
       hmr: {
         host: 'test.eastwinbip.com',
       },
