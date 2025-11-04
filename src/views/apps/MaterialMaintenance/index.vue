@@ -2,136 +2,127 @@
 <template>
   <div class="page-container page-material-info">
     <!-- 顶部栏 -->
-    <van-nav-bar
-      :z-index="999"
-      title="物料信息维护"
-      left-arrow
-      class="mi-navbar"
-      @click-left="$router?.back?.()"
-    />
+    <dc-nav-bar ref="navRef" title="物料信息维护" left-arrow @click-left="handleBack" />
+    <!-- 搜索区（吸顶） -->
+    <van-sticky
+      :offset-top="stickyTop"
+      :container="pageBodyRef"
+      :z-index="998"
+      @scroll="onStickyScroll"
+    >
+      <div class="search-container" :class="{ 'is-fixed': isSearchSticky }">
+        <van-search
+          v-model="snCode"
+          placeholder="请输入物料编码查询"
+          shape="square"
+          :show-action="false"
+          :input-align="'left'"
+          class="mi-search"
+          @search="doAction('search')"
+        />
+        <van-button type="success" @click="doAction('handleSearch')">
+          <van-icon name="search" size="18" /> 查询
+        </van-button>
+        <van-button type="primary" @click="doAction('scanCode')">
+          <van-icon name="scan" size="18" />
+        </van-button>
+      </div>
+    </van-sticky>
 
-    <div ref="pageBodyRef" class="page-body">
-      <!-- 搜索区（吸顶） -->
-      <van-sticky
-        :offset-top="stickyTop"
-        :container="pageBodyRef"
-        :z-index="998"
-        @scroll="onStickyScroll"
-      >
-        <div class="search-container" :class="{ 'is-fixed': isSearchSticky }">
-          <van-search
-            v-model="snCode"
-            placeholder="请输入物料编码查询"
-            shape="square"
-            :show-action="false"
-            :input-align="'left'"
-            class="mi-search"
-            @search="doAction('search')"
-          />
-          <van-button type="success" @click="doAction('handleSearch')">
-            <van-icon name="search" size="18" /> 查询
-          </van-button>
-          <van-button type="primary" @click="doAction('scanCode')">
-            <van-icon name="scan" size="18" />
-          </van-button>
-        </div>
-      </van-sticky>
+    <!-- 表单 -->
+    <div v-if="formData.id" class="form-box">
+      <van-form ref="formRef" :model="formData" :rules="rules">
+        <div v-for="(group, i) in groups" :key="i" class="group">
+          <div class="group-title">{{ group.label }}</div>
+          <div class="group-content">
+            <!-- 字段渲染 -->
+            <div
+              v-for="(item, j) in group.columns || []"
+              :key="j"
+              class="mi-form-item"
+              :class="{ disabled: item.props && item.props.disabled }"
+            >
+              <!-- input -->
+              <van-field
+                v-if="item.type === 'input'"
+                v-model="formData[item.prop]"
+                :name="item.prop"
+                :label="item.label"
+                :placeholder="`请输入${item.label}`"
+                v-bind="item.props"
+              />
 
-      <!-- 表单 -->
-      <div v-if="formData.id" class="form-box">
-        <van-form ref="formRef" :model="formData" :rules="rules">
-          <div v-for="(group, i) in groups" :key="i" class="group">
-            <div class="group-title">{{ group.label }}</div>
-            <div class="group-content">
-              <!-- 字段渲染 -->
-              <div
-                v-for="(item, j) in group.columns || []"
-                :key="j"
-                class="mi-form-item"
-                :class="{ disabled: item.props && item.props.disabled }"
-              >
-                <!-- input -->
-                <van-field
-                  v-if="item.type === 'input'"
-                  v-model="formData[item.prop]"
-                  :name="item.prop"
-                  :label="item.label"
-                  :placeholder="`请输入${item.label}`"
-                  v-bind="item.props"
-                />
+              <!-- ✅ Vant 选择（字典）: van-field + van-popup + van-picker -->
+              <van-field
+                v-else-if="item.type === 'select-dict'"
+                :label="item.label"
+                is-link
+                readonly
+                :model-value="displayDictText(item)"
+                :placeholder="item.props?.placeholder || '请选择'"
+                @click="openDictPicker(item)"
+              />
 
-                <!-- ✅ Vant 选择（字典）: van-field + van-popup + van-picker -->
-                <van-field
-                  v-else-if="item.type === 'select-dict'"
-                  :label="item.label"
-                  is-link
-                  readonly
-                  :model-value="displayDictText(item)"
-                  :placeholder="item.props?.placeholder || '请选择'"
-                  @click="openDictPicker(item)"
-                />
+              <!-- ✅ Vant 选择（通用下拉 / 原 dc-select-popup 语义） -->
+              <van-field
+                v-else-if="item.type === 'dc-select-popup'"
+                :label="item.label"
+                is-link
+                readonly
+                :model-value="displayOptionText(item)"
+                :placeholder="item.props?.placeholder || '请选择'"
+                @click="openOptionsPicker(item)"
+              />
 
-                <!-- ✅ Vant 选择（通用下拉 / 原 dc-select-popup 语义） -->
-                <van-field
-                  v-else-if="item.type === 'dc-select-popup'"
-                  :label="item.label"
-                  is-link
-                  readonly
-                  :model-value="displayOptionText(item)"
-                  :placeholder="item.props?.placeholder || '请选择'"
-                  @click="openOptionsPicker(item)"
-                />
+              <!-- ✅ Vant 数字：替代 number -->
+              <van-field
+                v-else-if="item.type === 'number'"
+                :label="item.label"
+                type="number"
+                :name="item.prop"
+                :placeholder="item.props?.placeholder || `请输入${item.label}`"
+                :formatter="(v) => formatDecimal(v, item.props?.precision, item.props?.min)"
+                format-trigger="onChange"
+                :model-value="formData[item.prop]"
+                v-bind="filterFieldProps(item)"
+                @update:model-value="(val) => onNumberInput(item, val)"
+              />
 
-                <!-- ✅ Vant 数字：替代 number -->
-                <van-field
-                  v-else-if="item.type === 'number'"
-                  :label="item.label"
-                  type="number"
-                  :name="item.prop"
-                  :placeholder="item.props?.placeholder || `请输入${item.label}`"
-                  :formatter="(v) => formatDecimal(v, item.props?.precision, item.props?.min)"
-                  format-trigger="onChange"
-                  :model-value="formData[item.prop]"
-                  v-bind="filterFieldProps(item)"
-                  @update:model-value="(val) => onNumberInput(item, val)"
-                />
+              <!-- ✅ Vant 数字（重量）：替代 weight -->
+              <van-field
+                v-else-if="item.type === 'weight'"
+                :label="item.label"
+                type="number"
+                :name="item.prop"
+                :placeholder="item.props?.placeholder || `请输入${item.label}`"
+                :formatter="(v) => formatDecimal(v, item.props?.precision, item.props?.min)"
+                format-trigger="onChange"
+                :model-value="formData[item.prop]"
+                v-bind="filterFieldProps(item)"
+                @update:model-value="(val) => onNumberInput(item, val)"
+              />
 
-                <!-- ✅ Vant 数字（重量）：替代 weight -->
-                <van-field
-                  v-else-if="item.type === 'weight'"
-                  :label="item.label"
-                  type="number"
-                  :name="item.prop"
-                  :placeholder="item.props?.placeholder || `请输入${item.label}`"
-                  :formatter="(v) => formatDecimal(v, item.props?.precision, item.props?.min)"
-                  format-trigger="onChange"
-                  :model-value="formData[item.prop]"
-                  v-bind="filterFieldProps(item)"
-                  @update:model-value="(val) => onNumberInput(item, val)"
-                />
-
-                <!-- 上传 -->
-                <div v-else-if="item.type === 'upload-img'" class="upload-img-box">
-                  <div class="upload-box">
-                    <WfUpload v-model="formData[item.prop]" :column="item.props.column" />
-                  </div>
+              <!-- 上传 -->
+              <div v-else-if="item.type === 'upload-img'" class="upload-img-box">
+                <div class="upload-box">
+                  <WfUpload v-model="formData[item.prop]" :column="item.props.column" />
                 </div>
               </div>
             </div>
           </div>
-        </van-form>
-      </div>
-
-      <!-- 底部按钮 -->
-      <div v-if="formData.id" class="page-body_footer">
-        <van-button block type="success" @click="doAction('submit')">
-          <van-icon name="passed" size="18" /> 提交
-        </van-button>
-      </div>
-
-      <!-- 无数据提示 -->
-      <div v-if="!formData.id" class="no-data">暂无数据, 请先扫码查询</div>
+        </div>
+      </van-form>
     </div>
+
+    <!-- 底部按钮 -->
+    <div v-if="formData.id" class="page-body_footer">
+      <van-button block type="success" @click="doAction('submit')">
+        <van-icon name="passed" size="18" /> 提交
+      </van-button>
+    </div>
+
+    <!-- 无数据提示 -->
+    <div v-if="!formData.id" class="no-data">暂无数据, 请先扫码查询</div>
 
     <!-- 扫码弹窗（按你备注保留原有逻辑/接口） -->
     <dc-scan-code v-if="show" ref="scanCodeRef" @confirm="handleScanCode" />
@@ -145,15 +136,22 @@
       />
     </van-popup>
   </div>
+  <van-back-top />
 </template>
 
 <script setup>
-import { ref, reactive, nextTick } from 'vue';
+import { ref, reactive, nextTick, onMounted, getCurrentInstance } from 'vue';
 import { closeToast, showToast } from 'vant';
 import WfUpload from '@/components/wf-ui/components/wf-upload/wf-upload.vue';
 import Api from '@/api';
+import { useDictStore } from '@/store/dict';
+
+const { proxy } = getCurrentInstance();
 
 defineOptions({ name: 'MaterialInfo' });
+
+const dictStore = useDictStore();
+const outTypeDict = ref([]);
 
 /** ======= state ======= */
 const pageBodyRef = ref(null);
@@ -201,8 +199,6 @@ const groups = ref([
         props: {
           disabled: true,
           dictKey: 'DC_ERP_UNIT',
-          labelKey: 'dictValue',
-          valueKey: 'dictKey',
           placeholder: '请选择',
         },
       },
@@ -293,6 +289,15 @@ const groups = ref([
 
 /** ======= lifecycle (created) ======= */
 loadDicts(['DC_ERP_UNIT']);
+
+onMounted(async () => {
+  try {
+    const boxes = proxy.dicts(['DC_ERP_UNIT']);
+    console.log(boxes);
+  } catch (error) {
+    console.error('获取出库类型字典失败', error);
+  }
+});
 
 /** ======= methods（setup 版） ======= */
 // Sticky
@@ -565,17 +570,6 @@ function handleFormItemChange(col, val) {
       height: 34px;
       line-height: 32px;
     }
-  }
-
-  .page-body {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: auto; /* 作为 sticky 的滚动容器 */
-    -webkit-overflow-scrolling: touch;
-    /* 若 NavBar 改为 fixed，可在运行时覆盖：
-       --mi-sticky-top: calc(46px + env(safe-area-inset-top));
-    */
   }
 
   .group-title {

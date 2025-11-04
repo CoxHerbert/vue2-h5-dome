@@ -68,10 +68,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, getCurrentInstance } from 'vue';
 import { showFailToast } from 'vant';
 import Api from '@/api';
 import { useDictStore } from '@/store/dict';
+
+const { proxy } = getCurrentInstance();
 
 const props = defineProps({
   stickyTop: { type: Number, default: 0 },
@@ -98,7 +100,7 @@ function handleSelect(item) {
 
 onMounted(async () => {
   try {
-    outTypeDict.value = await dictStore.get('DC_WMS_OUT_TYPE_WMS');
+    const { DC_WMS_OUT_TYPE_WMS } = proxy.dicts(['DC_WMS_OUT_TYPE_WMS']);
   } catch (error) {
     console.error('获取出库类型字典失败', error);
   }
