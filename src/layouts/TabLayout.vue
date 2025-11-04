@@ -12,7 +12,7 @@
       >
         <template v-if="isCustomIcon(r.meta.icon)" #icon="{ active }">
           <img
-            :src="getTabbarIcon(r.meta.icon, active)"
+            :src="withBase(getTabbarIcon(r.meta.icon, active))"
             class="tabbar-icon"
             :alt="t(r.meta.title)"
           />
@@ -28,6 +28,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import router from '@/router';
+import { withBase } from '@/utils/util';
 
 const { t } = useI18n();
 const route = useRoute();
