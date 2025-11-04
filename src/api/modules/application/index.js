@@ -3,11 +3,13 @@ import request from '@/utils/http';
 import planSheep from './planSheep';
 import workReport from './workReport';
 import materialMaintenance from './materialMaintenance';
+import wireInspection from './wireInspection';
 
 export default {
   planSheep,
   workReport,
   materialMaintenance,
+  wireInspection,
   // 入库单列表
   inventoryList(params) {
     return request({
