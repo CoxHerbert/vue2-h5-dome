@@ -225,21 +225,21 @@ const metrics = computed(() => [
     label: t('me.dashboard.metrics.leave'),
     value: stats.value.leaveDays,
     display: stats.value.leaveDays.toLocaleString(),
-    routeName: 'meLeave',
+    // routeName: 'meLeave',
   },
   {
     key: 'travel',
     label: t('me.dashboard.metrics.travel'),
     value: stats.value.travelDays,
     display: stats.value.travelDays.toLocaleString(),
-    routeName: 'meTravel',
+    // routeName: 'meTravel',
   },
   {
     key: 'overtime',
     label: t('me.dashboard.metrics.overtime'),
     value: stats.value.overtimeHours,
     display: stats.value.overtimeHours.toLocaleString(),
-    routeName: 'meOvertime',
+    // routeName: 'meOvertime',
   },
 ]);
 
@@ -256,7 +256,7 @@ const functionItems = computed(() => [
     key: 'punchRecord',
     label: t('me.dashboard.functions.items.punchRecord'),
     icon: punchRecordIcon,
-    routeName: 'mePunchRecord',
+    // routeName: 'mePunchRecord',
   },
 ]);
 
