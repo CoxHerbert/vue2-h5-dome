@@ -245,10 +245,11 @@ defineExpose({
   min-height: 0;
 
   &__toolbar {
+    padding: 0 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    background: #fff;
   }
 
   &__actions {
