@@ -1,11 +1,6 @@
 <template>
   <div class="debug-settings">
-    <van-nav-bar
-      class="debug-settings__nav"
-      title="调试设置"
-      left-arrow
-      @click-left="handleBack"
-    />
+    <van-nav-bar title="调试设置" left-arrow @click-left="handleBack" />
 
     <section class="debug-settings__content">
       <van-cell-group inset>
@@ -72,10 +67,6 @@ onMounted(() => {
 .debug-settings {
   min-height: 100vh;
   background-color: #f7f8fa;
-
-  &__nav {
-    --van-nav-bar-background: #fff;
-  }
 
   &__content {
     padding: 16px 0;
