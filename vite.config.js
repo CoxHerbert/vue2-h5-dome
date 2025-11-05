@@ -28,7 +28,7 @@ export default ({ mode }) => {
   const currentTimeVersion = Date.now();
 
   // 生产默认用 /mobile/，也可用 VITE_BASE 覆盖
-  const base = env.VITE_BASE || (mode === 'production' ? BASE_URL : '/');
+  const base = env.VITE_BASE;
 
   return defineConfig({
     plugins: [

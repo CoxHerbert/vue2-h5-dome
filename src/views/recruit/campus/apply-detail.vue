@@ -101,7 +101,6 @@
 import { computed, reactive, onMounted, toRefs, getCurrentInstance } from 'vue';
 import { useRoute } from 'vue-router';
 import Api from '@/api/index';
-import { ensureAuthOnEnter } from '@/router/ensure-auth';
 import { useUserStore } from '@/store/user';
 const user = useUserStore();
 
@@ -180,12 +179,6 @@ const postNames = computed(() => {
 
 // ===== 行为 =====
 onMounted(async () => {
-  // 进入页面第一行就做，避免还没鉴权就先发请求导致 401 抢跳
-  const ok = await ensureAuthOnEnter({
-    type: 'campus_applicant', // 明确类型（也可以不传，自动按 path 匹配）
-    mode: 'social', // 强制静默登录
-  });
-  if (!ok) return; // 已重定向去登录，后续不再执行
   await getCampusPositionList();
   const id = route.params.applyId;
   if (id === 'userid') {
