@@ -185,6 +185,7 @@ export default {
       campusApply: 'Campus Application',
       campusApplyDetail: 'Application Details',
     },
+    debugSettings: 'Debug Settings',
   },
   me: {
     navTitle: 'Profile',

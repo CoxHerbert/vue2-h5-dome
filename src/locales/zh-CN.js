@@ -185,6 +185,7 @@ export default {
       campusApply: '校招投递表单',
       campusApplyDetail: '投递详情',
     },
+    debugSettings: '调试设置',
   },
   me: {
     navTitle: '我的',

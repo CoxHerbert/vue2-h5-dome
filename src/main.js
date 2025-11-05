@@ -34,6 +34,10 @@ async function bootstrap() {
   app.use(plugins);
   setupRouterGuard(router);
 
+  const { useDebugStore } = await import('@/store/debug');
+  const debugStore = useDebugStore();
+  await debugStore.init();
+
   // 2) 全局注册（组件/指令/插件）
   registerComponents(app);
   setupDirectives(app);
