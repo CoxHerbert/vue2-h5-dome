@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 
-const STORAGE_KEY = 'debug:vconsole-enabled';
-const VCONSOLE_CDN = 'https://unpkg.com/vconsole@3.15.1/dist/vconsole.min.js';
+import { KEYS } from '@/constants/keys';
 
 let vconsoleInstance = null;
 let loaderPromise = null;
@@ -9,7 +8,7 @@ let loaderPromise = null;
 function readPersistedState() {
   if (typeof window === 'undefined') return false;
   try {
-    return window.localStorage.getItem(STORAGE_KEY) === 'true';
+    return window.localStorage.getItem(KEYS.DEBUG_VCONSOLE_ENABLED) === 'true';
   } catch (error) {
     console.warn('[debug] Failed to read vconsole flag from storage', error);
     return false;
@@ -19,7 +18,10 @@ function readPersistedState() {
 function persistState(enabled) {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(STORAGE_KEY, enabled ? 'true' : 'false');
+    window.localStorage.setItem(
+      KEYS.DEBUG_VCONSOLE_ENABLED,
+      enabled ? 'true' : 'false',
+    );
   } catch (error) {
     console.warn('[debug] Failed to persist vconsole flag', error);
   }
@@ -28,29 +30,13 @@ function persistState(enabled) {
 function loadVConsoleConstructor() {
   if (typeof window === 'undefined') return Promise.reject(new Error('window unavailable'));
 
-  if (window.VConsole) {
-    return Promise.resolve(window.VConsole);
-  }
-
   if (!loaderPromise) {
-    loaderPromise = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = VCONSOLE_CDN;
-      script.async = true;
-      script.onload = () => {
-        if (window.VConsole) {
-          resolve(window.VConsole);
-        } else {
-          loaderPromise = null;
-          reject(new Error('VConsole loaded without constructor'));
-        }
-      };
-      script.onerror = () => {
+    loaderPromise = import('vconsole')
+      .then((module) => module?.default ?? module)
+      .catch((error) => {
         loaderPromise = null;
-        reject(new Error('Failed to load VConsole script'));
-      };
-      document.head.appendChild(script);
-    });
+        throw error;
+      });
   }
 
   return loaderPromise;
