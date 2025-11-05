@@ -5,10 +5,12 @@ import recruitModule from './modules/recruit';
 import homeModule from './modules/home';
 import appsModule from './modules/apps.js';
 import meModule from './modules/me';
+import settingsModule from './modules/settings';
 
 const routes = [
   loginModule,
   recruitModule,
+  settingsModule,
   {
     path: '/',
     component: () => import('@/layouts/TabLayout.vue'),

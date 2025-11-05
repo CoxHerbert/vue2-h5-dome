@@ -185,6 +185,7 @@ export default {
       campusApply: 'Mẫu ứng tuyển sinh viên',
       campusApplyDetail: 'Chi tiết đơn ứng tuyển',
     },
+    debugSettings: 'Cài đặt gỡ lỗi',
   },
   me: {
     navTitle: 'Cá nhân',
