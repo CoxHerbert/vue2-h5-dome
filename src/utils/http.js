@@ -30,7 +30,8 @@ const noBaseUrlPrefixList = ['/pdf-printing'];
 
 // 统一错误提示（遵守 noErrorMsg）
 const getSystemErrorMessage = () => translate('common.errors.system', '系统错误');
-const getTokenExpiredMessage = () => translate('common.errors.tokenExpired', '用户令牌过期，请重新登录');
+const getTokenExpiredMessage = () =>
+  translate('common.errors.tokenExpired', '用户令牌过期，请重新登录');
 const getNetworkErrorMessage = () => translate('common.errors.network', '网络异常');
 
 function toastError(message, cfg) {

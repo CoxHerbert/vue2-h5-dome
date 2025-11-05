@@ -161,8 +161,10 @@ onMounted(async () => {
   try {
     const res = await getDetail();
     const { code, data } = res.data;
-    if (code === 200 && !!data) {
-      router.push({ path: '/recruit/campus/apply-detail/userid' });
+    if (code === 200) {
+      if (data?.id) {
+        router.push({ path: '/recruit/campus/apply-detail/userid' });
+      }
     }
   } catch (error) {
     console.log('error:', error);
