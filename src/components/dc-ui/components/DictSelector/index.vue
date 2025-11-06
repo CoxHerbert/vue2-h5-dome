@@ -97,8 +97,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
-import { useDictStore } from '@/store/dict';
+import { computed, ref, watch, unref } from 'vue';
 
 defineOptions({ name: 'DictSelector' });
 
@@ -108,11 +107,12 @@ const MULTI_VALUE_SEPARATOR = ',';
 /**
  * DictSelector Props 说明
  * - modelValue  支持单值或数组，双向绑定
- * - dictKey     字典编码，对应 useDictStore.get 的 code
+ * - dictKey     字典编码（由父级自行获取并通过 options 传入时可选）
  * - multiple    是否多选，未传时读取 field.multiple / field.props.multiple
+ * - options     选项数组（或 ref），优先于 field/options 配置
+ * - loading     控制弹层加载态，未传时回退到 field.props.loading
  * - columnsFieldNames 自定义字典项字段映射，默认 { text: 'text', value: 'value' }
  * - maxTagCount 多选模式下展示的标签数量，超出后折叠显示 +N
- * - field.props.dictParams 作为 useDictStore.get 的请求参数透传
  * - field.props.valueType / returnType 控制多选返回数组或逗号分隔字符串
  *  其余展示相关入参（label、placeholder、title 等）同 Vant Field 行为
  */
@@ -124,6 +124,8 @@ const props = defineProps({
   placeholder: { type: String, default: '' },
   title: { type: String, default: '' },
   multiple: { type: Boolean, default: null },
+  options: { type: [Array, Object], default: undefined },
+  loading: { type: Boolean, default: undefined },
   clearable: { type: Boolean, default: undefined },
   disabled: { type: Boolean, default: undefined },
   columnsFieldNames: {
@@ -136,19 +138,12 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'change']);
 
 const popupOpen = ref(false);
-const loading = ref(false);
-const rawOptions = ref([]);
 const singleDraft = ref(null);
 const multipleDraft = ref([]);
-
-const dictStore = useDictStore();
 
 const fieldProps = computed(() => (props.field && typeof props.field === 'object' ? props.field : {}));
 const fieldLabel = computed(() => props.label || fieldProps.value?.label || '');
 
-const effectiveDictKey = computed(
-  () => props.dictKey || fieldProps.value?.dictKey || fieldProps.value?.props?.dictKey || ''
-);
 const effectiveFieldNames = computed(() => {
   const normalize = (value) => (value && typeof value === 'object' ? value : {});
   const fromProps = normalize(props.columnsFieldNames);
@@ -159,9 +154,6 @@ const effectiveFieldNames = computed(() => {
     value: fromProps.value ?? fromField.value ?? fromFieldProps.value ?? 'value',
   };
 });
-const effectiveDictParams = computed(
-  () => fieldProps.value?.dictParams || fieldProps.value?.props?.dictParams || null
-);
 const effectivePlaceholder = computed(() => {
   if (props.placeholder) return props.placeholder;
   if (fieldProps.value?.props?.placeholder) return fieldProps.value.props.placeholder;
@@ -210,6 +202,13 @@ const canClearTags = computed(() => canClear.value && !isDisabled.value);
 
 const placeholderText = computed(() => effectivePlaceholder.value);
 const popupTitle = computed(() => effectiveTitle.value || '请选择');
+const loading = computed(() => {
+  if (props.loading !== undefined && props.loading !== null) return !!props.loading;
+  const fp = fieldProps.value;
+  if (fp && Object.prototype.hasOwnProperty.call(fp, 'loading')) return !!fp.loading;
+  if (fp?.props && Object.prototype.hasOwnProperty.call(fp.props, 'loading')) return !!fp.props.loading;
+  return false;
+});
 const multipleValueMode = computed(() => {
   if (!isMultiple.value) return 'single';
   const fp = fieldProps.value;
@@ -222,8 +221,23 @@ const multipleValueMode = computed(() => {
   return 'array';
 });
 
+const optionsSource = computed(() => {
+  const resolve = (source) => {
+    if (!source) return null;
+    const unwrapped = unref(source);
+    return Array.isArray(unwrapped) ? unwrapped : null;
+  };
+  const fromProps = resolve(props.options);
+  if (fromProps !== null) return fromProps;
+  const fromField = resolve(fieldProps.value?.options);
+  if (fromField !== null) return fromField;
+  const fromFieldProps = resolve(fieldProps.value?.props?.options);
+  if (fromFieldProps !== null) return fromFieldProps;
+  return [];
+});
+
 const options = computed(() => {
-  const arr = Array.isArray(rawOptions.value) ? rawOptions.value : [];
+  const arr = Array.isArray(optionsSource.value) ? optionsSource.value : [];
   const fieldNames = effectiveFieldNames.value;
   return arr.map((item, index) => {
     const label = pickOptionValue(item, [fieldNames.text, 'text', 'label']);
@@ -295,27 +309,6 @@ const extraTagCount = computed(() => {
   const diff = selectedTags.value.length - visibleTags.value.length;
   return diff > 0 ? diff : 0;
 });
-
-watch(
-  [effectiveDictKey, effectiveDictParams],
-  async ([code, params]) => {
-    if (!code) {
-      rawOptions.value = [];
-      return;
-    }
-    loading.value = true;
-    try {
-      const items = await dictStore.get(code, { params });
-      rawOptions.value = Array.isArray(items) ? items : [];
-    } catch (error) {
-      console.error('[DictSelector] failed to load dict:', error);
-      rawOptions.value = [];
-    } finally {
-      loading.value = false;
-    }
-  },
-  { immediate: true }
-);
 
 watch(
   () => popupOpen.value,

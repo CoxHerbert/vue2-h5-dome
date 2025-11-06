@@ -62,6 +62,7 @@
                 :placeholder="item.props?.placeholder"
                 :title="item.props?.title"
                 :multiple="item.props?.multiple"
+                :options="resolveDictOptions(item)"
                 :disabled="item.props?.disabled"
                 :clearable="item.props?.clearable"
                 :columns-field-names="resolveColumnsFieldNames(item)"
@@ -147,13 +148,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick } from 'vue';
+import { ref, reactive, nextTick, getCurrentInstance, unref } from 'vue';
 import { closeToast, showToast } from 'vant';
 import Api from '@/api';
 
 defineOptions({ name: 'MaterialInfo' });
 
 /** ======= state ======= */
+const { proxy } = getCurrentInstance();
 const pageBodyRef = ref(null);
 const stickyTop = ref(0);
 const isSearchSticky = ref(false);
@@ -178,7 +180,7 @@ const picker = reactive({
 });
 
 // 字段分组（保持不变）
-const groups = ref([
+const GROUP_SCHEMA = [
   {
     label: '基本信息',
     columns: [
@@ -279,7 +281,19 @@ const groups = ref([
       },
     ],
   },
-]);
+];
+
+const groups = ref(GROUP_SCHEMA);
+
+const dictCodes = Array.from(
+  new Set(
+    GROUP_SCHEMA.flatMap((group) => group.columns || [])
+      .map((column) => column?.props?.dictKey || column?.dictKey)
+      .filter(Boolean)
+  )
+);
+
+const dictRefs = proxy?.dicts ? proxy.dicts(dictCodes) : {};
 
 /** ======= methods（setup 版） ======= */
 // Sticky
@@ -288,6 +302,24 @@ function onStickyScroll(e) {
 }
 
 const DEFAULT_COLUMNS_FIELD_NAMES = Object.freeze({ text: 'text', value: 'value' });
+
+function resolveDictOptions(item) {
+  const column = item || {};
+  const columnProps = column.props || {};
+  const candidates = [columnProps.options, column.options];
+  for (const candidate of candidates) {
+    const list = unref(candidate);
+    if (Array.isArray(list)) return list;
+  }
+
+  const dictKey = columnProps.dictKey || column.dictKey;
+  if (dictKey && dictRefs && Object.prototype.hasOwnProperty.call(dictRefs, dictKey)) {
+    const list = unref(dictRefs[dictKey]);
+    if (Array.isArray(list)) return list;
+  }
+
+  return [];
+}
 
 function resolveColumnsFieldNames(item) {
   const props = item?.props || {};
