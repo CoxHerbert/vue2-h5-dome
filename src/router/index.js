@@ -12,6 +12,12 @@ const routes = [
   recruitModule,
   settingsModule,
   {
+    path: '/sop-doc/:docKey?',
+    name: 'sop-doc',
+    component: () => import('@/views/sop/doc.vue'),
+    meta: { title: '东创知识库', requiresAuth: false },
+  },
+  {
     path: '/',
     component: () => import('@/layouts/TabLayout.vue'),
     redirect: '/home',
