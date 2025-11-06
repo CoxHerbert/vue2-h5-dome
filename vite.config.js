@@ -22,7 +22,7 @@ const sanitize = (s) => s.replace(/[@/\\]+/g, '_').replace(/[^\w-]/g, '_');
 
 export default ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const { VITE_APP_ENV, VITE_APP_BASE_URL, VITE_APP_API, BASE_URL } = env;
+  const { VITE_APP_ENV, VITE_APP_BASE_URL, VITE_APP_API } = env;
 
   const isProd = VITE_APP_ENV === 'production';
   const currentTimeVersion = Date.now();

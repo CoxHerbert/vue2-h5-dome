@@ -43,19 +43,23 @@
       <!-- 步骤（移动端紧凑行高） -->
       <ul class="m-userinfo__steps">
         <li class="step" :class="stepClass(0)">
-          <span class="step__dot"></span><span class="step__text">{{ t('login.userInfoTransition.steps.readTicket') }}</span
+          <span class="step__dot"></span
+          ><span class="step__text">{{ t('login.userInfoTransition.steps.readTicket') }}</span
           ><span class="step__tag">{{ stepTag(0) }}</span>
         </li>
         <li class="step" :class="stepClass(1)">
-          <span class="step__dot"></span><span class="step__text">{{ t('login.userInfoTransition.steps.fetchUser') }}</span
+          <span class="step__dot"></span
+          ><span class="step__text">{{ t('login.userInfoTransition.steps.fetchUser') }}</span
           ><span class="step__tag">{{ stepTag(1) }}</span>
         </li>
         <li class="step" :class="stepClass(2)">
-          <span class="step__dot"></span><span class="step__text">{{ t('login.userInfoTransition.steps.persist') }}</span
+          <span class="step__dot"></span
+          ><span class="step__text">{{ t('login.userInfoTransition.steps.persist') }}</span
           ><span class="step__tag">{{ stepTag(2) }}</span>
         </li>
         <li class="step" :class="stepClass(3)">
-          <span class="step__dot"></span><span class="step__text">{{ t('login.userInfoTransition.steps.redirect') }}</span
+          <span class="step__dot"></span
+          ><span class="step__text">{{ t('login.userInfoTransition.steps.redirect') }}</span
           ><span class="step__tag">{{ stepTag(3) }}</span>
         </li>
       </ul>
@@ -201,6 +205,9 @@ async function bootstrap() {
     pct.value = 88;
 
     let path = userInfo?.h5Url;
+    if (userInfo?.h5Url) {
+      path = userInfo.h5Url.replace(/^\/mobile/, '');
+    }
 
     setTimeout(() => {
       steps.value[3] = 1;
