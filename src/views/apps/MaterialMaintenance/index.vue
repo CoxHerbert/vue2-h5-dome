@@ -149,6 +149,7 @@
 
 <script setup>
 import { ref, reactive, nextTick, getCurrentInstance, unref } from 'vue';
+import { useRouter } from 'vue-router';
 import { closeToast, showToast } from 'vant';
 import Api from '@/api';
 
@@ -156,6 +157,7 @@ defineOptions({ name: 'MaterialInfo' });
 
 /** ======= state ======= */
 const { proxy } = getCurrentInstance();
+const router = useRouter();
 const pageBodyRef = ref(null);
 const stickyTop = ref(0);
 const isSearchSticky = ref(false);
@@ -491,17 +493,28 @@ function doAction(action) {
         })
         .then((res) => {
           closeToast();
-          const { code } = res || {};
+          const { code, msg } = res?.data || {};
           if (code === 200) {
-            showToast({ message: '保存成功' });
+            showToast({ type: 'success', message: '提交成功' });
+          } else {
+            showToast({ message: msg || '提交失败' });
           }
         })
         .catch((error) => {
           closeToast();
-          showToast({ message: error?.msg || '保存失败' });
+          const message = error?.response?.data?.msg || error?.msg || error?.message;
+          showToast({ message: message || '提交失败' });
         });
     });
   }
+}
+
+function handleBack() {
+  if (window?.history?.length > 1) {
+    router.back();
+    return;
+  }
+  router.replace({ name: 'apps' });
 }
 
 // 原有联动逻辑（照搬）
