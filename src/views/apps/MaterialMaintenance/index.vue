@@ -64,8 +64,7 @@
                 :multiple="item.props?.multiple"
                 :disabled="item.props?.disabled"
                 :clearable="item.props?.clearable"
-                :label-key="item.props?.labelKey"
-                :value-key="item.props?.valueKey"
+                :columns-field-names="resolveColumnsFieldNames(item)"
                 :dict-params="item.props?.dictParams"
                 :value-type="item.props?.valueType || item.props?.returnType"
                 :separator="item.props?.separator"
@@ -197,6 +196,10 @@ const groups = ref([
           disabled: true,
           dictKey: 'DC_ERP_UNIT',
           placeholder: '请选择',
+          columnsFieldNames: {
+            text: 'dictValue',
+            value: 'dictKey',
+          },
         },
       },
       { label: '物料属性', prop: 'attribute', type: 'input', props: { disabled: true } },
@@ -212,9 +215,11 @@ const groups = ref([
         type: 'select-dict',
         props: {
           dictKey: 'DC_ERP_UNIT',
-          labelKey: 'dictValue',
-          valueKey: 'dictKey',
           placeholder: '请选择',
+          columnsFieldNames: {
+            text: 'dictValue',
+            value: 'dictKey',
+          },
         },
       },
       { label: '长', prop: 'length', type: 'number', props: { min: 0, precision: 4 } },
@@ -237,9 +242,11 @@ const groups = ref([
         type: 'select-dict',
         props: {
           dictKey: 'DC_ERP_UNIT',
-          labelKey: 'dictValue',
-          valueKey: 'dictKey',
           placeholder: '请选择',
+          columnsFieldNames: {
+            text: 'dictValue',
+            value: 'dictKey',
+          },
         },
       },
       {
@@ -282,23 +289,46 @@ function onStickyScroll(e) {
   isSearchSticky.value = !!e?.isFixed;
 }
 
+const DEFAULT_COLUMNS_FIELD_NAMES = Object.freeze({ text: 'text', value: 'value' });
+
+function resolveColumnsFieldNames(item) {
+  const props = item?.props || {};
+  const map = props.columnsFieldNames && typeof props.columnsFieldNames === 'object'
+    ? props.columnsFieldNames
+    : null;
+  if (map) return map;
+  if (props.labelKey || props.valueKey) {
+    return {
+      text: props.labelKey || 'text',
+      value: props.valueKey || 'value',
+    };
+  }
+  return DEFAULT_COLUMNS_FIELD_NAMES;
+}
+
 function displayOptionText(item) {
-  const { options = [], labelKey = 'label', valueKey = 'value' } = item.props || {};
+  const props = item.props || {};
+  const fieldNames = resolveColumnsFieldNames(item);
+  const { text: textKey, value: valueKey } = fieldNames;
+  const { options = [] } = props;
   const val = formData?.[item.prop];
-  const hit = options.find((x) => resolveOptionField(x, valueKey, 'value') === val);
-  return hit ? resolveOptionField(hit, labelKey, 'label') : '';
+  const hit = options.find((x) => resolveOptionField(x, [valueKey, 'value']) === val);
+  return hit ? resolveOptionField(hit, [textKey, 'text', 'label']) : '';
 }
 
 function openOptionsPicker(item) {
-  const { options = [], labelKey = 'label', valueKey = 'value' } = item.props || {};
+  const props = item.props || {};
+  const fieldNames = resolveColumnsFieldNames(item);
+  const { text: textKey, value: valueKey } = fieldNames;
+  const { options = [] } = props;
   if (!options.length) {
     showToast({ message: '暂无可选项' });
     return;
   }
   picker.forProp = item.prop;
   picker.columns = options.map((x) => ({
-    text: resolveOptionField(x, labelKey, 'label'),
-    value: resolveOptionField(x, valueKey, 'value'),
+    text: resolveOptionField(x, [textKey, 'text', 'label']),
+    value: resolveOptionField(x, [valueKey, 'value']),
   }));
   picker.meta = item;
   picker.show = true;
@@ -323,12 +353,14 @@ function filterFieldProps(item) {
   return { disabled, clearable, maxlength, 'input-align': inputAlign };
 }
 
-function resolveOptionField(option, key, fallbackKey) {
+function resolveOptionField(option, keys) {
   if (!option) return '';
-  if (key && option[key] != null) return option[key];
-  if (key && option.raw && option.raw[key] != null) return option.raw[key];
-  if (fallbackKey && option[fallbackKey] != null) return option[fallbackKey];
-  if (fallbackKey && option.raw && option.raw[fallbackKey] != null) return option.raw[fallbackKey];
+  const list = Array.isArray(keys) ? keys : [keys];
+  for (const key of list) {
+    if (!key) continue;
+    if (option[key] != null) return option[key];
+    if (option.raw && option.raw[key] != null) return option.raw[key];
+  }
   return '';
 }
 

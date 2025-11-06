@@ -112,8 +112,14 @@ const props = defineProps({
   multiple: { type: Boolean, default: null },
   clearable: { type: Boolean, default: undefined },
   disabled: { type: Boolean, default: undefined },
-  labelKey: { type: String, default: '' },
-  valueKey: { type: String, default: '' },
+  /**
+   * 自定义字典选项字段名映射，默认 { text: 'text', value: 'value' }
+   * 可通过 { text: 'labelKey', value: 'valueKey' } 指定自定义字段
+   */
+  columnsFieldNames: {
+    type: Object,
+    default: () => ({ text: 'text', value: 'value' }),
+  },
   dictParams: { type: Object, default: null },
   valueType: { type: String, default: '' },
   separator: { type: String, default: ',' },
@@ -136,12 +142,16 @@ const fieldLabel = computed(() => props.label || fieldProps.value?.label || '');
 const effectiveDictKey = computed(
   () => props.dictKey || fieldProps.value?.dictKey || fieldProps.value?.props?.dictKey || ''
 );
-const effectiveLabelKey = computed(
-  () => props.labelKey || fieldProps.value?.labelKey || fieldProps.value?.props?.labelKey || 'label'
-);
-const effectiveValueKey = computed(
-  () => props.valueKey || fieldProps.value?.valueKey || fieldProps.value?.props?.valueKey || 'value'
-);
+const effectiveFieldNames = computed(() => {
+  const normalize = (value) => (value && typeof value === 'object' ? value : {});
+  const fromProps = normalize(props.columnsFieldNames);
+  const fromField = normalize(fieldProps.value?.columnsFieldNames);
+  const fromFieldProps = normalize(fieldProps.value?.props?.columnsFieldNames);
+  return {
+    text: fromProps.text ?? fromField.text ?? fromFieldProps.text ?? 'text',
+    value: fromProps.value ?? fromField.value ?? fromFieldProps.value ?? 'value',
+  };
+});
 const effectiveDictParams = computed(
   () => props.dictParams || fieldProps.value?.dictParams || fieldProps.value?.props?.dictParams || null
 );
@@ -217,9 +227,10 @@ const multipleValueMode = computed(() => {
 
 const options = computed(() => {
   const arr = Array.isArray(rawOptions.value) ? rawOptions.value : [];
+  const fieldNames = effectiveFieldNames.value;
   return arr.map((item, index) => {
-    const label = resolveOptionField(item, effectiveLabelKey.value, 'label');
-    const value = resolveOptionField(item, effectiveValueKey.value, 'value');
+    const label = pickOptionValue(item, [fieldNames.text, 'text', 'label']);
+    const value = pickOptionValue(item, [fieldNames.value, 'value']);
     const id = item?.id ?? item?.value ?? item?.dictKey ?? index;
     return {
       key: id,
@@ -336,12 +347,14 @@ watch(
   }
 );
 
-function resolveOptionField(option, key, fallback) {
+function pickOptionValue(option, keys = []) {
   if (!option) return '';
-  if (key && option[key] !== undefined) return option[key];
-  if (key && option.raw && option.raw[key] !== undefined) return option.raw[key];
-  if (fallback && option[fallback] !== undefined) return option[fallback];
-  if (fallback && option.raw && option.raw[fallback] !== undefined) return option.raw[fallback];
+  const list = Array.isArray(keys) ? keys : [keys];
+  for (const key of list) {
+    if (!key) continue;
+    if (option[key] !== undefined) return option[key];
+    if (option.raw && option.raw[key] !== undefined) return option.raw[key];
+  }
   return '';
 }
 
