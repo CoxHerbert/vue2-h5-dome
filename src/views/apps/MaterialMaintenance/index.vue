@@ -140,15 +140,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick } from 'vue';
+import { ref, reactive, nextTick, getCurrentInstance, watch } from 'vue';
 import { closeToast, showToast } from 'vant';
 import WfUpload from '@/components/wf-ui/components/wf-upload/wf-upload.vue';
 import Api from '@/api';
-import { useDictStore } from '@/store/dict';
 
 defineOptions({ name: 'MaterialInfo' });
 
-const dictStore = useDictStore();
+const { proxy } = getCurrentInstance();
+const dictRefs = proxy.dicts(['DC_ERP_UNIT']);
 
 /** ======= state ======= */
 const pageBodyRef = ref(null);
@@ -170,6 +170,23 @@ const rules = reactive({
 const dictMap = reactive({
   DC_ERP_UNIT: [],
 });
+
+watch(
+  () => dictRefs?.DC_ERP_UNIT?.value,
+  (list) => {
+    const normalized = Array.isArray(list)
+      ? list.map((item) => {
+          if (!item || typeof item !== 'object') return {};
+          if (item.raw && typeof item.raw === 'object') {
+            return { ...item.raw, ...item };
+          }
+          return { ...item };
+        })
+      : [];
+    dictMap.DC_ERP_UNIT = normalized;
+  },
+  { immediate: true }
+);
 
 // 统一 picker 状态（字典/普通下拉共用）
 const picker = reactive({
@@ -284,38 +301,10 @@ const groups = ref([
   },
 ]);
 
-/** ======= lifecycle (created) ======= */
-loadDicts(['DC_ERP_UNIT']);
-
 /** ======= methods（setup 版） ======= */
 // Sticky
 function onStickyScroll(e) {
   isSearchSticky.value = !!e?.isFixed;
-}
-
-// 字典与下拉
-async function loadDicts(keys = []) {
-  const codes = keys.filter((code) => typeof code === 'string' && code);
-  if (!codes.length) return;
-
-  try {
-    const result = await dictStore.getMany(codes);
-    codes.forEach((code) => {
-      const list = Array.isArray(result?.[code]) ? result[code] : [];
-      dictMap[code] = list.map((item) => {
-        if (!item || typeof item !== 'object') return {};
-        if (item.raw && typeof item.raw === 'object') {
-          return { ...item.raw, ...item };
-        }
-        return { ...item };
-      });
-    });
-  } catch (error) {
-    console.error('加载字典失败', error);
-    codes.forEach((code) => {
-      dictMap[code] = [];
-    });
-  }
 }
 
 function displayDictText(item) {
@@ -348,11 +337,7 @@ function openDictPicker(item) {
   };
 
   if (!list.length) {
-    loadDicts([dictKey]).then(() => {
-      const again = dictMap?.[dictKey] || [];
-      if (!again.length) showToast({ message: '暂无可选项' });
-      else open(again);
-    });
+    showToast({ message: '暂无可选项' });
     return;
   }
   open(list);
