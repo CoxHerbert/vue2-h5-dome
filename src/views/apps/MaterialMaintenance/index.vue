@@ -110,6 +110,7 @@
 
               <!-- 上传 -->
               <div v-else-if="item.type === 'upload-img'" class="upload-img-box">
+                <div class="upload-label">{{ item.label }}</div>
                 <div class="upload-box">
                   <dc-uploader v-model="formData[item.prop]" v-bind="item.props.column" />
                 </div>
@@ -579,10 +580,21 @@ function handleFormItemChange(col, val) {
     overflow: hidden;
     display: flex;
     flex-flow: row nowrap;
+    align-items: center;
     position: relative;
+    padding: 10px 16px;
+
+    .upload-label {
+      width: 96px;
+      flex: none;
+      color: #646566;
+      font-size: 28rpx;
+      line-height: 1.4;
+    }
 
     .upload-box {
       flex: 1;
+      padding-left: 16px;
     }
 
     :deep(.wf-upload) {
