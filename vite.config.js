@@ -22,7 +22,7 @@ const sanitize = (s) => s.replace(/[@/\\]+/g, '_').replace(/[^\w-]/g, '_');
 
 export default ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const { VITE_APP_ENV, VITE_APP_BASE_URL, VITE_APP_API } = env;
+  const { VITE_APP_ENV, VITE_APP_BASE_URL, VITE_APP_API, VITE_WEIGHT } = env;
 
   const isProd = VITE_APP_ENV === 'production';
   const currentTimeVersion = Date.now();
@@ -79,6 +79,16 @@ export default ({ mode }) => {
           target: 'https://wiki.eastwinbip.com/graphql',
           changeOrigin: true,
           rewrite: (p) => p.replace('/graphql/wiki', ''),
+        },
+        '/weight': {
+          target: `${VITE_WEIGHT}/weight`,
+          changeOrigin: true,
+          // ✅ 确保只替换路径开头
+          rewrite: (p) => p.replace(/^\/weight/, ''),
+        },
+        '/socket.io': {
+          target: `${VITE_WEIGHT}/socket.io`,
+          changeOrigin: true,
         },
         // 稳一点的超时设置
         // timeout: 300000,

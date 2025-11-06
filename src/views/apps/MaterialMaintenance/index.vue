@@ -99,7 +99,7 @@
               />
 
               <!-- ✅ Vant 数字（重量）：替代 weight -->
-              <van-field
+              <dc-weight
                 v-else-if="item.type === 'weight'"
                 :label="item.label"
                 type="number"
@@ -115,7 +115,7 @@
               <!-- 上传 -->
               <div v-else-if="item.type === 'upload-img'" class="upload-img-box">
                 <div class="upload-box">
-                  <WfUpload v-model="formData[item.prop]" :column="item.props.column" />
+                  <dc-uploader v-model="formData[item.prop]" v-bind="item.props.column" />
                 </div>
               </div>
             </div>
@@ -152,7 +152,6 @@
 <script setup>
 import { ref, reactive, nextTick } from 'vue';
 import { closeToast, showToast } from 'vant';
-import WfUpload from '@/components/wf-ui/components/wf-upload/wf-upload.vue';
 import Api from '@/api';
 
 defineOptions({ name: 'MaterialInfo' });
@@ -266,18 +265,10 @@ const groups = ref([
         type: 'upload-img',
         props: {
           column: {
+            serverDir: 'scm/material',
             type: 'upload',
-            label: '上传',
-            span: 24,
-            display: true,
-            showFileList: true,
             multiple: false,
             limit: 1,
-            propsHttp: { url: 'attachId', name: 'originalName', res: 'data' },
-            prop: 'attachId',
-            action: '/blade-resource/oss/endpoint/put-file-attach-path',
-            drag: true,
-            headers: { filePath: 'scm/material' },
           },
         },
       },
