@@ -52,15 +52,25 @@
                 v-bind="item.props"
               />
 
-              <!-- ✅ Vant 选择（字典）: van-field + van-popup + van-picker -->
-              <van-field
+              <!-- ✅ 字典选择：支持单选/多选 -->
+              <dc-dict-selector
                 v-else-if="item.type === 'select-dict'"
+                v-model="formData[item.prop]"
+                :field="item"
                 :label="item.label"
-                is-link
-                readonly
-                :model-value="displayDictText(item)"
-                :placeholder="item.props?.placeholder || '请选择'"
-                @click="openDictPicker(item)"
+                :dict-key="item.props?.dictKey"
+                :placeholder="item.props?.placeholder"
+                :title="item.props?.title"
+                :multiple="item.props?.multiple"
+                :disabled="item.props?.disabled"
+                :clearable="item.props?.clearable"
+                :label-key="item.props?.labelKey"
+                :value-key="item.props?.valueKey"
+                :dict-params="item.props?.dictParams"
+                :value-type="item.props?.valueType || item.props?.returnType"
+                :separator="item.props?.separator"
+                :max-tag-count="item.props?.maxTagCount"
+                @change="(val) => handleFormItemChange(item, val)"
               />
 
               <!-- ✅ Vant 选择（通用下拉 / 原 dc-select-popup 语义） -->
@@ -140,18 +150,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick, onMounted, getCurrentInstance } from 'vue';
+import { ref, reactive, nextTick } from 'vue';
 import { closeToast, showToast } from 'vant';
 import WfUpload from '@/components/wf-ui/components/wf-upload/wf-upload.vue';
 import Api from '@/api';
-import { useDictStore } from '@/store/dict';
-
-const { proxy } = getCurrentInstance();
 
 defineOptions({ name: 'MaterialInfo' });
-
-const dictStore = useDictStore();
-const outTypeDict = ref([]);
 
 /** ======= state ======= */
 const pageBodyRef = ref(null);
@@ -169,17 +173,11 @@ const rules = reactive({
   // qty: [{ required: true, message: '请输入数量', trigger: 'onBlur' }]
 });
 
-// 字典缓存
-const dictMap = reactive({
-  DC_ERP_UNIT: [],
-});
-
-// 统一 picker 状态（字典/普通下拉共用）
+// 统一 picker 状态（普通下拉共用）
 const picker = reactive({
   show: false,
   forProp: '', // 作用字段
   columns: [], // [{ text, value }]
-  source: 'dict', // 'dict' | 'options'
   meta: null, // 记录 item 与 props
 });
 
@@ -287,77 +285,17 @@ const groups = ref([
   },
 ]);
 
-/** ======= lifecycle (created) ======= */
-loadDicts(['DC_ERP_UNIT']);
-
-onMounted(async () => {
-  try {
-    const boxes = proxy.dicts(['DC_ERP_UNIT']);
-    console.log(boxes);
-  } catch (error) {
-    console.error('获取出库类型字典失败', error);
-  }
-});
-
 /** ======= methods（setup 版） ======= */
 // Sticky
 function onStickyScroll(e) {
   isSearchSticky.value = !!e?.isFixed;
 }
 
-// 字典与下拉
-async function loadDicts(keys = []) {
-  const tasks = keys.map(async (k) => {
-    try {
-      if (Api?.application?.materialMaintenance?.getDict) {
-        const res = await Api.application.materialMaintenance.getDict({ key: k });
-        const list = (res?.data?.data ?? res?.data ?? []).filter(Boolean);
-        dictMap[k] = Array.isArray(list) ? list : [];
-      } else {
-        dictMap[k] = [];
-      }
-    } catch (err) {
-      dictMap[k] = [];
-    }
-  });
-  await Promise.allSettled(tasks);
-}
-
-function displayDictText(item) {
-  const { dictKey, labelKey = 'label', valueKey = 'value' } = item.props || {};
-  const list = dictMap?.[dictKey] || [];
-  const val = formData?.[item.prop];
-  const hit = list.find((x) => x?.[valueKey] === val);
-  return hit ? hit[labelKey] : '';
-}
-
 function displayOptionText(item) {
   const { options = [], labelKey = 'label', valueKey = 'value' } = item.props || {};
   const val = formData?.[item.prop];
-  const hit = options.find((x) => x?.[valueKey] === val);
-  return hit ? hit[labelKey] : '';
-}
-
-function openDictPicker(item) {
-  const { dictKey, labelKey = 'label', valueKey = 'value' } = item.props || {};
-  const list = dictMap?.[dictKey] || [];
-  const open = (arr) => {
-    picker.forProp = item.prop;
-    picker.columns = arr.map((x) => ({ text: x[labelKey], value: x[valueKey] }));
-    picker.source = 'dict';
-    picker.meta = item;
-    picker.show = true;
-  };
-
-  if (!list.length) {
-    loadDicts([dictKey]).then(() => {
-      const again = dictMap?.[dictKey] || [];
-      if (!again.length) showToast({ message: '暂无可选项' });
-      open(again);
-    });
-    return;
-  }
-  open(list);
+  const hit = options.find((x) => resolveOptionField(x, valueKey, 'value') === val);
+  return hit ? resolveOptionField(hit, labelKey, 'label') : '';
 }
 
 function openOptionsPicker(item) {
@@ -367,8 +305,10 @@ function openOptionsPicker(item) {
     return;
   }
   picker.forProp = item.prop;
-  picker.columns = options.map((x) => ({ text: x[labelKey], value: x[valueKey] }));
-  picker.source = 'options';
+  picker.columns = options.map((x) => ({
+    text: resolveOptionField(x, labelKey, 'label'),
+    value: resolveOptionField(x, valueKey, 'value'),
+  }));
   picker.meta = item;
   picker.show = true;
 }
@@ -378,6 +318,9 @@ function onPickerConfirm({ selectedValues, selectedOptions }) {
   const value = (selectedValues && selectedValues[0]) ?? opt?.value;
   if (picker.forProp) {
     formData[picker.forProp] = value;
+    if (picker.meta) {
+      handleFormItemChange(picker.meta, value);
+    }
   }
   picker.show = false;
 }
@@ -387,6 +330,15 @@ function filterFieldProps(item) {
   const p = item.props || {};
   const { disabled, clearable, maxlength, inputAlign } = p;
   return { disabled, clearable, maxlength, 'input-align': inputAlign };
+}
+
+function resolveOptionField(option, key, fallbackKey) {
+  if (!option) return '';
+  if (key && option[key] != null) return option[key];
+  if (key && option.raw && option.raw[key] != null) return option.raw[key];
+  if (fallbackKey && option[fallbackKey] != null) return option[fallbackKey];
+  if (fallbackKey && option.raw && option.raw[fallbackKey] != null) return option.raw[fallbackKey];
+  return '';
 }
 
 function formatDecimal(value, precision = 0, min) {
