@@ -140,18 +140,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick, onMounted, getCurrentInstance } from 'vue';
+import { ref, reactive, nextTick } from 'vue';
 import { closeToast, showToast } from 'vant';
 import WfUpload from '@/components/wf-ui/components/wf-upload/wf-upload.vue';
 import Api from '@/api';
 import { useDictStore } from '@/store/dict';
 
-const { proxy } = getCurrentInstance();
-
 defineOptions({ name: 'MaterialInfo' });
 
 const dictStore = useDictStore();
-const outTypeDict = ref([]);
 
 /** ======= state ======= */
 const pageBodyRef = ref(null);
@@ -290,15 +287,6 @@ const groups = ref([
 /** ======= lifecycle (created) ======= */
 loadDicts(['DC_ERP_UNIT']);
 
-onMounted(async () => {
-  try {
-    const boxes = proxy.dicts(['DC_ERP_UNIT']);
-    console.log(boxes);
-  } catch (error) {
-    console.error('获取出库类型字典失败', error);
-  }
-});
-
 /** ======= methods（setup 版） ======= */
 // Sticky
 function onStickyScroll(e) {
@@ -307,35 +295,42 @@ function onStickyScroll(e) {
 
 // 字典与下拉
 async function loadDicts(keys = []) {
-  const tasks = keys.map(async (k) => {
-    try {
-      if (Api?.application?.materialMaintenance?.getDict) {
-        const res = await Api.application.materialMaintenance.getDict({ key: k });
-        const list = (res?.data?.data ?? res?.data ?? []).filter(Boolean);
-        dictMap[k] = Array.isArray(list) ? list : [];
-      } else {
-        dictMap[k] = [];
-      }
-    } catch (err) {
-      dictMap[k] = [];
-    }
-  });
-  await Promise.allSettled(tasks);
+  const codes = keys.filter((code) => typeof code === 'string' && code);
+  if (!codes.length) return;
+
+  try {
+    const result = await dictStore.getMany(codes);
+    codes.forEach((code) => {
+      const list = Array.isArray(result?.[code]) ? result[code] : [];
+      dictMap[code] = list.map((item) => {
+        if (!item || typeof item !== 'object') return {};
+        if (item.raw && typeof item.raw === 'object') {
+          return { ...item.raw, ...item };
+        }
+        return { ...item };
+      });
+    });
+  } catch (error) {
+    console.error('加载字典失败', error);
+    codes.forEach((code) => {
+      dictMap[code] = [];
+    });
+  }
 }
 
 function displayDictText(item) {
   const { dictKey, labelKey = 'label', valueKey = 'value' } = item.props || {};
   const list = dictMap?.[dictKey] || [];
   const val = formData?.[item.prop];
-  const hit = list.find((x) => x?.[valueKey] === val);
-  return hit ? hit[labelKey] : '';
+  const hit = list.find((x) => resolveOptionField(x, valueKey, 'value') === val);
+  return hit ? resolveOptionField(hit, labelKey, 'label') : '';
 }
 
 function displayOptionText(item) {
   const { options = [], labelKey = 'label', valueKey = 'value' } = item.props || {};
   const val = formData?.[item.prop];
-  const hit = options.find((x) => x?.[valueKey] === val);
-  return hit ? hit[labelKey] : '';
+  const hit = options.find((x) => resolveOptionField(x, valueKey, 'value') === val);
+  return hit ? resolveOptionField(hit, labelKey, 'label') : '';
 }
 
 function openDictPicker(item) {
@@ -343,7 +338,10 @@ function openDictPicker(item) {
   const list = dictMap?.[dictKey] || [];
   const open = (arr) => {
     picker.forProp = item.prop;
-    picker.columns = arr.map((x) => ({ text: x[labelKey], value: x[valueKey] }));
+    picker.columns = arr.map((x) => ({
+      text: resolveOptionField(x, labelKey, 'label'),
+      value: resolveOptionField(x, valueKey, 'value'),
+    }));
     picker.source = 'dict';
     picker.meta = item;
     picker.show = true;
@@ -353,7 +351,7 @@ function openDictPicker(item) {
     loadDicts([dictKey]).then(() => {
       const again = dictMap?.[dictKey] || [];
       if (!again.length) showToast({ message: '暂无可选项' });
-      open(again);
+      else open(again);
     });
     return;
   }
@@ -367,7 +365,10 @@ function openOptionsPicker(item) {
     return;
   }
   picker.forProp = item.prop;
-  picker.columns = options.map((x) => ({ text: x[labelKey], value: x[valueKey] }));
+  picker.columns = options.map((x) => ({
+    text: resolveOptionField(x, labelKey, 'label'),
+    value: resolveOptionField(x, valueKey, 'value'),
+  }));
   picker.source = 'options';
   picker.meta = item;
   picker.show = true;
@@ -387,6 +388,15 @@ function filterFieldProps(item) {
   const p = item.props || {};
   const { disabled, clearable, maxlength, inputAlign } = p;
   return { disabled, clearable, maxlength, 'input-align': inputAlign };
+}
+
+function resolveOptionField(option, key, fallbackKey) {
+  if (!option) return '';
+  if (key && option[key] != null) return option[key];
+  if (key && option.raw && option.raw[key] != null) return option.raw[key];
+  if (fallbackKey && option[fallbackKey] != null) return option[fallbackKey];
+  if (fallbackKey && option.raw && option.raw[fallbackKey] != null) return option.raw[fallbackKey];
+  return '';
 }
 
 function formatDecimal(value, precision = 0, min) {
