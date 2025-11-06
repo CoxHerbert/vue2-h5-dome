@@ -75,6 +75,11 @@ export default ({ mode }) => {
           changeOrigin: true,
           rewrite: (p) => p.replace(VITE_APP_API, ''),
         },
+        '/graphql/wiki': {
+          target: 'https://wiki.eastwinbip.com/graphql',
+          changeOrigin: true,
+          rewrite: (p) => p.replace('/graphql/wiki', ''),
+        },
         // 稳一点的超时设置
         // timeout: 300000,
         // proxyTimeout: 300000,

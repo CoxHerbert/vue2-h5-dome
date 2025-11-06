@@ -1,5 +1,13 @@
 <!-- src/views/recruit/campus/apply.vue -->
 <template>
+  <van-nav-bar title="简历投递" @click-right="onClickRight">
+    <template #right>
+      <span class="help">
+        帮助文档
+        <van-icon name="question-o" size="18" />
+      </span>
+    </template>
+  </van-nav-bar>
   <img class="banner" :src="$assetUrl('/images/recruit/campus/apply/banner.svg')" alt="banner" />
   <dc-recruit-form
     v-model="form"
@@ -225,11 +233,22 @@ function handleChange({ name, value }) {
     form.value.resumeId = value?.attachId || '';
   }
 }
+function onClickRight() {
+  router.push({
+    name: 'sop-doc',
+    params: { docKey: 'campusRecruitApply' },
+  });
+}
 </script>
 
 <style scoped>
 /* 可选：页面级额外样式 */
 .banner {
   width: 100%;
+}
+.help {
+  display: flex;
+  align-items: center;
+  color: #fff;
 }
 </style>
