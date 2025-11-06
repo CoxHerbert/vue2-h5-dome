@@ -102,6 +102,20 @@ import { useDictStore } from '@/store/dict';
 
 defineOptions({ name: 'DictSelector' });
 
+// 多选字符串格式默认使用英文逗号分隔
+const MULTI_VALUE_SEPARATOR = ',';
+
+/**
+ * DictSelector Props 说明
+ * - modelValue  支持单值或数组，双向绑定
+ * - dictKey     字典编码，对应 useDictStore.get 的 code
+ * - multiple    是否多选，未传时读取 field.multiple / field.props.multiple
+ * - columnsFieldNames 自定义字典项字段映射，默认 { text: 'text', value: 'value' }
+ * - maxTagCount 多选模式下展示的标签数量，超出后折叠显示 +N
+ * - field.props.dictParams 作为 useDictStore.get 的请求参数透传
+ * - field.props.valueType / returnType 控制多选返回数组或逗号分隔字符串
+ *  其余展示相关入参（label、placeholder、title 等）同 Vant Field 行为
+ */
 const props = defineProps({
   modelValue: { type: [String, Number, Array, Object, Boolean], default: null },
   label: { type: String, default: '' },
@@ -112,17 +126,10 @@ const props = defineProps({
   multiple: { type: Boolean, default: null },
   clearable: { type: Boolean, default: undefined },
   disabled: { type: Boolean, default: undefined },
-  /**
-   * 自定义字典选项字段名映射，默认 { text: 'text', value: 'value' }
-   * 可通过 { text: 'labelKey', value: 'valueKey' } 指定自定义字段
-   */
   columnsFieldNames: {
     type: Object,
     default: () => ({ text: 'text', value: 'value' }),
   },
-  dictParams: { type: Object, default: null },
-  valueType: { type: String, default: '' },
-  separator: { type: String, default: ',' },
   maxTagCount: { type: [Number, String], default: undefined },
 });
 
@@ -153,14 +160,8 @@ const effectiveFieldNames = computed(() => {
   };
 });
 const effectiveDictParams = computed(
-  () => props.dictParams || fieldProps.value?.dictParams || fieldProps.value?.props?.dictParams || null
+  () => fieldProps.value?.dictParams || fieldProps.value?.props?.dictParams || null
 );
-const effectiveSeparator = computed(() => {
-  if (props.separator) return props.separator;
-  if (fieldProps.value?.props?.separator) return fieldProps.value.props.separator;
-  if (fieldProps.value?.separator) return fieldProps.value.separator;
-  return ',';
-});
 const effectivePlaceholder = computed(() => {
   if (props.placeholder) return props.placeholder;
   if (fieldProps.value?.props?.placeholder) return fieldProps.value.props.placeholder;
@@ -211,10 +212,6 @@ const placeholderText = computed(() => effectivePlaceholder.value);
 const popupTitle = computed(() => effectiveTitle.value || '请选择');
 const multipleValueMode = computed(() => {
   if (!isMultiple.value) return 'single';
-  if (props.valueType) {
-    if (props.valueType === 'string' || props.valueType === 'join') return 'string';
-    if (props.valueType === 'array') return 'array';
-  }
   const fp = fieldProps.value;
   const candidate =
     fp?.valueType || fp?.returnType || fp?.props?.valueType || fp?.props?.returnType || null;
@@ -270,9 +267,8 @@ const selectedValues = computed(() => {
   if (Array.isArray(value)) return value.filter((v) => v !== undefined && v !== null);
   if (value === undefined || value === null || value === '') return [];
   if (typeof value === 'string') {
-    const sep = effectiveSeparator.value || ',';
     return value
-      .split(sep)
+      .split(MULTI_VALUE_SEPARATOR)
       .map((s) => s.trim())
       .filter((s) => s !== '');
   }
@@ -372,7 +368,8 @@ function emitChange(value) {
     const arr = Array.isArray(value)
       ? value.filter((item) => item !== undefined && item !== null)
       : [];
-    const formatted = multipleValueMode.value === 'string' ? arr.join(effectiveSeparator.value) : arr;
+    const formatted =
+      multipleValueMode.value === 'string' ? arr.join(MULTI_VALUE_SEPARATOR) : arr;
     emit('update:modelValue', formatted);
     emit('change', formatted);
     return;

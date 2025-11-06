@@ -65,9 +65,6 @@
                 :disabled="item.props?.disabled"
                 :clearable="item.props?.clearable"
                 :columns-field-names="resolveColumnsFieldNames(item)"
-                :dict-params="item.props?.dictParams"
-                :value-type="item.props?.valueType || item.props?.returnType"
-                :separator="item.props?.separator"
                 :max-tag-count="item.props?.maxTagCount"
                 @change="(val) => handleFormItemChange(item, val)"
               />
