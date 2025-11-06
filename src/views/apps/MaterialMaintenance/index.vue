@@ -52,15 +52,25 @@
                 v-bind="item.props"
               />
 
-              <!-- ✅ Vant 选择（字典）: van-field + van-popup + van-picker -->
-              <van-field
+              <!-- ✅ 字典选择：支持单选/多选 -->
+              <dc-dict-selector
                 v-else-if="item.type === 'select-dict'"
+                v-model="formData[item.prop]"
+                :field="item"
                 :label="item.label"
-                is-link
-                readonly
-                :model-value="displayDictText(item)"
-                :placeholder="item.props?.placeholder || '请选择'"
-                @click="openDictPicker(item)"
+                :dict-key="item.props?.dictKey"
+                :placeholder="item.props?.placeholder"
+                :title="item.props?.title"
+                :multiple="item.props?.multiple"
+                :disabled="item.props?.disabled"
+                :clearable="item.props?.clearable"
+                :label-key="item.props?.labelKey"
+                :value-key="item.props?.valueKey"
+                :dict-params="item.props?.dictParams"
+                :value-type="item.props?.valueType || item.props?.returnType"
+                :separator="item.props?.separator"
+                :max-tag-count="item.props?.maxTagCount"
+                @change="(val) => handleFormItemChange(item, val)"
               />
 
               <!-- ✅ Vant 选择（通用下拉 / 原 dc-select-popup 语义） -->
@@ -140,15 +150,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick, getCurrentInstance, watch } from 'vue';
+import { ref, reactive, nextTick } from 'vue';
 import { closeToast, showToast } from 'vant';
 import WfUpload from '@/components/wf-ui/components/wf-upload/wf-upload.vue';
 import Api from '@/api';
 
 defineOptions({ name: 'MaterialInfo' });
-
-const { proxy } = getCurrentInstance();
-const dictRefs = proxy.dicts(['DC_ERP_UNIT']);
 
 /** ======= state ======= */
 const pageBodyRef = ref(null);
@@ -166,34 +173,11 @@ const rules = reactive({
   // qty: [{ required: true, message: '请输入数量', trigger: 'onBlur' }]
 });
 
-// 字典缓存
-const dictMap = reactive({
-  DC_ERP_UNIT: [],
-});
-
-watch(
-  () => dictRefs?.DC_ERP_UNIT?.value,
-  (list) => {
-    const normalized = Array.isArray(list)
-      ? list.map((item) => {
-          if (!item || typeof item !== 'object') return {};
-          if (item.raw && typeof item.raw === 'object') {
-            return { ...item.raw, ...item };
-          }
-          return { ...item };
-        })
-      : [];
-    dictMap.DC_ERP_UNIT = normalized;
-  },
-  { immediate: true }
-);
-
-// 统一 picker 状态（字典/普通下拉共用）
+// 统一 picker 状态（普通下拉共用）
 const picker = reactive({
   show: false,
   forProp: '', // 作用字段
   columns: [], // [{ text, value }]
-  source: 'dict', // 'dict' | 'options'
   meta: null, // 记录 item 与 props
 });
 
@@ -307,40 +291,11 @@ function onStickyScroll(e) {
   isSearchSticky.value = !!e?.isFixed;
 }
 
-function displayDictText(item) {
-  const { dictKey, labelKey = 'label', valueKey = 'value' } = item.props || {};
-  const list = dictMap?.[dictKey] || [];
-  const val = formData?.[item.prop];
-  const hit = list.find((x) => resolveOptionField(x, valueKey, 'value') === val);
-  return hit ? resolveOptionField(hit, labelKey, 'label') : '';
-}
-
 function displayOptionText(item) {
   const { options = [], labelKey = 'label', valueKey = 'value' } = item.props || {};
   const val = formData?.[item.prop];
   const hit = options.find((x) => resolveOptionField(x, valueKey, 'value') === val);
   return hit ? resolveOptionField(hit, labelKey, 'label') : '';
-}
-
-function openDictPicker(item) {
-  const { dictKey, labelKey = 'label', valueKey = 'value' } = item.props || {};
-  const list = dictMap?.[dictKey] || [];
-  const open = (arr) => {
-    picker.forProp = item.prop;
-    picker.columns = arr.map((x) => ({
-      text: resolveOptionField(x, labelKey, 'label'),
-      value: resolveOptionField(x, valueKey, 'value'),
-    }));
-    picker.source = 'dict';
-    picker.meta = item;
-    picker.show = true;
-  };
-
-  if (!list.length) {
-    showToast({ message: '暂无可选项' });
-    return;
-  }
-  open(list);
 }
 
 function openOptionsPicker(item) {
@@ -354,7 +309,6 @@ function openOptionsPicker(item) {
     text: resolveOptionField(x, labelKey, 'label'),
     value: resolveOptionField(x, valueKey, 'value'),
   }));
-  picker.source = 'options';
   picker.meta = item;
   picker.show = true;
 }
@@ -364,6 +318,9 @@ function onPickerConfirm({ selectedValues, selectedOptions }) {
   const value = (selectedValues && selectedValues[0]) ?? opt?.value;
   if (picker.forProp) {
     formData[picker.forProp] = value;
+    if (picker.meta) {
+      handleFormItemChange(picker.meta, value);
+    }
   }
   picker.show = false;
 }
