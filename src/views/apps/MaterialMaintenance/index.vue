@@ -120,8 +120,8 @@
           </div>
         </div>
       </van-form>
+      <van-number-keyboard safe-area-inset-bottom />
     </div>
-
     <!-- 底部按钮 -->
     <div v-if="formData.id" class="page-body_footer">
       <van-button block type="success" @click="doAction('submit')">
@@ -323,9 +323,10 @@ function resolveDictOptions(item) {
 
 function resolveColumnsFieldNames(item) {
   const props = item?.props || {};
-  const map = props.columnsFieldNames && typeof props.columnsFieldNames === 'object'
-    ? props.columnsFieldNames
-    : null;
+  const map =
+    props.columnsFieldNames && typeof props.columnsFieldNames === 'object'
+      ? props.columnsFieldNames
+      : null;
   if (map) return map;
   if (props.labelKey || props.valueKey) {
     return {
@@ -608,6 +609,7 @@ function handleFormItemChange(col, val) {
   }
 
   .upload-img-box {
+    margin-bottom: 44px;
     width: 100%;
     overflow: hidden;
     display: flex;
@@ -615,6 +617,7 @@ function handleFormItemChange(col, val) {
     align-items: center;
     position: relative;
     padding: 10px 16px;
+    box-sizing: border-box;
 
     .upload-label {
       width: 96px;

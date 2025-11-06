@@ -404,7 +404,7 @@ const downloadAt = (index) => {
 
 <style lang="scss" scoped>
 .dc-uploader {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
 }
 .dc-uploader__header {
