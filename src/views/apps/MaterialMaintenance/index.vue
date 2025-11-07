@@ -58,7 +58,6 @@
                 v-model="formData[item.prop]"
                 :field="item"
                 :label="item.label"
-                :dict-key="item.props?.dictKey"
                 :placeholder="item.props?.placeholder"
                 :title="item.props?.title"
                 :multiple="item.props?.multiple"
