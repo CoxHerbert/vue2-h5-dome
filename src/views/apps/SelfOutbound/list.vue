@@ -20,13 +20,12 @@
               placeholder="请选择仓库"
             />
           </dc-select-dialog>
-          <van-field
+          <dc-dict-selector
+            v-model="form.outStockType"
             label="出库类型"
-            is-link
-            readonly
-            :model-value="form.outStockTypeName"
+            :options="outTypeOptions"
             placeholder="请选择出库类型"
-            @click="openOutTypePicker"
+            @change="handleOutTypeChange"
           />
           <van-field
             label="来源单号"
@@ -51,14 +50,6 @@
     </div>
 
     <van-floating-bubble axis="xy" icon="scan" magnetic @click="handleScan" />
-
-    <van-popup v-model:show="outTypePicker.show" position="bottom" round>
-      <van-picker
-        :columns="outTypePicker.columns"
-        @confirm="handleOutTypeConfirm"
-        @cancel="outTypePicker.show = false"
-      />
-    </van-popup>
 
     <van-popup v-model:show="productPopupVisible" position="right" class="self-outbound-list__candidate-popup">
       <div class="self-outbound-list__candidate">
@@ -130,27 +121,45 @@ const scanCodeRef = ref(null);
 const productPopupVisible = ref(false);
 const productCandidates = ref([]);
 
-const outTypePicker = reactive({
-  show: false,
-  columns: [],
-});
-
 const selectedWarehouse = ref(null);
+const outTypeOptions = ref([]);
 
 async function initOutTypeDict() {
   try {
     const list = await dictStore.get('DC_WMS_OUT_TYPE_WMS');
-    outTypePicker.columns = list.map((item) => ({
-      text: item.label,
-      value: item.value,
-      raw: item.raw,
-    }));
+    outTypeOptions.value = Array.isArray(list)
+      ? list.map((item) => {
+          const text = item?.label ?? item?.text ?? item?.raw?.dictLabel ?? '';
+          const value = item?.value ?? item?.dictValue ?? item?.raw?.dictValue ?? '';
+          return {
+            text,
+            label: text,
+            value,
+            raw: item?.raw ?? item,
+          };
+        })
+      : [];
+    syncOutTypeName();
   } catch (error) {
     console.error('failed to load out stock dict', error);
   }
 }
 
 initOutTypeDict();
+
+function syncOutTypeName(value = form.outStockType) {
+  const target = value != null ? String(value) : '';
+  if (!target) {
+    form.outStockTypeName = '';
+    return;
+  }
+  const option = outTypeOptions.value.find((item) => String(item?.value ?? '') === target);
+  form.outStockTypeName = option?.text ?? option?.label ?? '';
+}
+
+function handleOutTypeChange(value) {
+  syncOutTypeName(value);
+}
 
 watch(
   () => form.warehouseId,
@@ -159,26 +168,19 @@ watch(
   }
 );
 
+watch(
+  () => form.outStockType,
+  (val) => {
+    if (val === undefined || val === null || `${val}` === '') {
+      form.outStockTypeName = '';
+      return;
+    }
+    syncOutTypeName(val);
+  }
+);
+
 function handleBack() {
   router.back();
-}
-
-function openOutTypePicker() {
-  if (!outTypePicker.columns.length) {
-    initOutTypeDict();
-  }
-  outTypePicker.show = true;
-}
-
-function handleOutTypeConfirm({ selectedOptions }) {
-  const option = Array.isArray(selectedOptions) ? selectedOptions[0] : null;
-  if (!option) {
-    outTypePicker.show = false;
-    return;
-  }
-  form.outStockType = option.value;
-  form.outStockTypeName = option.text;
-  outTypePicker.show = false;
 }
 
 watch(

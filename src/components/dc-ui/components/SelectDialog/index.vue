@@ -1,7 +1,15 @@
 <template>
   <div class="dc-select-dialog" :style="{ width, '--dc-select-dialog-footer-height': footerHeight }">
-    <div v-if="$slots.default" class="dc-select-dialog__trigger" @click="openPopup">
-      <slot></slot>
+    <div v-if="$slots.default" class="dc-select-dialog__trigger" :class="{ disabled }">
+      <div class="dc-select-dialog__slot" @click="openPopup">
+        <slot></slot>
+      </div>
+      <van-icon
+        v-if="showClear"
+        name="cross"
+        class="dc-select-dialog__clear"
+        @click.stop="clearSelection"
+      />
     </div>
     <div v-else class="dc-select-dialog__trigger" :class="{ disabled }" @click="openPopup">
       <div v-if="multiple && displayTags.length" class="dc-select-dialog__tags">
@@ -25,7 +33,7 @@
         {{ placeholderText }}
       </div>
       <van-icon
-        v-if="clearable && displayTags.length"
+        v-if="showClear"
         name="cross"
         class="dc-select-dialog__clear"
         @click.stop="clearSelection"
@@ -290,6 +298,22 @@ const displayTags = computed(() => {
     label: getDisplayLabel(row) || getKey(row) || '-',
   }));
 });
+
+const hasSelection = computed(() => {
+  if (!props.showValue) {
+    const value = props.modelValue;
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+    if (value && typeof value === 'object') {
+      return Object.keys(value).length > 0;
+    }
+    return value !== undefined && value !== null && `${value}` !== '';
+  }
+  return selectedRows.value.length > 0;
+});
+
+const showClear = computed(() => props.clearable && !props.disabled && hasSelection.value);
 
 const searchPreviewChips = computed(() => {
   return searchFields.value
@@ -708,6 +732,12 @@ function resetSearch(force = false, resetFn) {
   &.disabled {
     opacity: 0.6;
   }
+}
+
+.dc-select-dialog__slot {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
 }
 
 .dc-select-dialog__tags {
