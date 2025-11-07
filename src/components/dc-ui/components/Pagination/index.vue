@@ -18,8 +18,10 @@
         :clear-query="clearQuery"
         :reset-and-load="doResetAndLoad"
         :apply="doResetAndLoad"
+        :show-search="showSearch"
+        :show-tabs="showTabs"
       >
-        <div class="dc-search-bar">
+        <div v-if="showSearch" class="dc-search-bar">
           <van-search
             v-model="kw"
             :placeholder="searchPlaceholder"
@@ -53,6 +55,7 @@
         </div>
 
         <van-tabs
+          v-if="showTabs"
           v-model:active="act"
           line-width="22px"
           line-height="2px"
@@ -157,6 +160,8 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } 
  * - getNavEl: () => HTMLElement | null 自定义获取 nav 元素
  * - backTopThreshold: number 滚动超过多少像素显示回顶按钮
  * - addVisible: boolean 是否显示右下角新增悬浮按钮
+ * - searchVisible: boolean 是否展示顶部搜索区域
+ * - tabsVisible: boolean 是否展示状态切换标签
  */
 const props = defineProps({
   fetcher: { type: Function, required: true },
@@ -181,6 +186,8 @@ const props = defineProps({
   getNavEl: { type: Function, default: null },
   backTopThreshold: { type: Number, default: 300 },
   addVisible: { type: Boolean, default: true },
+  searchVisible: { type: Boolean, default: true },
+  tabsVisible: { type: Boolean, default: true },
 });
 
 const emit = defineEmits([
@@ -190,6 +197,9 @@ const emit = defineEmits([
   'item-action',
   'add',
 ]);
+
+const showSearch = computed(() => props.searchVisible !== false);
+const showTabs = computed(() => props.tabsVisible !== false && (props.statusOptions || []).length > 0);
 
 /** 受控 v-model 封装（父传/不传都可用） */
 const kw = computed({
