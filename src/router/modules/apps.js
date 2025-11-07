@@ -84,9 +84,21 @@ export default {
     },
     {
       path: 'wire-inspection',
-      name: 'appsWireInspection',
-      meta: { title: '线材质检', requiresAuth: true },
-      component: () => import('@/views/apps/WireInspection.vue'),
+      component: () => import('@/views/apps/WireInspection/index.vue'),
+      children: [
+        {
+          path: '',
+          name: 'appsWireInspection',
+          meta: { title: '线材质检', requiresAuth: true },
+          component: () => import('@/views/apps/WireInspection/List.vue'),
+        },
+        {
+          path: 'submit',
+          name: 'appsWireInspectionSubmit',
+          meta: { title: '质检录入', requiresAuth: true },
+          component: () => import('@/views/apps/WireInspection/Submit.vue'),
+        },
+      ],
     },
     {
       path: 'shipment-upload',
