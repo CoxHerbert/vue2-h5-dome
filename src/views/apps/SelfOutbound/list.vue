@@ -10,16 +10,8 @@
             object-name="warehouse"
             :multiple="false"
             return-type="object"
-            :show-value="false"
-          >
-            <van-field
-              label="仓库"
-              is-link
-              readonly
-              :model-value="form.warehouseName"
-              placeholder="请选择仓库"
-            />
-          </dc-select-dialog>
+            label="仓库"
+          />
           <dc-dict-selector
             v-model="form.outStockType"
             label="出库类型"

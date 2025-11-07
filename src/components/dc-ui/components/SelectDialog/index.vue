@@ -8,41 +8,57 @@
         v-if="showClear"
         name="cross"
         class="dc-select-dialog__clear"
-        size="16"
+        size="14"
         @click.stop="clearSelection"
       />
-      <van-icon name="arrow" class="dc-select-dialog__arrow" size="16" />
+      <van-icon name="arrow" class="dc-select-dialog__arrow" size="14" />
     </div>
-    <div v-else class="dc-select-dialog__trigger" :class="{ disabled }" @click="openPopup">
-      <div v-if="multiple && displayTags.length" class="dc-select-dialog__tags">
-        <van-tag
-          v-for="tag in displayTags"
-          :key="tag.key"
-          type="primary"
-          size="medium"
-          :color="tagColor"
-          :text-color="tagTextColor"
-          :closeable="clearable"
-          @close.stop="removeTag(tag.key)"
-        >
-          {{ tag.label }}
-        </van-tag>
-      </div>
-      <div v-else-if="!multiple && displayTags.length" class="dc-select-dialog__text">
-        {{ displayTags[0]?.label || '-' }}
-      </div>
-      <div v-else class="dc-select-dialog__placeholder">
-        {{ placeholderText }}
-      </div>
-      <van-icon
-        v-if="showClear"
-        name="cross"
-        class="dc-select-dialog__clear"
-        size="16"
-        @click.stop="clearSelection"
-      />
-      <van-icon name="arrow" class="dc-select-dialog__arrow" size="16" />
-    </div>
+    <van-field
+      v-else
+      :label="fieldLabel"
+      readonly
+      clickable
+      is-link
+      :disabled="disabled"
+      :model-value="!multiple ? singleDisplayText : undefined"
+      :placeholder="!multiple ? placeholderText : undefined"
+      class="dc-select-dialog__field"
+      @click="openPopup"
+    >
+      <template v-if="multiple" #input>
+        <div class="dc-select-dialog__field-input" :class="{ 'has-value': displayTags.length }">
+          <template v-if="displayTags.length">
+            <div class="dc-select-dialog__tags">
+              <van-tag
+                v-for="tag in displayTags"
+                :key="tag.key"
+                type="primary"
+                size="medium"
+                :color="tagColor"
+                :text-color="tagTextColor"
+                :closeable="clearable"
+                @close.stop="removeTag(tag.key)"
+              >
+                {{ tag.label }}
+              </van-tag>
+            </div>
+          </template>
+          <span v-else class="dc-select-dialog__field-placeholder">{{ placeholderText }}</span>
+        </div>
+      </template>
+      <template #right-icon>
+        <div class="dc-select-dialog__icons">
+          <van-icon
+            v-if="showClear"
+            name="cross"
+            class="dc-select-dialog__clear"
+            size="14"
+            @click.stop="clearSelection"
+          />
+          <van-icon name="arrow" class="dc-select-dialog__arrow" size="14" />
+        </div>
+      </template>
+    </van-field>
 
     <van-popup
       v-model:show="open"
@@ -247,6 +263,7 @@ const props = defineProps({
   modelValue: { type: [Array, Object, String, Number], default: null },
   objectName: { type: String, default: '' },
   placeholder: { type: String, default: '请选择' },
+  label: { type: String, default: '' },
   width: { type: String, default: '100%' },
   disabled: { type: Boolean, default: false },
   clearable: { type: Boolean, default: true },
@@ -294,7 +311,13 @@ const getNavElement = () => zeroNavEl;
 const popupHeight = computed(() => '100vh');
 const popupTitle = computed(() => props.title || model.value?.title || '请选择');
 const confirmText = computed(() => model.value?.submitTitle || '确认');
-const placeholderText = computed(() => props.placeholder || model.value?.placeholder || '请选择');
+const fieldLabel = computed(() => props.label || model.value?.title || model.value?.label || '');
+const placeholderText = computed(() => {
+  if (props.placeholder) return props.placeholder;
+  if (model.value?.placeholder) return model.value.placeholder;
+  if (fieldLabel.value) return `请选择${fieldLabel.value}`;
+  return '请选择';
+});
 const footerHeight = computed(() => '96px');
 
 const keyField = computed(() => props.masterKey || model.value?.rowKey || rowKeyRef.value || 'id');
@@ -306,6 +329,33 @@ const displayTags = computed(() => {
     key: getKey(row),
     label: getDisplayLabel(row) || getKey(row) || '-',
   }));
+});
+
+const singleDisplayText = computed(() => {
+  if (multiple.value) {
+    return '';
+  }
+  if (displayTags.value.length) {
+    return displayTags.value[0]?.label || '';
+  }
+  if (!props.showValue) {
+    const value = props.modelValue;
+    if (value && typeof value === 'object') {
+      const key = keyField.value;
+      const candidate =
+        value?.[props.showKey] ??
+        value?.[model.value?.defaultLabel] ??
+        value?.label ??
+        value?.name ??
+        value?.[key];
+      if (candidate !== undefined && candidate !== null && `${candidate}` !== '') {
+        return candidate;
+      }
+    } else if (value !== undefined && value !== null && `${value}` !== '') {
+      return `${value}`;
+    }
+  }
+  return '';
 });
 
 const singleValue = computed(() => {
@@ -769,6 +819,40 @@ function resetSearch(force = false, resetFn) {
   }
 }
 
+.dc-select-dialog__field {
+  width: 100%;
+}
+
+.dc-select-dialog__field :deep(.van-field__control) {
+  cursor: pointer;
+}
+
+.dc-select-dialog__field :deep(.van-field__value) {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.dc-select-dialog__field-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  width: 100%;
+  min-height: 24px;
+}
+
+.dc-select-dialog__field-placeholder {
+  color: #969799;
+}
+
+.dc-select-dialog__icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #c8c9cc;
+}
+
 .dc-select-dialog__slot {
   flex: 1;
   min-width: 0;
@@ -779,9 +863,8 @@ function resetSearch(force = false, resetFn) {
   display: flex;
   flex: 1;
   gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .dc-select-dialog__tags :deep(.van-tag),
@@ -812,6 +895,10 @@ function resetSearch(force = false, resetFn) {
 
 .dc-select-dialog__clear {
   margin-left: auto;
+}
+
+.dc-select-dialog__icons .dc-select-dialog__clear {
+  margin-left: 0;
 }
 
 .dc-select-dialog__arrow {
