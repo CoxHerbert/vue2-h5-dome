@@ -107,9 +107,8 @@ const MULTI_VALUE_SEPARATOR = ',';
 /**
  * DictSelector Props 说明
  * - modelValue  支持单值或数组，双向绑定
- * - dictKey     字典编码（由父级自行获取并通过 options 传入时可选）
  * - multiple    是否多选，未传时读取 field.multiple / field.props.multiple
- * - options     选项数组（或 ref），优先于 field/options 配置
+ * - options     选项数组（或 ref），需由父组件提前获取并传入
  * - loading     控制弹层加载态，未传时回退到 field.props.loading
  * - columnsFieldNames 自定义字典项字段映射，默认 { text: 'text', value: 'value' }
  * - maxTagCount 多选模式下展示的标签数量，超出后折叠显示 +N
@@ -119,7 +118,6 @@ const MULTI_VALUE_SEPARATOR = ',';
 const props = defineProps({
   modelValue: { type: [String, Number, Array, Object, Boolean], default: null },
   label: { type: String, default: '' },
-  dictKey: { type: String, default: '' },
   field: { type: Object, default: () => ({}) },
   placeholder: { type: String, default: '' },
   title: { type: String, default: '' },
@@ -223,16 +221,21 @@ const multipleValueMode = computed(() => {
 
 const optionsSource = computed(() => {
   const resolve = (source) => {
-    if (!source) return null;
+    if (!source) return [];
     const unwrapped = unref(source);
-    return Array.isArray(unwrapped) ? unwrapped : null;
+    return Array.isArray(unwrapped) ? unwrapped : [];
   };
+
   const fromProps = resolve(props.options);
-  if (fromProps !== null) return fromProps;
+  if (fromProps.length) return fromProps;
+
+  // 兼容旧用法：允许在 field / field.props 上传入 options
   const fromField = resolve(fieldProps.value?.options);
-  if (fromField !== null) return fromField;
+  if (fromField.length) return fromField;
+
   const fromFieldProps = resolve(fieldProps.value?.props?.options);
-  if (fromFieldProps !== null) return fromFieldProps;
+  if (fromFieldProps.length) return fromFieldProps;
+
   return [];
 });
 
