@@ -53,12 +53,7 @@ import { ref, computed, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
 import Api from '@/api';
 // ★ 引入公共常量与工具
-import {
-  IN_STOCK_STATUS,
-  IN_STOCK_STATUS_OPTIONS,
-  getInStockStatusMeta,
-  buildInStockStatusOptions,
-} from './constants';
+import { getInStockStatusMeta, buildInStockStatusOptions } from './constants';
 
 const { proxy } = getCurrentInstance();
 // 如果你项目有字典系统，这里取字典（可选）

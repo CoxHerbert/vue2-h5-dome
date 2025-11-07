@@ -168,11 +168,7 @@ const props = defineProps({
   pageSize: { type: Number, default: 8 },
   statusOptions: {
     type: Array,
-    default: () => [
-      { label: '全部', value: null, type: 'success' },
-      { label: '已审核', value: 'DC_WMS_IN_STATUS_C', type: 'success ' },
-      { label: '待审核', value: 'DC_WMS_IN_STATUS_A', type: 'warning' },
-    ],
+    default: () => [{ label: '全部', value: null, type: 'success' }],
   },
   defaultStatus: { type: [String, Number], default: 'all' },
   keyword: { type: String, default: '' },
@@ -199,7 +195,9 @@ const emit = defineEmits([
 ]);
 
 const showSearch = computed(() => props.searchVisible !== false);
-const showTabs = computed(() => props.tabsVisible !== false && (props.statusOptions || []).length > 0);
+const showTabs = computed(
+  () => props.tabsVisible !== false && (props.statusOptions || []).length > 0
+);
 
 /** 受控 v-model 封装（父传/不传都可用） */
 const kw = computed({
