@@ -50,7 +50,7 @@
           <span v-else class="dc-select-dialog__field-placeholder">{{ placeholderText }}</span>
         </div>
       </template>
-      <template #right-icon>
+      <template #extra>
         <div class="dc-select-dialog__icons">
           <van-icon
             v-if="displayClearIcon"
