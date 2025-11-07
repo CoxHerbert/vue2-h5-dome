@@ -8,8 +8,10 @@
         v-if="showClear"
         name="cross"
         class="dc-select-dialog__clear"
+        size="16"
         @click.stop="clearSelection"
       />
+      <van-icon name="arrow" class="dc-select-dialog__arrow" size="16" />
     </div>
     <div v-else class="dc-select-dialog__trigger" :class="{ disabled }" @click="openPopup">
       <div v-if="multiple && displayTags.length" class="dc-select-dialog__tags">
@@ -36,9 +38,10 @@
         v-if="showClear"
         name="cross"
         class="dc-select-dialog__clear"
+        size="16"
         @click.stop="clearSelection"
       />
-      <van-icon name="arrow" class="dc-select-dialog__arrow" />
+      <van-icon name="arrow" class="dc-select-dialog__arrow" size="16" />
     </div>
 
     <van-popup
@@ -129,12 +132,12 @@
                         v-if="clearable"
                         text
                         type="danger"
-                        size="small"
+                        size="mini"
                         @click="clearSelection"
                       >
                         清空
                       </van-button>
-                      <van-button text size="small" @click="toggleSelectedCollapsed">
+                      <van-button text size="mini" @click="toggleSelectedCollapsed">
                         {{ selectedCollapsed ? '展开' : '收起' }}
                         <van-icon :name="selectedCollapsed ? 'arrow-down' : 'arrow-up'" size="14" />
                       </van-button>
@@ -168,7 +171,12 @@
                   :model-value="isSelected(item)"
                   @click.stop="toggleRow(item)"
                 />
-                <van-radio v-else :model-value="isSelected(item)" @click.stop="toggleSingle(item)" />
+                <van-radio
+                  v-else
+                  :name="getKey(item)"
+                  :model-value="singleValue"
+                  @update:model-value="() => toggleSingle(item)"
+                />
                 <div class="dc-select-dialog__row-content">
                   <div
                     v-for="col in modelColumns"
@@ -285,18 +293,27 @@ const getNavElement = () => zeroNavEl;
 
 const popupHeight = computed(() => '100vh');
 const popupTitle = computed(() => props.title || model.value?.title || '请选择');
-const confirmText = computed(() => model.value?.submitTitle || '确定');
+const confirmText = computed(() => model.value?.submitTitle || '确认');
 const placeholderText = computed(() => props.placeholder || model.value?.placeholder || '请选择');
 const footerHeight = computed(() => '96px');
 
 const keyField = computed(() => props.masterKey || model.value?.rowKey || rowKeyRef.value || 'id');
 const modelColumns = computed(() => (Array.isArray(model.value?.column) ? model.value.column : []));
 const searchFields = computed(() => modelColumns.value.filter((col) => col?.search));
+const multiple = computed(() => props.multiple !== false);
 const displayTags = computed(() => {
   return selectedRows.value.map((row) => ({
     key: getKey(row),
     label: getDisplayLabel(row) || getKey(row) || '-',
   }));
+});
+
+const singleValue = computed(() => {
+  if (multiple.value) {
+    return null;
+  }
+  const first = selectedRows.value[0];
+  return first ? getKey(first) : null;
 });
 
 const hasSelection = computed(() => {
@@ -412,16 +429,36 @@ watch(
         data: ids,
         masterKey: keyField.value,
       });
-      const bucket = cacheStore.globalData[model.value.url] || {};
-      const rows = Array.isArray(bucket) ? bucket : Object.values(bucket);
-      const key = keyField.value;
-      selectedRows.value = ids.map((id) => {
-        const hit = rows.find((item) => `${item?.[key]}` === `${id}`);
-        return hit ? { ...hit } : { [key]: id };
-      });
     } catch (error) {
       console.error('Failed to fetch cache data:', error);
     }
+    const bucket = cacheStore.globalData[model.value.url] || {};
+    const rows = Array.isArray(bucket) ? bucket : Object.values(bucket);
+    const key = keyField.value;
+    const valueMap = new Map();
+    if (Array.isArray(newVal)) {
+      newVal.forEach((item) => {
+        if (item && typeof item === 'object') {
+          const itemKey = item?.[key];
+          if (itemKey != null) {
+            valueMap.set(`${itemKey}`, { ...item });
+          }
+        }
+      });
+    } else if (newVal && typeof newVal === 'object') {
+      const itemKey = newVal?.[key];
+      if (itemKey != null) {
+        valueMap.set(`${itemKey}`, { ...newVal });
+      }
+    }
+    selectedRows.value = ids.map((id) => {
+      const idKey = `${id}`;
+      if (valueMap.has(idKey)) {
+        return valueMap.get(idKey);
+      }
+      const hit = rows.find((item) => `${item?.[key]}` === idKey);
+      return hit ? { ...hit } : { [key]: id };
+    });
   },
   { immediate: true, deep: true }
 );
@@ -444,8 +481,6 @@ watch(
   },
   { immediate: true }
 );
-
-const multiple = computed(() => props.multiple !== false);
 
 function openPopup() {
   if (props.disabled) return;
@@ -777,6 +812,10 @@ function resetSearch(force = false, resetFn) {
 
 .dc-select-dialog__clear {
   margin-left: auto;
+}
+
+.dc-select-dialog__arrow {
+  margin-left: 4px;
 }
 
 .dc-select-dialog__popup {
