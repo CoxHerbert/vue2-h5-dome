@@ -1,27 +1,28 @@
 import request from '@/utils/http';
 
-const BASE_URL = '/blade-bip/dc-wire-qc';
-
 export default {
+  // 列表
   list(params) {
     return request({
-      url: `${BASE_URL}/page`,
+      url: '/blade-bip/WireQc/list',
       method: 'get',
       params,
     });
   },
 
+  // 获取图纸内容
   getDrawContent(params) {
     return request({
-      url: `${BASE_URL}/draw-content`,
+      url: '/blade-bip/WireQc/get-draw-content',
       method: 'get',
       params,
     });
   },
 
+  // 批量保存质检单
   batchSave(data) {
     return request({
-      url: `${BASE_URL}/batch-save`,
+      url: '/blade-bip/WireQc/batch-save',
       method: 'post',
       data,
     });

@@ -20,11 +20,7 @@
             </span>
           </div>
           <div class="wire-card__body">
-            <div
-              v-for="column in displayColumns"
-              :key="column.prop"
-              class="wire-card__row"
-            >
+            <div v-for="column in displayColumns" :key="column.prop" class="wire-card__row">
               <span class="wire-card__label">{{ column.label }}</span>
               <span class="wire-card__value">{{ renderValue(item, column) }}</span>
             </div>
@@ -34,9 +30,7 @@
 
       <template #empty>
         <van-empty description="暂无质检记录">
-          <van-button type="primary" round size="small" @click="handleCreate">
-            去录入
-          </van-button>
+          <van-button type="primary" round size="small" @click="handleCreate"> 去录入 </van-button>
         </van-empty>
       </template>
     </dc-pagination>
@@ -55,18 +49,14 @@ const route = useRoute();
 const navRef = ref(null);
 const listRef = ref(null);
 
-const dictRefs = proxy?.dicts ? proxy.dicts(['QualifiedEnum', 'DC_WIRE_EXCEPTION_TYPE']) : {};
+const dictRefs = proxy?.dicts ? proxy.dicts(['DC_WIRE_EXCEPTION_TYPE']) : {};
 
 const defaultQualified = [
   { label: '合格', value: '1' },
   { label: '不合格', value: '0' },
 ];
 
-const qualifiedOptions = computed(() => {
-  const list = dictRefs?.QualifiedEnum;
-  const resolved = unref(list);
-  return Array.isArray(resolved) && resolved.length ? resolved : defaultQualified;
-});
+const qualifiedOptions = computed(() => defaultQualified);
 
 const exceptionOptions = computed(() => {
   const list = dictRefs?.DC_WIRE_EXCEPTION_TYPE;
@@ -78,13 +68,25 @@ const displayColumns = [
   { prop: 'drawQty', label: '图档数量' },
   { prop: 'execeptionType', label: '异常类型', dictKey: 'DC_WIRE_EXCEPTION_TYPE' },
   { prop: 'remark', label: '备注' },
+  {
+    prop: 'itemId',
+    label: '执行单明细',
+    props: {
+      is: 'dc-view',
+      objectName: 'wireExecute',
+    },
+  },
   { prop: 'bomNo', label: 'BOM编码' },
   { prop: 'bomVersion', label: 'BOM版本' },
-  { prop: 'no', label: '执行单号' },
+  {
+    prop: 'drawAddress',
+    label: '图档地址',
+  },
   { prop: 'exeMaterialNumber', label: '物料编码' },
   { prop: 'exeMaterialName', label: '物料名称' },
   { prop: 'mtoNo', label: '专案号' },
   { prop: 'unit', label: '单位' },
+  { prop: 'no', label: '线材执行单单号' },
   { prop: 'finishMaterialNumber', label: '成品物料编码' },
   { prop: 'finishMaterialName', label: '成品物料名称' },
 ];
@@ -146,7 +148,7 @@ watch(
   background: #fff;
   border-radius: 12px;
   padding: 12px 14px;
-  margin: 0 12px 12px;
+  margin-bottom: 12px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
 }
 
@@ -192,7 +194,7 @@ watch(
 }
 
 .wire-card__label {
-  min-width: 88px;
+  min-width: 98px;
   color: #969799;
 }
 
