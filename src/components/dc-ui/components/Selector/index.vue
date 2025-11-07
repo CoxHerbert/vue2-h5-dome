@@ -1,5 +1,5 @@
 <template>
-  <div class="dc-dict-selector" :class="{ 'is-disabled': isDisabled }">
+  <div class="dc-selector" :class="{ 'is-disabled': isDisabled }">
     <van-field
       :label="fieldLabel"
       readonly
@@ -8,13 +8,13 @@
       :model-value="!isMultiple ? singleLabel : undefined"
       :placeholder="!isMultiple ? placeholderText : undefined"
       :disabled="isDisabled"
-      class="dc-dict-selector__field"
+      class="dc-selector__field"
       @click="openPopup"
     >
       <template v-if="isMultiple" #input>
-        <div class="dc-dict-selector__input" :class="{ 'has-value': selectedTags.length }">
+        <div class="dc-selector__input" :class="{ 'has-value': selectedTags.length }">
           <template v-if="selectedTags.length">
-            <div class="dc-dict-selector__tags">
+            <div class="dc-selector__tags">
               <van-tag
                 v-for="tag in visibleTags"
                 :key="tag.valueKey"
@@ -25,39 +25,47 @@
               >
                 {{ tag.label }}
               </van-tag>
-              <span v-if="extraTagCount > 0" class="dc-dict-selector__more">+{{ extraTagCount }}</span>
+              <span v-if="extraTagCount > 0" class="dc-selector__more">+{{ extraTagCount }}</span>
             </div>
           </template>
-          <span v-else class="dc-dict-selector__placeholder">{{ placeholderText }}</span>
+          <span v-else class="dc-selector__placeholder">{{ placeholderText }}</span>
         </div>
       </template>
       <template #right-icon>
         <van-icon
           v-if="canClear && hasValue"
           name="cross"
-          class="dc-dict-selector__clear"
+          class="dc-selector__clear"
           @click.stop="clearSelection"
         />
       </template>
     </van-field>
 
     <van-popup v-model:show="popupOpen" position="bottom" round teleport="body">
-      <div class="dc-dict-selector__popup">
-        <div class="dc-dict-selector__popup-header">
-          <span class="dc-dict-selector__title">{{ popupTitle }}</span>
-          <van-icon name="cross" class="dc-dict-selector__close" @click="closePopup" />
+      <div class="dc-selector__popup">
+        <div class="dc-selector__popup-header">
+          <span class="dc-selector__title">{{ popupTitle }}</span>
+          <van-icon name="cross" class="dc-selector__close" @click="closePopup" />
         </div>
-        <div class="dc-dict-selector__popup-body" :class="{ 'is-loading': loading }">
-          <div v-if="loading" class="dc-dict-selector__loading">
+        <div class="dc-selector__popup-body" :class="{ 'is-loading': loading }">
+          <div v-if="loading" class="dc-selector__loading">
             <van-loading size="24px">加载中...</van-loading>
           </div>
           <template v-else>
-            <van-empty v-if="!options.length" description="暂无数据" />
+            <div v-if="options.length" class="dc-selector__search">
+              <van-search
+                v-model="searchKeyword"
+                placeholder="请输入关键词搜索"
+                background="transparent"
+                clearable
+              />
+            </div>
+            <van-empty v-if="!filteredOptions.length" description="暂无数据" />
             <template v-else>
               <van-radio-group v-if="!isMultiple" v-model="singleDraft">
                 <van-cell-group>
                   <van-cell
-                    v-for="option in options"
+                    v-for="option in filteredOptions"
                     :key="option.key"
                     clickable
                     :title="option.label"
@@ -72,7 +80,7 @@
               <van-checkbox-group v-else v-model="multipleDraft">
                 <van-cell-group>
                   <van-cell
-                    v-for="option in options"
+                    v-for="option in filteredOptions"
                     :key="option.key"
                     clickable
                     :title="option.label"
@@ -87,7 +95,7 @@
             </template>
           </template>
         </div>
-        <div class="dc-dict-selector__popup-footer">
+        <div class="dc-selector__popup-footer">
           <van-button size="small" type="default" plain @click="closePopup">取消</van-button>
           <van-button size="small" type="primary" @click="confirmSelection">确定</van-button>
         </div>
@@ -99,13 +107,13 @@
 <script setup>
 import { computed, ref, watch, unref } from 'vue';
 
-defineOptions({ name: 'DictSelector' });
+defineOptions({ name: 'DcSelector' });
 
 // 多选字符串格式默认使用英文逗号分隔
 const MULTI_VALUE_SEPARATOR = ',';
 
 /**
- * DictSelector Props 说明
+ * DcSelector Props 说明
  * - modelValue  支持单值或数组，双向绑定
  * - multiple    是否多选，未传时读取 field.multiple / field.props.multiple
  * - options     选项数组（或 ref），需由父组件提前获取并传入
@@ -255,6 +263,18 @@ const options = computed(() => {
   });
 });
 
+const searchKeyword = ref('');
+
+const filteredOptions = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase();
+  if (!keyword) return options.value;
+  return options.value.filter((option) => {
+    const labelText = option.label === null || option.label === undefined ? '' : String(option.label);
+    const valueText = option.value === null || option.value === undefined ? '' : String(option.value);
+    return labelText.toLowerCase().includes(keyword) || valueText.toLowerCase().includes(keyword);
+  });
+});
+
 const optionMap = computed(() => {
   const map = new Map();
   options.value.forEach((opt) => {
@@ -317,6 +337,7 @@ watch(
   () => popupOpen.value,
   (open) => {
     if (open) {
+      searchKeyword.value = '';
       if (isMultiple.value) {
         multipleDraft.value = [...selectedValues.value];
       } else {
@@ -421,7 +442,7 @@ function isSame(a, b) {
 </script>
 
 <style lang="scss" scoped>
-.dc-dict-selector {
+.dc-selector {
   &__field {
     :deep(.van-field__control) {
       display: flex;
@@ -484,6 +505,10 @@ function isSame(a, b) {
   &__popup-body {
     flex: 1;
     overflow: auto;
+  }
+
+  &__search {
+    padding: 8px 16px 0;
   }
 
   &__loading {
