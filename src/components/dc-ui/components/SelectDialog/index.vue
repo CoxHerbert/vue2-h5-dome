@@ -1,5 +1,8 @@
 <template>
-  <div class="dc-select-dialog" :style="{ width, '--dc-select-dialog-footer-height': footerHeight }">
+  <div
+    class="dc-select-dialog"
+    :style="{ width, '--dc-select-dialog-footer-height': footerHeight }"
+  >
     <div v-if="$slots.default" class="dc-select-dialog__trigger" :class="{ disabled }">
       <div class="dc-select-dialog__slot" @click="openPopup">
         <slot></slot>
@@ -71,7 +74,11 @@
           >
             <template #sticky="{ resetAndLoad }">
               <div class="dc-select-dialog__sticky">
-                <div v-if="searchFields.length" class="dc-select-dialog__search" :class="{ 'is-collapsed': searchCollapsed }">
+                <div
+                  v-if="searchFields.length"
+                  class="dc-select-dialog__search"
+                  :class="{ 'is-collapsed': searchCollapsed }"
+                >
                   <div class="dc-select-dialog__search-preview">
                     <div class="dc-select-dialog__search-chips" @click="toggleSearchPanel">
                       <template v-if="searchPreviewChips.length">
@@ -83,7 +90,9 @@
                           {{ chip.text }}
                         </span>
                       </template>
-                      <span v-else class="dc-select-dialog__search-placeholder">点击展开筛选条件</span>
+                      <span v-else class="dc-select-dialog__search-placeholder"
+                        >点击展开筛选条件</span
+                      >
                     </div>
                     <div class="dc-select-dialog__search-controls">
                       <van-button text size="small" type="primary" @click="toggleSearchPanel">
@@ -121,7 +130,11 @@
                   </transition>
                 </div>
 
-                <div v-if="selectedRows.length" class="dc-select-dialog__selected" :class="{ 'is-collapsed': selectedCollapsed }">
+                <div
+                  v-if="selectedRows.length"
+                  class="dc-select-dialog__selected"
+                  :class="{ 'is-collapsed': selectedCollapsed }"
+                >
                   <div class="dc-select-dialog__selected-header">
                     <span>已选 {{ selectedRows.length }}</span>
                     <div class="dc-select-dialog__selected-actions">
@@ -140,7 +153,10 @@
                       </van-button>
                     </div>
                   </div>
-                  <div class="dc-select-dialog__selected-tags" :class="{ 'is-collapsed': selectedCollapsed }">
+                  <div
+                    class="dc-select-dialog__selected-tags"
+                    :class="{ 'is-collapsed': selectedCollapsed }"
+                  >
                     <van-tag
                       v-for="row in selectedRows"
                       :key="getKey(row)"
@@ -175,11 +191,7 @@
                   @update:model-value="() => toggleSingle(item)"
                 />
                 <div class="dc-select-dialog__row-content">
-                  <div
-                    v-for="col in modelColumns"
-                    :key="col.prop"
-                    class="dc-select-dialog__cell"
-                  >
+                  <div v-for="col in modelColumns" :key="col.prop" class="dc-select-dialog__cell">
                     <span class="dc-select-dialog__cell-label">{{ col.label }}</span>
                     <div class="dc-select-dialog__cell-value">
                       <template v-if="col.component === 'dc-view'">
@@ -223,7 +235,9 @@
       <div class="dc-select-dialog__footer">
         <div class="dc-select-dialog__footer-actions">
           <van-button size="mini" type="default" plain @click="cancelSelection">取消</van-button>
-          <van-button size="mini" type="primary" @click="confirmSelection">{{ confirmText }}</van-button>
+          <van-button size="mini" type="primary" @click="confirmSelection">{{
+            confirmText
+          }}</van-button>
         </div>
       </div>
     </van-popup>
@@ -540,7 +554,9 @@ function mergeSelectionWithRows(rows) {
 }
 
 function normalizeResponse(res, fallbackPageNo, fallbackSize) {
-  const raw = model.value?.callBack ? model.value.callBack(res) : res?.data?.data ?? res?.data ?? {};
+  const raw = model.value?.callBack
+    ? model.value.callBack(res)
+    : (res?.data?.data ?? res?.data ?? {});
   let records = [];
   let total = 0;
   let current = fallbackPageNo;
@@ -574,7 +590,13 @@ function normalizeResponse(res, fallbackPageNo, fallbackSize) {
   if (!pages && typeof total === 'number' && total > 0 && typeof size === 'number' && size > 0) {
     pages = Math.ceil(total / size);
   }
-  if (!pages && total === 0 && normalizedRecords.length > 0 && typeof size === 'number' && size > 0) {
+  if (
+    !pages &&
+    total === 0 &&
+    normalizedRecords.length > 0 &&
+    typeof size === 'number' &&
+    size > 0
+  ) {
     pages = normalizedRecords.length < size ? 1 : undefined;
   }
 
@@ -610,7 +632,11 @@ async function paginationFetcher({ pageNo, pageSize: sizeParam }) {
     const response = await model.value.dialogGet(requestPayload);
     const normalized = normalizeResponse(response, pageNo, size);
     mergeSelectionWithRows(normalized.records);
-    if (typeof normalized.size === 'number' && normalized.size > 0 && normalized.size !== pageSize.value) {
+    if (
+      typeof normalized.size === 'number' &&
+      normalized.size > 0 &&
+      normalized.size !== pageSize.value
+    ) {
       pageSize.value = normalized.size;
     }
     return {
@@ -708,14 +734,17 @@ function applySelection() {
             .join(',')
         : selectedRows.value.map((item) => ({ ...item }));
     emit('update:modelValue', payload);
-    emit('change', selectedRows.value.map((item) => ({ ...item })));
+    emit(
+      'change',
+      selectedRows.value.map((item) => ({ ...item }))
+    );
     if (typeof props.change === 'function') {
       props.change({ value: selectedRows.value, column: props.column, index: props.dynamicIndex });
     }
   } else {
     const row = selectedRows.value.length ? selectedRows.value[0] : null;
     const payload =
-      props.returnType === 'string' ? (row ? row?.[key] ?? null : null) : row ? { ...row } : null;
+      props.returnType === 'string' ? (row ? (row?.[key] ?? null) : null) : row ? { ...row } : null;
     emit('update:modelValue', payload);
     emit('change', row ? { ...row } : null);
     if (typeof props.change === 'function') {
@@ -765,6 +794,9 @@ function resetSearch(force = false, resetFn) {
 <style lang="scss" scoped>
 .dc-select-dialog {
   width: 100%;
+  :deep(.van-field__value) {
+    min-height: unset !important;
+  }
 }
 
 .dc-select-dialog__trigger {
@@ -1057,7 +1089,8 @@ function resetSearch(force = false, resetFn) {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 12px 16px calc(var(--dc-select-dialog-footer-height, 96px) + 32px + var(--van-safe-area-bottom, 0px));
+  padding: 12px 16px
+    calc(var(--dc-select-dialog-footer-height, 96px) + 32px + var(--van-safe-area-bottom, 0px));
 }
 
 .dc-select-dialog__pagination :deep(.dc-content .van-pull-refresh) {
