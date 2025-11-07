@@ -116,7 +116,7 @@ export default {
       path: 'self-outbound',
       name: 'appsSelfOutbound',
       meta: { title: '自助出库', requiresAuth: true },
-      component: () => import('@/views/apps/SelfOutbound.vue'),
+      component: () => import('@/views/apps/SelfOutbound/index.vue'),
     },
     {
       path: 'nameplate-binding',
