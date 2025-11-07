@@ -43,7 +43,11 @@
 
     <van-floating-bubble axis="xy" icon="scan" magnetic @click="handleScan" />
 
-    <van-popup v-model:show="productPopupVisible" position="right" class="self-outbound-list__candidate-popup">
+    <van-popup
+      v-model:show="productPopupVisible"
+      position="right"
+      class="self-outbound-list__candidate-popup"
+    >
       <div class="self-outbound-list__candidate">
         <div class="self-outbound-list__candidate-header">
           <span>请选择</span>
@@ -278,7 +282,9 @@ function addProduct(item) {
     showToast({ message: '缺少库位信息，无法添加', type: 'fail' });
     return;
   }
-  const exists = productList.value.some((product) => String(product.locationId) === String(detail.locationId));
+  const exists = productList.value.some(
+    (product) => String(product.locationId) === String(detail.locationId)
+  );
   if (exists) {
     showToast({ message: '当前仓位已存在', type: 'fail' });
     return;
@@ -392,7 +398,7 @@ async function handleSubmit() {
   &__body {
     flex: 1;
     min-height: 0;
-    padding: 12px 12px 96px;
+    padding: 12px 0 96px;
     box-sizing: border-box;
   }
 
