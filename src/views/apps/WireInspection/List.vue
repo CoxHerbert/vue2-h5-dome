@@ -51,7 +51,7 @@ const route = useRoute();
 const navRef = ref(null);
 const listRef = ref(null);
 
-const dictRefs = proxy?.dicts ? proxy.dicts(['DC_WIRE_EXCEPTION_TYPE']) : {};
+const dictRefs = proxy.dicts(['DC_WIRE_EXCEPTION_TYPE']);
 
 const defaultQualified = [
   { label: '合格', value: '1' },
