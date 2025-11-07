@@ -5,6 +5,8 @@
       :fetcher="fetcher"
       :page-size="8"
       :get-nav-el="() => navRef?.getNavEl?.()"
+      :search-visible="false"
+      :tabs-visible="false"
       @add="handleCreate"
     >
       <template #nav>
