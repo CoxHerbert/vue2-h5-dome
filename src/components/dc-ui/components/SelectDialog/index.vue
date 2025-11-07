@@ -14,7 +14,7 @@
           class="dc-select-dialog__clear"
           @click.stop="handleClearClick"
         />
-        <van-icon name="arrow" class="dc-select-dialog__arrow" size="14" @click="openPopup" />
+        <van-icon name="arrow" class="dc-select-dialog__arrow" @click="openPopup" />
       </div>
     </div>
     <van-field
@@ -58,7 +58,7 @@
             class="dc-select-dialog__clear"
             @click.stop="handleClearClick"
           />
-          <van-icon name="arrow" class="dc-select-dialog__arrow" size="14" />
+          <van-icon name="arrow" class="dc-select-dialog__arrow" />
         </div>
       </template>
     </van-field>
@@ -402,7 +402,11 @@ const hasModelValue = computed(() => {
 });
 
 const displayClearIcon = computed(
-  () => props.showClearIcon !== false && props.clearable !== false && !props.disabled && hasModelValue.value
+  () =>
+    props.showClearIcon !== false &&
+    props.clearable !== false &&
+    !props.disabled &&
+    hasModelValue.value
 );
 
 const searchPreviewChips = computed(() => {
@@ -848,6 +852,9 @@ function resetSearch(force = false, resetFn) {
   :deep(.van-field__value) {
     min-height: unset !important;
   }
+  :deep(.van-cell__right-icon) {
+    display: none !important;
+  }
 }
 
 .dc-select-dialog__trigger {
@@ -960,7 +967,10 @@ function resetSearch(force = false, resetFn) {
 }
 
 .dc-select-dialog__arrow {
-  color: #c8c9cc;
+  color: var(--van-cell-right-icon-color);
+  height: var(--van-cell-line-height);
+  font-size: var(--van-cell-icon-size);
+  line-height: var(--van-cell-line-height);
 }
 
 .dc-select-dialog__popup {
