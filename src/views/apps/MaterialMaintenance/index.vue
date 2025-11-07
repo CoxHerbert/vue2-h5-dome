@@ -53,7 +53,7 @@
               />
 
               <!-- ✅ 字典选择：支持单选/多选 -->
-              <dc-dict-selector
+              <dc-selector
                 v-else-if="item.type === 'select-dict'"
                 v-model="formData[item.prop]"
                 :field="item"

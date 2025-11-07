@@ -12,7 +12,7 @@
             return-type="object"
             label="仓库"
           />
-          <dc-dict-selector
+          <dc-selector
             v-model="form.outStockType"
             label="出库类型"
             :options="outTypeOptions"

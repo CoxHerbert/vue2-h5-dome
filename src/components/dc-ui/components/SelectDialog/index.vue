@@ -7,7 +7,15 @@
       <div class="dc-select-dialog__slot" @click="openPopup">
         <slot></slot>
       </div>
-      <van-icon name="arrow" class="dc-select-dialog__arrow" size="14" />
+      <div class="dc-select-dialog__icons">
+        <van-icon
+          v-if="displayClearIcon"
+          name="cross"
+          class="dc-select-dialog__clear"
+          @click.stop="handleClearClick"
+        />
+        <van-icon name="arrow" class="dc-select-dialog__arrow" size="14" @click="openPopup" />
+      </div>
     </div>
     <van-field
       v-else
@@ -40,6 +48,17 @@
             </div>
           </template>
           <span v-else class="dc-select-dialog__field-placeholder">{{ placeholderText }}</span>
+        </div>
+      </template>
+      <template #extra>
+        <div class="dc-select-dialog__icons">
+          <van-icon
+            v-if="displayClearIcon"
+            name="cross"
+            class="dc-select-dialog__clear"
+            @click.stop="handleClearClick"
+          />
+          <van-icon name="arrow" class="dc-select-dialog__arrow" size="14" />
         </div>
       </template>
     </van-field>
@@ -262,6 +281,7 @@ const props = defineProps({
   width: { type: String, default: '100%' },
   disabled: { type: Boolean, default: false },
   clearable: { type: Boolean, default: true },
+  showClearIcon: { type: Boolean, default: true },
   multiple: { type: Boolean, default: true },
   showValue: { type: Boolean, default: true },
   showKey: { type: String, default: '' },
@@ -360,6 +380,30 @@ const singleValue = computed(() => {
   const first = selectedRows.value[0];
   return first ? getKey(first) : null;
 });
+
+const hasModelValue = computed(() => {
+  if (selectedRows.value.length) {
+    return true;
+  }
+  const value = props.modelValue;
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+  if (value && typeof value === 'object') {
+    return Object.keys(value).length > 0;
+  }
+  if (typeof value === 'string') {
+    return value.trim() !== '';
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return true;
+  }
+  return value !== undefined && value !== null;
+});
+
+const displayClearIcon = computed(
+  () => props.showClearIcon !== false && props.clearable !== false && !props.disabled && hasModelValue.value
+);
 
 const searchPreviewChips = computed(() => {
   return searchFields.value
@@ -694,6 +738,13 @@ function removeTag(key) {
   }
 }
 
+function handleClearClick() {
+  if (props.disabled || props.clearable === false) {
+    return;
+  }
+  clearSelection();
+}
+
 function clearSelection() {
   selectedRows.value = [];
   applySelection();
@@ -816,6 +867,23 @@ function resetSearch(force = false, resetFn) {
   }
 }
 
+.dc-select-dialog__icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.dc-select-dialog__clear {
+  color: #c8c9cc;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.dc-select-dialog__clear:active {
+  color: #969799;
+}
+
 .dc-select-dialog__field {
   width: 100%;
 }
@@ -893,7 +961,6 @@ function resetSearch(force = false, resetFn) {
 
 .dc-select-dialog__arrow {
   color: #c8c9cc;
-  margin-left: auto;
 }
 
 .dc-select-dialog__popup {
