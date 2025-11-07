@@ -4,13 +4,6 @@
       <div class="dc-select-dialog__slot" @click="openPopup">
         <slot></slot>
       </div>
-      <van-icon
-        v-if="showClear"
-        name="cross"
-        class="dc-select-dialog__clear"
-        size="14"
-        @click.stop="clearSelection"
-      />
       <van-icon name="arrow" class="dc-select-dialog__arrow" size="14" />
     </div>
     <van-field
@@ -44,18 +37,6 @@
             </div>
           </template>
           <span v-else class="dc-select-dialog__field-placeholder">{{ placeholderText }}</span>
-        </div>
-      </template>
-      <template #right-icon>
-        <div class="dc-select-dialog__icons">
-          <van-icon
-            v-if="showClear"
-            name="cross"
-            class="dc-select-dialog__clear"
-            size="14"
-            @click.stop="clearSelection"
-          />
-          <van-icon name="arrow" class="dc-select-dialog__arrow" size="14" />
         </div>
       </template>
     </van-field>
@@ -365,22 +346,6 @@ const singleValue = computed(() => {
   const first = selectedRows.value[0];
   return first ? getKey(first) : null;
 });
-
-const hasSelection = computed(() => {
-  if (!props.showValue) {
-    const value = props.modelValue;
-    if (Array.isArray(value)) {
-      return value.length > 0;
-    }
-    if (value && typeof value === 'object') {
-      return Object.keys(value).length > 0;
-    }
-    return value !== undefined && value !== null && `${value}` !== '';
-  }
-  return selectedRows.value.length > 0;
-});
-
-const showClear = computed(() => props.clearable && !props.disabled && hasSelection.value);
 
 const searchPreviewChips = computed(() => {
   return searchFields.value
@@ -840,17 +805,23 @@ function resetSearch(force = false, resetFn) {
   flex-wrap: wrap;
   width: 100%;
   min-height: 24px;
+  overflow: hidden;
+}
+
+.dc-select-dialog__field-input.has-value {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dc-select-dialog__field-input.has-value::-webkit-scrollbar {
+  display: none;
 }
 
 .dc-select-dialog__field-placeholder {
   color: #969799;
-}
-
-.dc-select-dialog__icons {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: #c8c9cc;
 }
 
 .dc-select-dialog__slot {
@@ -860,11 +831,11 @@ function resetSearch(force = false, resetFn) {
 }
 
 .dc-select-dialog__tags {
-  display: flex;
-  flex: 1;
+  display: inline-flex;
+  flex: 1 0 auto;
   gap: 6px;
-  flex-wrap: wrap;
-  max-width: 100%;
+  flex-wrap: nowrap;
+  max-width: none;
 }
 
 .dc-select-dialog__tags :deep(.van-tag),
@@ -888,21 +859,9 @@ function resetSearch(force = false, resetFn) {
   color: #969799;
 }
 
-.dc-select-dialog__clear,
 .dc-select-dialog__arrow {
   color: #c8c9cc;
-}
-
-.dc-select-dialog__clear {
   margin-left: auto;
-}
-
-.dc-select-dialog__icons .dc-select-dialog__clear {
-  margin-left: 0;
-}
-
-.dc-select-dialog__arrow {
-  margin-left: 4px;
 }
 
 .dc-select-dialog__popup {
