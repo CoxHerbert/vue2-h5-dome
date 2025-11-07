@@ -30,5 +30,29 @@ export default {
         },
       ],
     },
+    {
+      path: 'onboarding',
+      name: 'recruit-onboarding',
+      children: [
+        {
+          path: 'self',
+          name: 'recruit-onboarding-self',
+          meta: { title: 'routes.recruit.onboardingSelf', requiresAuth: true },
+          component: () => import('@/views/recruit/onboarding/SelfForm.vue'),
+        },
+        {
+          path: 'audit-result',
+          name: 'recruit-onboarding-audit-result',
+          meta: { title: 'routes.recruit.onboardingAudit', requiresAuth: true },
+          component: () => import('@/views/recruit/onboarding/AuditResult.vue'),
+        },
+        {
+          path: 'success',
+          name: 'recruit-onboarding-success',
+          meta: { title: 'routes.recruit.onboardingSuccess', requiresAuth: true },
+          component: () => import('@/views/recruit/onboarding/Success.vue'),
+        },
+      ],
+    },
   ],
 };
