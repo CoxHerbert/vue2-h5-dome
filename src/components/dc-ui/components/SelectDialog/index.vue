@@ -1,37 +1,45 @@
 <template>
   <div class="dc-select-dialog" :style="{ width, '--dc-select-dialog-footer-height': footerHeight }">
-    <div v-if="$slots.default" class="dc-select-dialog__trigger" @click="openPopup">
-      <slot></slot>
+    <div v-if="$slots.default" class="dc-select-dialog__trigger" :class="{ disabled }">
+      <div class="dc-select-dialog__slot" @click="openPopup">
+        <slot></slot>
+      </div>
+      <van-icon name="arrow" class="dc-select-dialog__arrow" size="14" />
     </div>
-    <div v-else class="dc-select-dialog__trigger" :class="{ disabled }" @click="openPopup">
-      <div v-if="multiple && displayTags.length" class="dc-select-dialog__tags">
-        <van-tag
-          v-for="tag in displayTags"
-          :key="tag.key"
-          type="primary"
-          size="medium"
-          :color="tagColor"
-          :text-color="tagTextColor"
-          :closeable="clearable"
-          @close.stop="removeTag(tag.key)"
-        >
-          {{ tag.label }}
-        </van-tag>
-      </div>
-      <div v-else-if="!multiple && displayTags.length" class="dc-select-dialog__text">
-        {{ displayTags[0]?.label || '-' }}
-      </div>
-      <div v-else class="dc-select-dialog__placeholder">
-        {{ placeholderText }}
-      </div>
-      <van-icon
-        v-if="clearable && displayTags.length"
-        name="cross"
-        class="dc-select-dialog__clear"
-        @click.stop="clearSelection"
-      />
-      <van-icon name="arrow" class="dc-select-dialog__arrow" />
-    </div>
+    <van-field
+      v-else
+      :label="fieldLabel"
+      readonly
+      clickable
+      is-link
+      :disabled="disabled"
+      :model-value="!multiple ? singleDisplayText : undefined"
+      :placeholder="!multiple ? placeholderText : undefined"
+      class="dc-select-dialog__field"
+      @click="openPopup"
+    >
+      <template v-if="multiple" #input>
+        <div class="dc-select-dialog__field-input" :class="{ 'has-value': displayTags.length }">
+          <template v-if="displayTags.length">
+            <div class="dc-select-dialog__tags">
+              <van-tag
+                v-for="tag in displayTags"
+                :key="tag.key"
+                type="primary"
+                size="medium"
+                :color="tagColor"
+                :text-color="tagTextColor"
+                :closeable="clearable"
+                @close.stop="removeTag(tag.key)"
+              >
+                {{ tag.label }}
+              </van-tag>
+            </div>
+          </template>
+          <span v-else class="dc-select-dialog__field-placeholder">{{ placeholderText }}</span>
+        </div>
+      </template>
+    </van-field>
 
     <van-popup
       v-model:show="open"
@@ -121,12 +129,12 @@
                         v-if="clearable"
                         text
                         type="danger"
-                        size="small"
+                        size="mini"
                         @click="clearSelection"
                       >
                         清空
                       </van-button>
-                      <van-button text size="small" @click="toggleSelectedCollapsed">
+                      <van-button text size="mini" @click="toggleSelectedCollapsed">
                         {{ selectedCollapsed ? '展开' : '收起' }}
                         <van-icon :name="selectedCollapsed ? 'arrow-down' : 'arrow-up'" size="14" />
                       </van-button>
@@ -160,7 +168,12 @@
                   :model-value="isSelected(item)"
                   @click.stop="toggleRow(item)"
                 />
-                <van-radio v-else :model-value="isSelected(item)" @click.stop="toggleSingle(item)" />
+                <van-radio
+                  v-else
+                  :name="getKey(item)"
+                  :model-value="singleValue"
+                  @update:model-value="() => toggleSingle(item)"
+                />
                 <div class="dc-select-dialog__row-content">
                   <div
                     v-for="col in modelColumns"
@@ -231,6 +244,7 @@ const props = defineProps({
   modelValue: { type: [Array, Object, String, Number], default: null },
   objectName: { type: String, default: '' },
   placeholder: { type: String, default: '请选择' },
+  label: { type: String, default: '' },
   width: { type: String, default: '100%' },
   disabled: { type: Boolean, default: false },
   clearable: { type: Boolean, default: true },
@@ -277,18 +291,60 @@ const getNavElement = () => zeroNavEl;
 
 const popupHeight = computed(() => '100vh');
 const popupTitle = computed(() => props.title || model.value?.title || '请选择');
-const confirmText = computed(() => model.value?.submitTitle || '确定');
-const placeholderText = computed(() => props.placeholder || model.value?.placeholder || '请选择');
+const confirmText = computed(() => model.value?.submitTitle || '确认');
+const fieldLabel = computed(() => props.label || model.value?.title || model.value?.label || '');
+const placeholderText = computed(() => {
+  if (props.placeholder) return props.placeholder;
+  if (model.value?.placeholder) return model.value.placeholder;
+  if (fieldLabel.value) return `请选择${fieldLabel.value}`;
+  return '请选择';
+});
 const footerHeight = computed(() => '96px');
 
 const keyField = computed(() => props.masterKey || model.value?.rowKey || rowKeyRef.value || 'id');
 const modelColumns = computed(() => (Array.isArray(model.value?.column) ? model.value.column : []));
 const searchFields = computed(() => modelColumns.value.filter((col) => col?.search));
+const multiple = computed(() => props.multiple !== false);
 const displayTags = computed(() => {
   return selectedRows.value.map((row) => ({
     key: getKey(row),
     label: getDisplayLabel(row) || getKey(row) || '-',
   }));
+});
+
+const singleDisplayText = computed(() => {
+  if (multiple.value) {
+    return '';
+  }
+  if (displayTags.value.length) {
+    return displayTags.value[0]?.label || '';
+  }
+  if (!props.showValue) {
+    const value = props.modelValue;
+    if (value && typeof value === 'object') {
+      const key = keyField.value;
+      const candidate =
+        value?.[props.showKey] ??
+        value?.[model.value?.defaultLabel] ??
+        value?.label ??
+        value?.name ??
+        value?.[key];
+      if (candidate !== undefined && candidate !== null && `${candidate}` !== '') {
+        return candidate;
+      }
+    } else if (value !== undefined && value !== null && `${value}` !== '') {
+      return `${value}`;
+    }
+  }
+  return '';
+});
+
+const singleValue = computed(() => {
+  if (multiple.value) {
+    return null;
+  }
+  const first = selectedRows.value[0];
+  return first ? getKey(first) : null;
 });
 
 const searchPreviewChips = computed(() => {
@@ -388,16 +444,36 @@ watch(
         data: ids,
         masterKey: keyField.value,
       });
-      const bucket = cacheStore.globalData[model.value.url] || {};
-      const rows = Array.isArray(bucket) ? bucket : Object.values(bucket);
-      const key = keyField.value;
-      selectedRows.value = ids.map((id) => {
-        const hit = rows.find((item) => `${item?.[key]}` === `${id}`);
-        return hit ? { ...hit } : { [key]: id };
-      });
     } catch (error) {
       console.error('Failed to fetch cache data:', error);
     }
+    const bucket = cacheStore.globalData[model.value.url] || {};
+    const rows = Array.isArray(bucket) ? bucket : Object.values(bucket);
+    const key = keyField.value;
+    const valueMap = new Map();
+    if (Array.isArray(newVal)) {
+      newVal.forEach((item) => {
+        if (item && typeof item === 'object') {
+          const itemKey = item?.[key];
+          if (itemKey != null) {
+            valueMap.set(`${itemKey}`, { ...item });
+          }
+        }
+      });
+    } else if (newVal && typeof newVal === 'object') {
+      const itemKey = newVal?.[key];
+      if (itemKey != null) {
+        valueMap.set(`${itemKey}`, { ...newVal });
+      }
+    }
+    selectedRows.value = ids.map((id) => {
+      const idKey = `${id}`;
+      if (valueMap.has(idKey)) {
+        return valueMap.get(idKey);
+      }
+      const hit = rows.find((item) => `${item?.[key]}` === idKey);
+      return hit ? { ...hit } : { [key]: id };
+    });
   },
   { immediate: true, deep: true }
 );
@@ -420,8 +496,6 @@ watch(
   },
   { immediate: true }
 );
-
-const multiple = computed(() => props.multiple !== false);
 
 function openPopup() {
   if (props.disabled) return;
@@ -710,13 +784,58 @@ function resetSearch(force = false, resetFn) {
   }
 }
 
-.dc-select-dialog__tags {
+.dc-select-dialog__field {
+  width: 100%;
+}
+
+.dc-select-dialog__field :deep(.van-field__control) {
+  cursor: pointer;
+}
+
+.dc-select-dialog__field :deep(.van-field__value) {
   display: flex;
-  flex: 1;
+  align-items: center;
+  min-height: 44px;
+}
+
+.dc-select-dialog__field-input {
+  display: flex;
+  align-items: center;
   gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  flex-wrap: wrap;
+  width: 100%;
+  min-height: 24px;
+  overflow: hidden;
+}
+
+.dc-select-dialog__field-input.has-value {
   flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dc-select-dialog__field-input.has-value::-webkit-scrollbar {
+  display: none;
+}
+
+.dc-select-dialog__field-placeholder {
+  color: #969799;
+}
+
+.dc-select-dialog__slot {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.dc-select-dialog__tags {
+  display: inline-flex;
+  flex: 1 0 auto;
+  gap: 6px;
+  flex-wrap: nowrap;
+  max-width: none;
 }
 
 .dc-select-dialog__tags :deep(.van-tag),
@@ -740,12 +859,8 @@ function resetSearch(force = false, resetFn) {
   color: #969799;
 }
 
-.dc-select-dialog__clear,
 .dc-select-dialog__arrow {
   color: #c8c9cc;
-}
-
-.dc-select-dialog__clear {
   margin-left: auto;
 }
 
