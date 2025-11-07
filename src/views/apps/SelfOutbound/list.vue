@@ -5,14 +5,21 @@
     <div class="self-outbound-list__body">
       <van-form class="self-outbound-list__form" :model="form">
         <van-cell-group inset>
-          <van-field
-            label="仓库"
-            is-link
-            readonly
-            :model-value="form.warehouseName"
-            placeholder="请选择仓库"
-            @click="openWarehouseDialog"
-          />
+          <dc-select-dialog
+            v-model="selectedWarehouse"
+            object-name="warehouse"
+            :multiple="false"
+            return-type="object"
+            :show-value="false"
+          >
+            <van-field
+              label="仓库"
+              is-link
+              readonly
+              :model-value="form.warehouseName"
+              placeholder="请选择仓库"
+            />
+          </dc-select-dialog>
           <van-field
             label="出库类型"
             is-link
@@ -51,38 +58,6 @@
         @confirm="handleOutTypeConfirm"
         @cancel="outTypePicker.show = false"
       />
-    </van-popup>
-
-    <van-popup v-model:show="warehouseDialog.show" position="right" class="self-outbound-list__warehouse-popup">
-      <div class="self-outbound-list__warehouse">
-        <div class="self-outbound-list__warehouse-header">
-          <span>选择仓库</span>
-          <van-icon name="cross" @click="warehouseDialog.show = false" />
-        </div>
-        <van-search
-          v-model="warehouseDialog.keyword"
-          placeholder="请输入仓库名称"
-          shape="round"
-          background="#f7f8fa"
-          @search="loadWarehouses"
-        />
-        <div class="self-outbound-list__warehouse-body">
-          <div v-if="warehouseDialog.loading" class="self-outbound-list__warehouse-loading">
-            <van-loading size="24px" vertical>加载中...</van-loading>
-          </div>
-          <template v-else>
-            <van-empty v-if="!warehouseDialog.list.length" description="暂无仓库" />
-            <van-cell
-              v-for="item in warehouseDialog.list"
-              :key="item.id || item.warehouseId"
-              :title="item.warehouseName || item.name || '-'"
-              :label="item.warehouseCode ? `仓库编码：${item.warehouseCode}` : ''"
-              clickable
-              @click="handleSelectWarehouse(item)"
-            />
-          </template>
-        </div>
-      </div>
     </van-popup>
 
     <van-popup v-model:show="productPopupVisible" position="right" class="self-outbound-list__candidate-popup">
@@ -160,12 +135,7 @@ const outTypePicker = reactive({
   columns: [],
 });
 
-const warehouseDialog = reactive({
-  show: false,
-  loading: false,
-  keyword: '',
-  list: [],
-});
+const selectedWarehouse = ref(null);
 
 async function initOutTypeDict() {
   try {
@@ -211,37 +181,15 @@ function handleOutTypeConfirm({ selectedOptions }) {
   outTypePicker.show = false;
 }
 
-async function loadWarehouses() {
-  warehouseDialog.loading = true;
-  try {
-    const params = {};
-    const keyword = warehouseDialog.keyword?.trim();
-    if (keyword) {
-      params.keyword = keyword;
-    }
-    const res = await Api.wms.warehouse?.list?.(params);
-    const data = res?.data ?? res?.records ?? res?.list ?? [];
-    warehouseDialog.list = Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error('failed to load warehouses', error);
-    showToast({ message: '仓库列表加载失败', type: 'fail' });
-  } finally {
-    warehouseDialog.loading = false;
-  }
-}
-
-function openWarehouseDialog() {
-  warehouseDialog.show = true;
-  if (!warehouseDialog.list.length) {
-    loadWarehouses();
-  }
-}
-
-function handleSelectWarehouse(item) {
-  form.warehouseId = item?.id ?? item?.warehouseId ?? null;
-  form.warehouseName = item?.warehouseName ?? item?.name ?? '';
-  warehouseDialog.show = false;
-}
+watch(
+  selectedWarehouse,
+  (val) => {
+    const row = val && typeof val === 'object' ? val : null;
+    form.warehouseId = row?.id ?? row?.warehouseId ?? null;
+    form.warehouseName = row?.warehouseName ?? row?.name ?? '';
+  },
+  { immediate: true }
+);
 
 async function handleScan() {
   if (!form.warehouseId) {
@@ -472,7 +420,6 @@ async function handleSubmit() {
     box-shadow: 0 -6px 12px rgba(31, 35, 41, 0.08);
   }
 
-  &__warehouse-popup,
   &__candidate-popup {
     width: 80vw;
     max-width: 360px;
@@ -480,14 +427,12 @@ async function handleSubmit() {
     background: #fff;
   }
 
-  &__warehouse,
   &__candidate {
     display: flex;
     flex-direction: column;
     height: 100%;
   }
 
-  &__warehouse-header,
   &__candidate-header {
     display: flex;
     align-items: center;
@@ -498,17 +443,9 @@ async function handleSubmit() {
     border-bottom: 1px solid #f2f3f5;
   }
 
-  &__warehouse-body,
   &__candidate-body {
     flex: 1;
     overflow: auto;
-  }
-
-  &__warehouse-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
   }
 
   &__candidate-title {
