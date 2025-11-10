@@ -8,42 +8,66 @@
     />
 
     <div class="recruit-onboarding-audit__body">
-      <section v-if="detail" class="card">
-        <header class="card__header">
-          <h2 class="card__title">{{ t('recruit.onboarding.auditResult.sections.personalInfo') }}</h2>
-          <van-button size="small" type="primary" plain @click="goSelfForm('look')">
-            {{ t('recruit.onboarding.auditResult.actions.viewDetail') }}
-          </van-button>
+      <section v-if="detail" class="personal-card">
+        <header class="personal-card__header">
+          <div class="personal-card__title">{{ t('recruit.onboarding.auditResult.sections.personalInfo') }}</div>
+          <LanguageSelector
+            variant="compact"
+            trigger-class="personal-card__language-trigger"
+            :title="t('login.language.title')"
+            :cancel-text="t('login.language.cancel')"
+          />
         </header>
 
-        <div class="profile">
-          <van-image
-            v-if="detail.avatarId"
-            :src="detail.avatarId"
-            class="profile__avatar"
-            fit="cover"
-            round
-          />
-          <div v-else class="profile__avatar profile__avatar--placeholder">{{ initials(detail.name) }}</div>
-          <div class="profile__info">
-            <div class="profile__name">{{ detail.name || '-' }}</div>
-            <div class="profile__meta">
-              <span>{{ t('recruit.onboarding.auditResult.fields.mobile') }}：</span>{{ detail.mobile || '-' }}
+        <div class="personal-card__banner">
+          <div class="personal-card__badge">
+            <van-image
+              v-if="detail.avatarId"
+              :src="detail.avatarId"
+              class="personal-card__avatar"
+              fit="cover"
+              round
+            />
+            <div v-else class="personal-card__avatar personal-card__avatar--placeholder">
+              {{ initials(detail.name) }}
             </div>
-            <div class="profile__meta">
-              <span>{{ t('recruit.onboarding.auditResult.fields.cardNo') }}：</span>{{ detail.cardNo || '-' }}
+          </div>
+          <div class="personal-card__summary">
+            <div class="personal-card__name">{{ detail.name || '-' }}</div>
+            <div class="personal-card__meta">
+              <span>{{ t('recruit.onboarding.auditResult.fields.mobile') }}：</span>
+              {{ detail.mobile || '-' }}
+            </div>
+            <div class="personal-card__meta">
+              <span>{{ t('recruit.onboarding.auditResult.fields.cardNo') }}：</span>
+              {{ detail.cardNo || '-' }}
             </div>
           </div>
         </div>
 
-        <van-cell-group inset>
-          <van-cell :title="t('recruit.onboarding.auditResult.fields.position')" :value="detail.positionDict || '-'" />
-          <van-cell :title="t('recruit.onboarding.auditResult.fields.workYear')" :value="detail.workYear || '-'" />
-          <van-cell :title="t('recruit.onboarding.auditResult.fields.isAccommodation')" :value="translateStatus(detail.isAccommodation)" />
-        </van-cell-group>
+        <div class="personal-card__content">
+          <div class="info-item">
+            <div class="info-item__label">{{ t('recruit.onboarding.auditResult.fields.position') }}</div>
+            <div class="info-item__value">{{ detail.positionDict || '-' }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item__label">{{ t('recruit.onboarding.auditResult.fields.workYear') }}</div>
+            <div class="info-item__value">{{ detail.workYear || '-' }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item__label">{{ t('recruit.onboarding.auditResult.fields.isAccommodation') }}</div>
+            <div class="info-item__value">{{ translateStatus(detail.isAccommodation) }}</div>
+          </div>
+        </div>
+
+        <div class="personal-card__actions">
+          <van-button block round type="primary" plain @click="goSelfForm('look')">
+            {{ t('recruit.onboarding.auditResult.actions.viewDetail') }}
+          </van-button>
+        </div>
       </section>
 
-      <section v-if="detail" class="card">
+      <section v-if="detail" class="progress-card card">
         <header class="card__header">
           <h2 class="card__title">{{ t('recruit.onboarding.auditResult.sections.progress') }}</h2>
           <van-tag type="primary" plain>{{ translateStatus(detail.applyStatus) }}</van-tag>
@@ -65,19 +89,30 @@
           </div>
         </div>
         <template v-else>
-          <van-steps :active="activeStep" direction="vertical" class="status-steps">
-            <van-step v-for="step in stepItems" :key="step.status">
-              <div class="step__title">{{ step.title }}</div>
-              <div v-if="step.description" class="step__desc">{{ step.description }}</div>
-            </van-step>
-          </van-steps>
+          <ul class="progress-card__list">
+            <li
+              v-for="(step, index) in stepItems"
+              :key="step.status"
+              class="progress-card__item"
+              :class="`progress-card__item--${stepState(index)}`"
+            >
+              <div class="progress-card__indicator">
+                <span class="progress-card__dot"></span>
+                <span v-if="index !== stepItems.length - 1" class="progress-card__line"></span>
+              </div>
+              <div class="progress-card__body">
+                <div class="progress-card__title">{{ step.title }}</div>
+                <div v-if="step.description" class="progress-card__desc">{{ step.description }}</div>
+              </div>
+            </li>
+          </ul>
         </template>
       </section>
 
-      <section v-if="detail" class="card">
+      <section v-if="detail" class="actions-card card">
         <div class="actions">
           <template v-if="detail.applyStatus === '待初试' || !detail.applyStatus">
-            <van-button block round plain type="primary" @click="confirmStatus('初试已取消')">
+            <van-button block round type="danger" @click="confirmStatus('初试已取消')">
               {{ t('recruit.onboarding.auditResult.actions.cancelInitial') }}
             </van-button>
             <van-button block round type="primary" @click="goSelfForm('edit')">
@@ -282,6 +317,12 @@ const activeStep = computed(() => {
 const isRefuseStatus = computed(() => refusalStatuses.has(detail.value?.applyStatus));
 const canReApply = computed(() => refusalStatuses.has(detail.value?.applyStatus));
 
+const stepState = (index) => {
+  if (index < activeStep.value) return 'done';
+  if (index === activeStep.value) return 'active';
+  return 'pending';
+};
+
 const goSelfForm = (mode) => {
   router.push({ name: 'recruit-onboarding-self', query: { mode } });
 };
@@ -329,9 +370,10 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .recruit-onboarding-audit {
+  --van-primary-color: #2563eb;
   padding-top: 46px;
   min-height: 100vh;
-  background: #f5f7fa;
+  background: linear-gradient(180deg, #ecf2ff 0%, #f7f9fc 60%, #f5f7fa 100%);
 
   &__body {
     padding: 16px 12px 32px;
@@ -340,62 +382,148 @@ onMounted(async () => {
 
 .card {
   background: #fff;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 20px 16px;
   margin-bottom: 16px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
 
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
 
   &__title {
     font-size: 16px;
     font-weight: 600;
-    color: #323233;
+    color: #0f172a;
   }
 }
 
-.profile {
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
+
+.personal-card {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: none;
+  border-radius: 20px;
+  margin-bottom: 20px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 20px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  &__language-trigger {
+    margin: 0;
+    font-size: 12px;
+    color: #2563ff;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18);
+    border: none;
+  }
+
+  &__banner {
+    display: flex;
+    padding: 0 20px 16px;
+    background: rgba(15, 23, 42, 0.1);
+    backdrop-filter: blur(6px);
+  }
+
+  &__badge {
+    margin-right: 16px;
+  }
 
   &__avatar {
     width: 56px;
     height: 56px;
-    background: #fde68a;
+    background: rgba(255, 255, 255, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 20px;
-    font-weight: 600;
-    color: #92400e;
-    margin-right: 12px;
+    font-weight: 700;
+    color: #1d4ed8;
+    border: 2px solid rgba(255, 255, 255, 0.35);
   }
 
   &__avatar--placeholder {
     border-radius: 50%;
   }
 
-  &__info {
+  &__summary {
     flex: 1;
   }
 
-  &__name {
-    font-size: 18px;
+  &__title {
+    font-size: 16px;
     font-weight: 600;
-    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  &__name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
   }
 
   &__meta {
     font-size: 13px;
-    color: #666;
-    line-height: 20px;
+    line-height: 1.6;
+    opacity: 0.9;
   }
+
+  &__content {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 16px 20px 12px;
+    background: #fff;
+    color: #0f172a;
+  }
+
+  &__actions {
+    padding: 8px 20px 20px;
+    background: #fff;
+    border-top: 1px solid rgba(37, 99, 235, 0.08);
+
+    .van-button {
+      margin: 0;
+      border-color: rgba(37, 99, 235, 0.2);
+      color: #2563eb;
+    }
+  }
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f4f7ff 0%, #eef2ff 100%);
+  box-shadow: inset 0 1px 0 rgba(37, 99, 235, 0.08);
+
+  &__label {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+
+  &__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+}
+
+.progress-card {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
 }
 
 .status-block {
@@ -431,32 +559,98 @@ onMounted(async () => {
   }
 }
 
-.status-steps {
-  :deep(.van-step__title) {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.progress-card__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
-  :deep(.van-step__circle-container) {
-    width: 16px;
-    height: 16px;
+.progress-card__item {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  padding-left: 4px;
+  & + & {
+    margin-top: 16px;
   }
 }
 
-.step__title {
+.progress-card__indicator {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 12px;
+  min-height: 32px;
+}
+
+.progress-card__dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 4px solid #c7d2fe;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  transition: all 0.3s ease;
+}
+
+.progress-card__line {
+  flex: 1;
+  width: 2px;
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.45) 0%, rgba(148, 163, 184, 0.3) 100%);
+  margin-top: 4px;
+}
+
+.progress-card__body {
+  flex: 1;
+}
+
+.progress-card__title {
   font-size: 14px;
   font-weight: 600;
+  color: #1e293b;
   margin-bottom: 4px;
 }
 
-.step__desc {
+.progress-card__desc {
   font-size: 12px;
-  color: #666;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.progress-card__item--done .progress-card__dot {
+  background: #2563eb;
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.35);
+}
+
+.progress-card__item--active .progress-card__dot {
+  background: #3b82f6;
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+.progress-card__item--pending .progress-card__dot {
+  background: #fff;
+}
+
+.actions-card {
+  box-shadow: none;
 }
 
 .actions {
   display: grid;
   gap: 12px;
+}
+
+:deep(.van-button--primary) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border: none;
+}
+
+:deep(.van-button--plain) {
+  background: #fff;
+  border-color: rgba(37, 99, 235, 0.45);
+  color: #2563eb;
 }
 </style>
