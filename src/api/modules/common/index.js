@@ -1,5 +1,6 @@
 import upload from './upload';
+import wechat from './wechat';
 
 export default {
-  upload,
+  wechat,
 };

@@ -50,8 +50,8 @@ const apps = [
     routeName: 'appsMaterialTracking',
     url: 'http://board.eastwinsz.com:8022/webroot/decision/view/report?viewlet=DC%252Fphone%252Fsuplier.cpt&username=',
   },
-  { label: '入库单', icon: '/images/apps/入库单.svg', routeName: 'appsInboundOrder' },
-  { label: '现场计划单', icon: '/images/apps/现场计划单.svg', routeName: 'appsSitePlanning' },
+  // { label: '入库单', icon: '/images/apps/入库单.svg', routeName: 'appsInboundOrder' },
+  // { label: '现场计划单', icon: '/images/apps/现场计划单.svg', routeName: 'appsSitePlanning' },
   { label: '工时汇报', icon: '/images/apps/工时汇报.svg', routeName: 'appsWorkReport' },
   { label: '确认领料', icon: '/images/apps/确认领料.svg', routeName: 'appsPickingConfirmation' },
   {
@@ -60,8 +60,8 @@ const apps = [
     routeName: 'appsMaterialMaintenance',
   },
   { label: '线材质检', icon: '/images/apps/线材质检.svg', routeName: 'appsWireInspection' },
-  { label: '出货资料上传', icon: '/images/apps/出货资料上传.svg', routeName: 'appsShipmentUpload' },
-  { label: '外协核价', icon: '/images/apps/外协核价.svg', routeName: 'appsOutsourcingQuotation' },
+  // { label: '出货资料上传', icon: '/images/apps/出货资料上传.svg', routeName: 'appsShipmentUpload' },
+  // { label: '外协核价', icon: '/images/apps/外协核价.svg', routeName: 'appsOutsourcingQuotation' },
   { label: '自助出库', icon: '/images/apps/自助出库.svg', routeName: 'appsSelfOutbound' },
   { label: '铭牌绑定', icon: '/images/apps/名牌绑定.svg', routeName: 'appsNameplateBinding' },
 ];
