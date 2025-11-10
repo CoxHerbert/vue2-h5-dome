@@ -189,12 +189,20 @@ export default {
         validation: {
           avatarId: '请上传证件照',
           name: '请输入姓名',
+          age: '请输入年龄',
           cardNo: '请输入身份证号',
           mobile: '请输入联系电话',
+          passportNumber: '请输入护照号码',
+          nation: '请选择民族',
+          address: '请输入籍贯',
+          education: '请选择文化程度',
+          graduateSchool: '请输入毕业院校',
           idCardFront: '请上传身份证正面',
           idCardBack: '请上传身份证反面',
           company: '请选择外协公司',
           position: '请选择岗位',
+          workYear: '请选择工作年限',
+          isAccommodation: '请选择是否住宿',
         },
         options: {
           education: {

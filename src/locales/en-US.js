@@ -189,12 +189,20 @@ export default {
         validation: {
           avatarId: 'Please upload your ID photo',
           name: 'Please enter your name',
+          age: 'Please enter your age',
           cardNo: 'Please enter your ID number',
           mobile: 'Please enter your contact number',
+          passportNumber: 'Please enter your passport number',
+          nation: 'Please select your ethnicity',
+          address: 'Please enter your native place',
+          education: 'Please select your education level',
+          graduateSchool: 'Please enter your graduated school',
           idCardFront: 'Please upload the front side of the ID card',
           idCardBack: 'Please upload the back side of the ID card',
           company: 'Please select a company',
           position: 'Please select a position',
+          workYear: 'Please select your years of experience',
+          isAccommodation: 'Please select whether accommodation is provided',
         },
         options: {
           education: {

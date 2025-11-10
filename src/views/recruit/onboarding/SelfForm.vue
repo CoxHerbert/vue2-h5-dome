@@ -65,6 +65,9 @@
               :label="t('recruit.onboarding.selfForm.fields.age')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
+              :rules="[
+                { required: true, message: t('recruit.onboarding.selfForm.validation.age') },
+              ]"
             />
             <van-field
               v-model="form.cardNo"
@@ -146,6 +149,12 @@
               :label="t('recruit.onboarding.selfForm.fields.passportNumber')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
+              :rules="[
+                {
+                  required: true,
+                  message: t('recruit.onboarding.selfForm.validation.passportNumber'),
+                },
+              ]"
             />
             <van-field
               name="nation"
@@ -154,6 +163,9 @@
               :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
               is-link
               readonly
+              :rules="[
+                { validator: () => !!form.nation, message: t('recruit.onboarding.selfForm.validation.nation') },
+              ]"
               @click="openPicker('nation')"
             />
             <van-field
@@ -162,6 +174,9 @@
               :label="t('recruit.onboarding.selfForm.fields.address')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
+              :rules="[
+                { required: true, message: t('recruit.onboarding.selfForm.validation.address') },
+              ]"
             />
             <van-field
               name="education"
@@ -170,6 +185,12 @@
               :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
               is-link
               readonly
+              :rules="[
+                {
+                  validator: () => !!form.education,
+                  message: t('recruit.onboarding.selfForm.validation.education'),
+                },
+              ]"
               @click="openPicker('education')"
             />
             <van-field
@@ -178,6 +199,12 @@
               :label="t('recruit.onboarding.selfForm.fields.graduateSchool')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
+              :rules="[
+                {
+                  required: true,
+                  message: t('recruit.onboarding.selfForm.validation.graduateSchool'),
+                },
+              ]"
             />
           </van-cell-group>
         </section>
@@ -224,6 +251,12 @@
               :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
               is-link
               readonly
+              :rules="[
+                {
+                  validator: () => !!form.workYear,
+                  message: t('recruit.onboarding.selfForm.validation.workYear'),
+                },
+              ]"
               @click="openPicker('workYear')"
             />
             <van-field
@@ -233,6 +266,12 @@
               :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
               is-link
               readonly
+              :rules="[
+                {
+                  validator: () => !!form.isAccommodation,
+                  message: t('recruit.onboarding.selfForm.validation.isAccommodation'),
+                },
+              ]"
               @click="openPicker('accommodation')"
             />
           </van-cell-group>
