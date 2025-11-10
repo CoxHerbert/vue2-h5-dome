@@ -218,18 +218,10 @@
                           v-model="item[col.prop]"
                           type="text"
                           :object-name="col.objectName"
-                          :show-label="col.showKey || col.prop"
                         />
                       </template>
                       <template v-else-if="col.component === 'dc-dict'">
                         <dc-dict
-                          type="text"
-                          :value="item[col.prop]"
-                          :options="dictMaps[col.dictData]"
-                        />
-                      </template>
-                      <template v-else-if="col.component === 'dc-dict-key'">
-                        <dc-dict-key
                           type="text"
                           :value="item[col.prop]"
                           :options="dictMaps[col.dictData]"
