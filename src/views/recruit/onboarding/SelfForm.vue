@@ -1,11 +1,10 @@
 <template>
   <div class="recruit-onboarding-self">
-    <van-nav-bar
+    <!-- <van-nav-bar
       :title="t('recruit.onboarding.selfForm.title')"
       left-arrow
-      fixed
       @click-left="handleBack"
-    />
+    /> -->
 
     <div class="recruit-onboarding-self__body">
       <van-form ref="formRef" :show-error="false" @submit="handleSubmit">
@@ -42,7 +41,7 @@
                     :show-type-hint="false"
                     :placeholder="t('recruit.onboarding.selfForm.placeholders.avatarId')"
                     accept="image/*"
-                    @change="onUploaderChange('avatarId')"
+                    @change="onUploaderChange('avatarId', $event)"
                   />
                 </div>
               </template>
@@ -65,6 +64,9 @@
               :label="t('recruit.onboarding.selfForm.fields.age')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
+              :rules="[
+                { required: true, message: t('recruit.onboarding.selfForm.validation.age') },
+              ]"
             />
             <van-field
               v-model="form.cardNo"
@@ -97,7 +99,7 @@
                     :show-type-hint="false"
                     accept="image/*"
                     :placeholder="t('recruit.onboarding.selfForm.placeholders.idCardFront')"
-                    @change="onUploaderChange('idCardFront')"
+                    @change="onUploaderChange('idCardFront', $event)"
                   />
                 </div>
               </template>
@@ -123,7 +125,7 @@
                     :show-type-hint="false"
                     accept="image/*"
                     :placeholder="t('recruit.onboarding.selfForm.placeholders.idCardBack')"
-                    @change="(e) => onUploaderChange('idCardBack', e)"
+                    @change="onUploaderChange('idCardBack', $event)"
                   />
                 </div>
               </template>
@@ -146,6 +148,12 @@
               :label="t('recruit.onboarding.selfForm.fields.passportNumber')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
+              :rules="[
+                {
+                  required: true,
+                  message: t('recruit.onboarding.selfForm.validation.passportNumber'),
+                },
+              ]"
             />
             <van-field
               name="nation"
@@ -154,6 +162,12 @@
               :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
               is-link
               readonly
+              :rules="[
+                {
+                  validator: () => !!form.nation,
+                  message: t('recruit.onboarding.selfForm.validation.nation'),
+                },
+              ]"
               @click="openPicker('nation')"
             />
             <van-field
@@ -162,6 +176,9 @@
               :label="t('recruit.onboarding.selfForm.fields.address')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
+              :rules="[
+                { required: true, message: t('recruit.onboarding.selfForm.validation.address') },
+              ]"
             />
             <van-field
               name="education"
@@ -170,6 +187,12 @@
               :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
               is-link
               readonly
+              :rules="[
+                {
+                  validator: () => !!form.education,
+                  message: t('recruit.onboarding.selfForm.validation.education'),
+                },
+              ]"
               @click="openPicker('education')"
             />
             <van-field
@@ -178,12 +201,18 @@
               :label="t('recruit.onboarding.selfForm.fields.graduateSchool')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
+              :rules="[
+                {
+                  required: true,
+                  message: t('recruit.onboarding.selfForm.validation.graduateSchool'),
+                },
+              ]"
             />
           </van-cell-group>
         </section>
 
         <section class="section">
-          <header class="section__title">
+          <header class="section__title mb8">
             {{ t('recruit.onboarding.selfForm.sections.work') }}
           </header>
           <van-cell-group inset>
@@ -224,6 +253,12 @@
               :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
               is-link
               readonly
+              :rules="[
+                {
+                  validator: () => !!form.workYear,
+                  message: t('recruit.onboarding.selfForm.validation.workYear'),
+                },
+              ]"
               @click="openPicker('workYear')"
             />
             <van-field
@@ -233,6 +268,12 @@
               :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
               is-link
               readonly
+              :rules="[
+                {
+                  validator: () => !!form.isAccommodation,
+                  message: t('recruit.onboarding.selfForm.validation.isAccommodation'),
+                },
+              ]"
               @click="openPicker('accommodation')"
             />
           </van-cell-group>
@@ -326,23 +367,23 @@ const submitting = ref(false);
 const form = reactive({
   id: null,
   avatarId: '',
-  name: '',
-  age: '',
-  cardNo: '',
+  name: 'zn b',
+  age: '18',
+  cardNo: '330225199907304839',
   idCardFront: '',
   idCardBack: '',
-  mobile: '',
-  nation: '',
-  address: '',
-  education: '',
-  graduateSchool: '',
-  passportNumber: '',
-  companyId: '',
-  companyDict: '',
-  jobGradeDictCode: '',
-  positionDict: '',
-  workYear: '',
-  isAccommodation: '',
+  mobile: '15824423899',
+  nation: '汉族',
+  address: '测试街道',
+  education: '初中及以下',
+  graduateSchool: '小学生',
+  passportNumber: 'huzhao001',
+  companyId: '1901902647122264066',
+  companyDict: '昌科',
+  jobGradeDictCode: '0',
+  positionDict: '钳工',
+  workYear: '1年以下',
+  isAccommodation: '是',
   applyStatus: '',
 });
 
@@ -507,7 +548,7 @@ const displayLabel = (value, columns) => {
   return col ? col.text : value;
 };
 
-const onUploaderChange = (key) => (files) => {
+const onUploaderChange = (key, files) => {
   const first = Array.isArray(files) ? files[0] : files;
   const link = first?.link || first?.path || '';
   form[key] = link;
@@ -587,7 +628,6 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .recruit-onboarding-self {
-  padding-top: 46px;
   min-height: 100vh;
   background: #f5f7fa;
   display: flex;
@@ -598,6 +638,12 @@ onMounted(async () => {
     overflow-y: auto;
     padding: 16px 12px 80px;
     box-sizing: border-box;
+    .mb8 {
+      margin-bottom: 8px;
+    }
+    :deep(.van-cell-group) {
+      margin: 0;
+    }
   }
 
   &__footer {

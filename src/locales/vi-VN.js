@@ -189,12 +189,20 @@ export default {
         validation: {
           avatarId: 'Vui lòng tải lên ảnh CMND',
           name: 'Vui lòng nhập họ và tên',
+          age: 'Vui lòng nhập tuổi',
           cardNo: 'Vui lòng nhập số CMND',
           mobile: 'Vui lòng nhập số điện thoại',
+          passportNumber: 'Vui lòng nhập số hộ chiếu',
+          nation: 'Vui lòng chọn dân tộc',
+          address: 'Vui lòng nhập quê quán',
+          education: 'Vui lòng chọn trình độ học vấn',
+          graduateSchool: 'Vui lòng nhập trường tốt nghiệp',
           idCardFront: 'Vui lòng tải lên mặt trước CMND',
           idCardBack: 'Vui lòng tải lên mặt sau CMND',
           company: 'Vui lòng chọn công ty',
           position: 'Vui lòng chọn chức danh',
+          workYear: 'Vui lòng chọn kinh nghiệm làm việc',
+          isAccommodation: 'Vui lòng chọn tình trạng chỗ ở',
         },
         options: {
           education: {

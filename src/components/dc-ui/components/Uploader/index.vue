@@ -119,12 +119,18 @@ const joinUrl = (a, b) => {
   if (!B) return A;
   return `${A.replace(/\/+$/, '')}/${B.replace(/^\/+/, '')}`;
 };
+const isHttpUrl = (val) => /^(https?:)?\/\//i.test(String(val || ''));
+
 const composeLink = (obj) => {
   const link = String(obj?.link || '');
   const name = String(obj?.name || '');
   if (link) return link;
-  if (props.previewBaseDomain && name) return joinUrl(props.previewBaseDomain, name);
-  return '';
+  if (!name) return '';
+  if (isHttpUrl(name)) return name;
+  if (props.previewBaseDomain) return joinUrl(props.previewBaseDomain, name);
+  if (name.startsWith('/')) return joinUrl(props.apiPrefix, name);
+  if (props.apiPrefix) return joinUrl(props.apiPrefix, name);
+  return name;
 };
 
 /* ============ 入口保险：深提取 path / attachId，强制字符串化 ============ */
@@ -406,6 +412,9 @@ const downloadAt = (index) => {
 .dc-uploader {
   display: inline-flex;
   flex-direction: column;
+  .van-cell-group {
+    margin: 0;
+  }
 }
 .dc-uploader__header {
   display: flex;
@@ -430,12 +439,19 @@ const downloadAt = (index) => {
     padding: 0 !important; /* 无内边距 */
     display: flex;
     align-items: center; /* 垂直居中 */
+    justify-content: space-between;
     min-height: 44px; /* 可选：行高更友好 */
   }
   :deep(.van-cell__title) {
     display: flex;
     align-items: center; /* 文本与右侧图标基线对齐更自然 */
-    gap: 0; /* 不需要额外间距 */
+    width: 120px;
+    overflow: hidden;
+  }
+  :deep(.van-cell__title span) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   :deep(.van-cell__value) {
     /* 防止 value 区域撑开布局（有右侧删除图标） */
