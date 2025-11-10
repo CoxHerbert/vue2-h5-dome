@@ -11,7 +11,9 @@
       <van-form ref="formRef" :show-error="false" @submit="handleSubmit">
         <section class="section">
           <div class="section__header">
-            <header class="section__title">{{ t('recruit.onboarding.selfForm.sections.personal') }}</header>
+            <header class="section__title">
+              {{ t('recruit.onboarding.selfForm.sections.personal') }}
+            </header>
             <LanguageSelector
               variant="compact"
               trigger-class="section__language-trigger"
@@ -23,7 +25,12 @@
             <van-field
               name="avatarId"
               :label="t('recruit.onboarding.selfForm.fields.avatarId')"
-              :rules="[{ validator: () => !!form.avatarId, message: t('recruit.onboarding.selfForm.validation.avatarId') }]"
+              :rules="[
+                {
+                  validator: () => !!form.avatarId,
+                  message: t('recruit.onboarding.selfForm.validation.avatarId'),
+                },
+              ]"
             >
               <template #input>
                 <div class="uploader-inline" :class="{ 'is-readonly': isReadonly }">
@@ -47,7 +54,9 @@
               :label="t('recruit.onboarding.selfForm.fields.name')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
-              :rules="[{ required: true, message: t('recruit.onboarding.selfForm.validation.name') }]"
+              :rules="[
+                { required: true, message: t('recruit.onboarding.selfForm.validation.name') },
+              ]"
             />
             <van-field
               v-model="form.age"
@@ -63,13 +72,20 @@
               :label="t('recruit.onboarding.selfForm.fields.cardNo')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
-              :rules="[{ required: true, message: t('recruit.onboarding.selfForm.validation.cardNo') }]"
+              :rules="[
+                { required: true, message: t('recruit.onboarding.selfForm.validation.cardNo') },
+              ]"
             />
 
             <van-field
               name="idCardFront"
               :label="t('recruit.onboarding.selfForm.fields.idCardFront')"
-              :rules="[{ validator: () => !!form.idCardFront, message: t('recruit.onboarding.selfForm.validation.idCardFront') }]"
+              :rules="[
+                {
+                  validator: () => !!form.idCardFront,
+                  message: t('recruit.onboarding.selfForm.validation.idCardFront'),
+                },
+              ]"
             >
               <template #input>
                 <div class="uploader-inline" :class="{ 'is-readonly': isReadonly }">
@@ -90,7 +106,12 @@
             <van-field
               name="idCardBack"
               :label="t('recruit.onboarding.selfForm.fields.idCardBack')"
-              :rules="[{ validator: () => !!form.idCardBack, message: t('recruit.onboarding.selfForm.validation.idCardBack') }]"
+              :rules="[
+                {
+                  validator: () => !!form.idCardBack,
+                  message: t('recruit.onboarding.selfForm.validation.idCardBack'),
+                },
+              ]"
             >
               <template #input>
                 <div class="uploader-inline" :class="{ 'is-readonly': isReadonly }">
@@ -102,7 +123,7 @@
                     :show-type-hint="false"
                     accept="image/*"
                     :placeholder="t('recruit.onboarding.selfForm.placeholders.idCardBack')"
-                    @change="onUploaderChange('idCardBack')"
+                    @change="(e) => onUploaderChange('idCardBack', e)"
                   />
                 </div>
               </template>
@@ -115,7 +136,9 @@
               :label="t('recruit.onboarding.selfForm.fields.mobile')"
               :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
               :readonly="isReadonly"
-              :rules="[{ required: true, message: t('recruit.onboarding.selfForm.validation.mobile') }]"
+              :rules="[
+                { required: true, message: t('recruit.onboarding.selfForm.validation.mobile') },
+              ]"
             />
             <van-field
               v-model="form.passportNumber"
@@ -160,7 +183,9 @@
         </section>
 
         <section class="section">
-          <header class="section__title">{{ t('recruit.onboarding.selfForm.sections.work') }}</header>
+          <header class="section__title">
+            {{ t('recruit.onboarding.selfForm.sections.work') }}
+          </header>
           <van-cell-group inset>
             <van-field
               name="companyId"
@@ -169,7 +194,12 @@
               :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
               is-link
               readonly
-              :rules="[{ validator: () => !!form.companyId, message: t('recruit.onboarding.selfForm.validation.company') }]"
+              :rules="[
+                {
+                  validator: () => !!form.companyId,
+                  message: t('recruit.onboarding.selfForm.validation.company'),
+                },
+              ]"
               @click="openPicker('company')"
             />
             <van-field
@@ -179,7 +209,12 @@
               :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
               is-link
               readonly
-              :rules="[{ validator: () => !!form.jobGradeDictCode, message: t('recruit.onboarding.selfForm.validation.position') }]"
+              :rules="[
+                {
+                  validator: () => !!form.jobGradeDictCode,
+                  message: t('recruit.onboarding.selfForm.validation.position'),
+                },
+              ]"
               @click="openPicker('position')"
             />
             <van-field
@@ -340,11 +375,16 @@ const workYearColumns = computed(() =>
 const accommodationColumns = computed(() =>
   ACCOMMODATION_OPTIONS.map((item) => ({ text: t(item.labelKey), value: item.value }))
 );
-const nationalityColumns = computed(() => NATIONALITY_OPTIONS.map((item) => ({ text: item.value, value: item.value })));
+const nationalityColumns = computed(() =>
+  NATIONALITY_OPTIONS.map((item) => ({ text: item.value, value: item.value }))
+);
 const nationPickerColumns = computed(() => nationalityColumns.value);
 
 const companyColumns = computed(() =>
-  companyOptions.value.map((item) => ({ text: item.label || item.name || item.text, value: item.value || item.id }))
+  companyOptions.value.map((item) => ({
+    text: item.label || item.name || item.text,
+    value: item.value || item.id,
+  }))
 );
 const positionColumns = computed(() =>
   positionOptions.value.map((item) => ({ text: item.label || item.name, value: item.value }))
@@ -417,9 +457,13 @@ const loadLaborRegisterDetail = async () => {
         form.id = null;
         form.applyStatus = '';
       }
-      const company = companyOptions.value.find((item) => String(item.value) === String(form.companyId));
+      const company = companyOptions.value.find(
+        (item) => String(item.value) === String(form.companyId)
+      );
       form.companyDict = company?.label || payload.companyDict || '';
-      const position = positionOptions.value.find((item) => String(item.value) === String(form.jobGradeDictCode));
+      const position = positionOptions.value.find(
+        (item) => String(item.value) === String(form.jobGradeDictCode)
+      );
       form.positionDict = position?.label || payload.positionDict || '';
       syncUploaderFromForm();
     }

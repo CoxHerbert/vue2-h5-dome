@@ -3,7 +3,7 @@ import request from '@/utils/http';
 export default {
   getLaborRegisterDetail(params) {
     return request({
-      url: '/blade-bip/laborRegister/detail',
+      url: '/blade-bip/LaborRegister/detail',
       method: 'get',
       params,
     });
@@ -11,7 +11,7 @@ export default {
 
   createLaborRegister(data) {
     return request({
-      url: '/blade-bip/laborRegister/user-create',
+      url: '/blade-bip/LaborRegister/user-create',
       method: 'post',
       data,
     });
@@ -19,7 +19,7 @@ export default {
 
   updateLaborRegister(data) {
     return request({
-      url: '/blade-bip/laborRegister/update',
+      url: '/blade-bip/LaborRegister/update',
       method: 'post',
       data,
     });
@@ -27,7 +27,7 @@ export default {
 
   getLaborCompanyList(params) {
     return request({
-      url: '/blade-bip/laborCompany/list',
+      url: '/blade-bip/LaborCompany/list',
       method: 'get',
       params,
     });
