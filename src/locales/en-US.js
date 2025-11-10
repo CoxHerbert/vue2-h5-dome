@@ -162,6 +162,7 @@ export default {
         },
         fields: {
           avatarId: 'ID Photo',
+          language: 'Interface Language',
           name: 'Full Name',
           age: 'Age',
           cardNo: 'ID Number',

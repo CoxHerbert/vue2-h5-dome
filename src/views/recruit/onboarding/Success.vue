@@ -4,7 +4,7 @@
       :title="t('recruit.onboarding.success.title')"
       left-arrow
       fixed
-      @click-left="router.back"
+      @click-left="handleBack"
     />
     <div class="recruit-onboarding-success__body">
       <van-icon name="passed" class="success-icon" />
@@ -23,9 +23,14 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { goBackOrHome } from '@/utils/navigation';
 
 const router = useRouter();
 const { t } = useI18n();
+
+const handleBack = () => {
+  goBackOrHome(router);
+};
 
 const goAuditResult = () => {
   router.replace({ name: 'recruit-onboarding-audit-result' });

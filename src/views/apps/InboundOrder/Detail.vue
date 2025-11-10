@@ -1,6 +1,6 @@
 <template>
   <div class="page inbound-order-detail">
-    <dc-nav-bar ref="navRef" title="入库单详情" fixed left-arrow @click-left="goBack" />
+    <van-nav-bar ref="navRef" title="入库单详情" fixed left-arrow @click-left="goBack" />
 
     <!-- 加载态 -->
     <div v-if="loading" class="page-body">
@@ -146,6 +146,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Api from '@/api/index';
 import { getInStockStatusMeta } from './constants';
+import { goBackOrHome } from '@/utils/navigation';
 
 const status = computed(() => getInStockStatusMeta(order.value?.inStockStatus));
 
@@ -157,7 +158,9 @@ const loading = ref(false);
 const loadError = ref(null);
 
 const emptyDesc = computed(() => (loadError.value ? '加载失败' : '未找到入库单'));
-const goBack = () => router.back();
+const goBack = () => {
+  goBackOrHome(router);
+};
 
 /** 规范化：detailList 兜底为数组 */
 const normalize = (d) => ({

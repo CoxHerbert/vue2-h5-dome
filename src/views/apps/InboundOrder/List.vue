@@ -10,11 +10,11 @@
       :page-size="8"
       :offset="200"
       :fetcher="fetcher"
-      :get-nav-el="() => navRef?.getNavEl?.()"
+      :get-nav-el="resolveNavEl"
       @add="handleCreate"
     >
       <template #nav>
-        <dc-nav-bar ref="navRef" title="入库单" fixed left-arrow @click-left="goBack" />
+        <van-nav-bar ref="navRef" title="入库单" fixed left-arrow @click-left="goBack" />
       </template>
 
       <template #item="{ item, index }">
@@ -52,6 +52,7 @@
 import { ref, computed, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
 import Api from '@/api';
+import { goBackOrHome } from '@/utils/navigation';
 // ★ 引入公共常量与工具
 import { getInStockStatusMeta, buildInStockStatusOptions } from './constants';
 
@@ -64,6 +65,15 @@ const router = useRouter();
 
 const navRef = ref(null);
 const listRef = ref(null);
+
+const resolveNavEl = () => {
+  const target = navRef.value;
+  if (!target) return null;
+  if (target instanceof HTMLElement) return target;
+  if (target.$el instanceof HTMLElement) return target.$el;
+  if (target.$?.subTree?.el instanceof HTMLElement) return target.$?.subTree?.el;
+  return null;
+};
 
 // 搜索关键字（对应入库单号 inStockCode） & 状态筛选
 const keyword = ref('');
@@ -99,7 +109,9 @@ async function fetcher({ pageNo, pageSize, keyword, status }) {
   return data; // { current, pages, records, total, size }
 }
 
-const goBack = () => router.back();
+const goBack = () => {
+  goBackOrHome(router);
+};
 
 // 新增入库单
 function handleCreate() {

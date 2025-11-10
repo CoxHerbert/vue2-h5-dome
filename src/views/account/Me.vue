@@ -1,7 +1,7 @@
 <template>
   <div class="page mine">
     <div class="top-bg"></div>
-    <dc-nav-bar
+    <van-nav-bar
       :title="t('me.navTitle')"
       fixed
       :border="false"

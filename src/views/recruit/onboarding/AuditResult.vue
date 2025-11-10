@@ -4,7 +4,7 @@
       :title="t('recruit.onboarding.auditResult.title')"
       left-arrow
       fixed
-      @click-left="router.back"
+      @click-left="handleBack"
     />
 
     <div class="recruit-onboarding-audit__body">
@@ -116,11 +116,16 @@ import { showToast, showConfirmDialog } from 'vant';
 import Api from '@/api';
 import { useUserStore } from '@/store/user';
 import { useDictStore } from '@/store/dict';
+import { goBackOrHome } from '@/utils/navigation';
 
 const router = useRouter();
 const { t } = useI18n();
 const userStore = useUserStore();
 const dictStore = useDictStore();
+
+const handleBack = () => {
+  goBackOrHome(router);
+};
 
 const detail = ref(null);
 const positionOptions = ref([]);

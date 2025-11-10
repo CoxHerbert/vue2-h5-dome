@@ -1,6 +1,6 @@
 <template>
   <div class="work-report page">
-    <dc-nav-bar title="工时汇报" left-arrow @click-left="handleBack" />
+    <van-nav-bar title="工时汇报" left-arrow @click-left="handleBack" />
 
     <div class="work-report__content">
       <!-- 普通白卡：搜索 + 扫码（不吸顶） -->
@@ -78,6 +78,7 @@ import { showFailToast, showLoadingToast, showSuccessToast } from 'vant';
 import Api from '@/api';
 import ProjectOverview from './components/ProjectOverview.vue';
 import WorkRouteCard from './components/WorkRouteCard.vue';
+import { goBackOrHome } from '@/utils/navigation';
 
 const router = useRouter();
 
@@ -278,7 +279,7 @@ const handleJump = (billNumber) => {
 };
 
 const handleBack = () => {
-  router.back();
+  goBackOrHome(router);
 };
 </script>
 

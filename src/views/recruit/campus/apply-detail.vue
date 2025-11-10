@@ -1,5 +1,5 @@
 <template>
-  <dc-nav-bar title="投递详情" fixed placeholder left-arrow @click-left="onClickLeft" />
+  <van-nav-bar title="投递详情" fixed placeholder left-arrow @click-left="onClickLeft" />
 
   <div class="page">
     <div class="page-top-bg"></div>
@@ -99,12 +99,14 @@
 
 <script setup>
 import { computed, reactive, onMounted, toRefs, getCurrentInstance } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import Api from '@/api/index';
 import { useUserStore } from '@/store/user';
+import { goBackOrHome } from '@/utils/navigation';
 const user = useUserStore();
 
 const route = useRoute();
+const router = useRouter();
 const { proxy } = getCurrentInstance();
 const dictRefs = proxy.dicts([
   'DC_GENDER',
@@ -234,7 +236,7 @@ function normalizeDetail(data) {
 }
 
 function onClickLeft() {
-  history.length > 1 ? history.back() : (location.href = '/');
+  goBackOrHome(router);
 }
 
 function onPreviewResume() {

@@ -162,6 +162,7 @@ export default {
         },
         fields: {
           avatarId: '证件照',
+          language: '界面语言',
           name: '姓名',
           age: '年龄',
           cardNo: '身份证号',
