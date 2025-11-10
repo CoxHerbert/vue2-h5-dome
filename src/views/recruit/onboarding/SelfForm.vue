@@ -42,7 +42,7 @@
                     :show-type-hint="false"
                     :placeholder="t('recruit.onboarding.selfForm.placeholders.avatarId')"
                     accept="image/*"
-                    @change="onUploaderChange('avatarId')"
+                    @change="onUploaderChange('avatarId', $event)"
                   />
                 </div>
               </template>
@@ -100,7 +100,7 @@
                     :show-type-hint="false"
                     accept="image/*"
                     :placeholder="t('recruit.onboarding.selfForm.placeholders.idCardFront')"
-                    @change="onUploaderChange('idCardFront')"
+                    @change="onUploaderChange('idCardFront', $event)"
                   />
                 </div>
               </template>
@@ -126,7 +126,7 @@
                     :show-type-hint="false"
                     accept="image/*"
                     :placeholder="t('recruit.onboarding.selfForm.placeholders.idCardBack')"
-                    @change="(e) => onUploaderChange('idCardBack', e)"
+                    @change="onUploaderChange('idCardBack', $event)"
                   />
                 </div>
               </template>
@@ -546,7 +546,7 @@ const displayLabel = (value, columns) => {
   return col ? col.text : value;
 };
 
-const onUploaderChange = (key) => (files) => {
+const onUploaderChange = (key, files) => {
   const first = Array.isArray(files) ? files[0] : files;
   const link = first?.link || first?.path || '';
   form[key] = link;
