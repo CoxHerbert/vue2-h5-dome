@@ -442,6 +442,13 @@ const downloadAt = (index) => {
     display: flex;
     align-items: center; /* 文本与右侧图标基线对齐更自然 */
     gap: 0; /* 不需要额外间距 */
+    flex: 1;
+    min-width: 0; /* 允许文本区域收缩以显示省略号 */
+  }
+  :deep(.van-cell__title span) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   :deep(.van-cell__value) {
     /* 防止 value 区域撑开布局（有右侧删除图标） */
