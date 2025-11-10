@@ -1,13 +1,7 @@
 <template>
   <div class="page mine">
     <div class="top-bg"></div>
-    <van-nav-bar
-      :title="t('me.navTitle')"
-      fixed
-      :border="false"
-      class="mine-nav"
-      safe-area-inset-top
-    />
+    <van-nav-bar :title="t('me.navTitle')" :border="false" class="mine-nav" safe-area-inset-top />
     <section class="profile-card">
       <div class="bg-index bg-index-2"></div>
       <div class="bg-index bg-index-1"></div>
@@ -381,7 +375,7 @@ $shadow-card: 0 12px 36px rgba(25, 81, 230, 0.08);
   position: relative;
   margin: 0 auto;
   max-width: 750px;
-  padding: 56px 0 120px;
+  padding: 0 0 120px;
   padding-bottom: calc(120px + constant(safe-area-inset-bottom));
   padding-bottom: calc(120px + env(safe-area-inset-bottom));
   background: #f6f7fb;
