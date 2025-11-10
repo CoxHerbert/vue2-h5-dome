@@ -119,12 +119,18 @@ const joinUrl = (a, b) => {
   if (!B) return A;
   return `${A.replace(/\/+$/, '')}/${B.replace(/^\/+/, '')}`;
 };
+const isHttpUrl = (val) => /^(https?:)?\/\//i.test(String(val || ''));
+
 const composeLink = (obj) => {
   const link = String(obj?.link || '');
   const name = String(obj?.name || '');
   if (link) return link;
-  if (props.previewBaseDomain && name) return joinUrl(props.previewBaseDomain, name);
-  return '';
+  if (!name) return '';
+  if (isHttpUrl(name)) return name;
+  if (props.previewBaseDomain) return joinUrl(props.previewBaseDomain, name);
+  if (name.startsWith('/')) return joinUrl(props.apiPrefix, name);
+  if (props.apiPrefix) return joinUrl(props.apiPrefix, name);
+  return name;
 };
 
 /* ============ 入口保险：深提取 path / attachId，强制字符串化 ============ */
