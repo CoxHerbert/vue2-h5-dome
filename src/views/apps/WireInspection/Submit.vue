@@ -1,6 +1,6 @@
 <template>
   <div class="page wire-inspection-submit">
-    <dc-nav-bar title="线材质检" left-arrow fixed @click-left="goBack" />
+    <van-nav-bar title="线材质检" left-arrow fixed @click-left="goBack" />
 
     <div class="wire-inspection-submit__body">
       <van-form ref="formRef" :model="form" scroll-to-error>
@@ -125,6 +125,7 @@ import { computed, getCurrentInstance, nextTick, reactive, ref, unref } from 'vu
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import Api from '@/api';
+import { goBackOrHome } from '@/utils/navigation';
 
 defineOptions({ name: 'WireInspectionSubmit' });
 
@@ -173,7 +174,7 @@ function resolveDictLabel(key, value) {
 }
 
 function goBack() {
-  router.back();
+  goBackOrHome(router);
 }
 
 function addRow(payload = {}) {

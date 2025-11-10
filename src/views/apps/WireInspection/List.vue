@@ -4,13 +4,13 @@
       ref="listRef"
       :fetcher="fetcher"
       :page-size="8"
-      :get-nav-el="() => navRef?.getNavEl?.()"
+      :get-nav-el="resolveNavEl"
       :search-visible="false"
       :tabs-visible="false"
       @add="handleCreate"
     >
       <template #nav>
-        <dc-nav-bar ref="navRef" title="线材质检" fixed left-arrow @click-left="goBack" />
+        <van-nav-bar ref="navRef" title="线材质检" fixed left-arrow @click-left="goBack" />
       </template>
 
       <template #item="{ item, index }">
@@ -43,6 +43,7 @@
 import { computed, ref, getCurrentInstance, unref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import Api from '@/api';
+import { goBackOrHome } from '@/utils/navigation';
 
 const { proxy } = getCurrentInstance();
 const router = useRouter();
@@ -50,6 +51,15 @@ const route = useRoute();
 
 const navRef = ref(null);
 const listRef = ref(null);
+
+const resolveNavEl = () => {
+  const target = navRef.value;
+  if (!target) return null;
+  if (target instanceof HTMLElement) return target;
+  if (target.$el instanceof HTMLElement) return target.$el;
+  if (target.$?.subTree?.el instanceof HTMLElement) return target.$?.subTree?.el;
+  return null;
+};
 
 const dictRefs = proxy.dicts(['DC_WIRE_EXCEPTION_TYPE']);
 
@@ -123,7 +133,7 @@ async function fetcher({ pageNo, pageSize }) {
 }
 
 function goBack() {
-  router.back();
+  goBackOrHome(router);
 }
 
 function handleCreate() {

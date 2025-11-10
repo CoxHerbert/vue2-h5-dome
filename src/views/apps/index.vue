@@ -1,6 +1,6 @@
 <template>
   <div class="dc-apps page">
-    <dc-nav-bar :title="t('routes.apps')" fixed />
+    <van-nav-bar :title="t('routes.apps')" fixed />
 
     <div class="dc-apps__content">
       <van-grid class="dc-apps__grid" :column-num="4" :gutter="12" clickable :border="false">

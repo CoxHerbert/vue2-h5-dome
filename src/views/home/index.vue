@@ -1,7 +1,7 @@
 <!-- pages/CascaderDemo.vue -->
 <template>
   <div class="page home">
-    <dc-nav-bar :title="t('routes.home')" fixed />
+    <van-nav-bar :title="t('routes.home')" fixed />
   </div>
 </template>
 

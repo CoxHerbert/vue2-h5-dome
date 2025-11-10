@@ -2,7 +2,7 @@
 <template>
   <div class="cnt">
     <!-- 顶部导航 -->
-    <dc-nav-bar ref="navRef" title="新增入库单" fixed left-arrow @click-left="goBack" />
+    <van-nav-bar ref="navRef" title="新增入库单" fixed left-arrow @click-left="goBack" />
 
     <!-- 基本信息 -->
     <div class="base-wrapper mtop20">
@@ -123,6 +123,7 @@
 import { ref, reactive, computed, onMounted, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
 import { showToast, showConfirmDialog } from 'vant';
+import { goBackOrHome } from '@/utils/navigation';
 
 import Api from '@/api/index';
 // import selectDialog from './com/selectDialog.vue';
@@ -174,6 +175,10 @@ const inTypeLabel = computed(() => review(form.inType, dc_dict?.DC_WMS_IN_TYPE) 
 onMounted(() => {
   form.applicantId = loginInfo?.user_id || loginInfo?.userId || null;
 });
+
+function goBack() {
+  goBackOrHome(router);
+}
 
 // 打开弹窗
 function handleSelect(refname) {
@@ -255,7 +260,7 @@ async function add() {
       showToast('入库成功');
       // 返回上一页并派发刷新事件（上一页可监听 window 的事件）
       setTimeout(() => {
-        router.back();
+        goBackOrHome(router);
         window.dispatchEvent(new CustomEvent('refreshData', { detail: true }));
       }, 600);
     } else {

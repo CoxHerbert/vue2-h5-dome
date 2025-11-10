@@ -1,6 +1,6 @@
 <template>
   <div class="self-outbound-list">
-    <dc-nav-bar title="自助出库" left-arrow @click-left="handleBack" />
+    <van-nav-bar title="自助出库" left-arrow @click-left="handleBack" />
 
     <div class="self-outbound-list__body">
       <van-form class="self-outbound-list__form" :model="form">
@@ -89,6 +89,7 @@ import { useRouter } from 'vue-router';
 import Api from '@/api';
 import { useDictStore } from '@/store/dict';
 import ProductList from './components/ProductList.vue';
+import { goBackOrHome } from '@/utils/navigation';
 
 const router = useRouter();
 const dictStore = useDictStore();
@@ -176,7 +177,7 @@ watch(
 );
 
 function handleBack() {
-  router.back();
+  goBackOrHome(router);
 }
 
 watch(

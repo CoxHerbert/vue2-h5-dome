@@ -4,7 +4,7 @@
       :title="t('recruit.onboarding.selfForm.title')"
       left-arrow
       fixed
-      @click-left="router.back"
+      @click-left="handleBack"
     />
 
     <div class="recruit-onboarding-self__body">
@@ -267,6 +267,7 @@ import Api from '@/api';
 import { useUserStore } from '@/store/user';
 import { useDictStore } from '@/store/dict';
 import DcUploader from '@/components/dc-ui/components/Uploader/index.vue';
+import { goBackOrHome } from '@/utils/navigation';
 import {
   EDUCATION_OPTIONS,
   WORK_YEAR_OPTIONS,
@@ -279,6 +280,10 @@ const route = useRoute();
 const { t } = useI18n();
 const userStore = useUserStore();
 const dictStore = useDictStore();
+
+const handleBack = () => {
+  goBackOrHome(router);
+};
 
 const formRef = ref();
 const submitting = ref(false);

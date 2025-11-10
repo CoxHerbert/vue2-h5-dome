@@ -1,6 +1,6 @@
 <template>
   <div class="missing-material page">
-    <dc-nav-bar title="缺料明细" left-arrow @click-left="handleBack" />
+    <van-nav-bar title="缺料明细" left-arrow @click-left="handleBack" />
 
     <div class="missing-material__content">
       <div v-if="dataList.length" class="missing-material__scroll">
@@ -42,6 +42,7 @@ import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showFailToast, showLoadingToast } from 'vant';
 import Api from '@/api';
+import { goBackOrHome } from '@/utils/navigation';
 
 const router = useRouter();
 const route = useRoute();
@@ -85,7 +86,7 @@ onMounted(() => {
 });
 
 const handleBack = () => {
-  router.back();
+  goBackOrHome(router);
 };
 </script>
 

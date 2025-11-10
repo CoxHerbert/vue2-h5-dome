@@ -1,7 +1,7 @@
 <template>
   <div class="me-work-time">
     <!-- 顶部固定导航 -->
-    <dc-nav-bar
+    <van-nav-bar
       class="me-work-time__nav"
       :title="t('me.workTime.title')"
       left-arrow
@@ -11,7 +11,7 @@
       placeholder
       @click-left="handleBack"
     />
-    <!-- 占位：确保内容不被固定导航遮挡（若 dc-nav-bar 已内置 placeholder 可删除本行） -->
+    <!-- 占位：确保内容不被固定导航遮挡（若 van-nav-bar 已内置 placeholder 可删除本行） -->
     <div class="me-work-time__nav-spacer" aria-hidden="true"></div>
 
     <main class="me-work-time__body">
@@ -78,6 +78,7 @@ import dayjs from 'dayjs';
 import Api from '@/api/index';
 import { showToast } from 'vant';
 import WorkTimeCalendar from './components/WorkTimeCalendar.vue';
+import { goBackOrHome } from '@/utils/navigation';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -170,7 +171,7 @@ function toggleGroup(key) {
 }
 
 function handleBack() {
-  router.back();
+  goBackOrHome(router);
 }
 
 function formatValue(prop) {
@@ -218,7 +219,7 @@ watch(
 </script>
 
 <style scoped lang="scss">
-/* 统一定义导航高度，若你的 dc-nav-bar 高度不同，请在此处调整 */
+/* 统一定义导航高度，若你的 van-nav-bar 高度不同，请在此处调整 */
 :root {
   --dc-nav-height: 46px;
 }

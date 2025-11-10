@@ -1,6 +1,6 @@
 <template>
   <div class="site-planning-create">
-    <dc-nav-bar title="现场计划单" fixed left-arrow @click-left="handleBack" />
+    <van-nav-bar title="现场计划单" fixed left-arrow @click-left="handleBack" />
 
     <div class="base-wrapper ptop56">
       <div class="baseinfo">
@@ -66,6 +66,7 @@ import { reactive, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showToast, showConfirmDialog } from 'vant';
 import Api from '@/api';
+import { goBackOrHome } from '@/utils/navigation';
 
 const route = useRoute();
 const router = useRouter();
@@ -108,7 +109,7 @@ async function fetchDetail() {
 }
 
 function handleBack() {
-  router.back();
+  goBackOrHome(router);
 }
 
 async function handleSave() {
@@ -134,7 +135,7 @@ async function handleSave() {
 
     if (success) {
       setTimeout(() => {
-        router.back();
+        goBackOrHome(router);
       }, 600);
     }
   } catch (error) {

@@ -1,6 +1,6 @@
 <template>
   <div class="confirm-material">
-    <dc-nav-bar ref="navRef" title="确认领料" left-arrow @click-left="handleBack" />
+    <van-nav-bar ref="navRef" title="确认领料" left-arrow @click-left="handleBack" />
     <div class="confirm-material__content">
       <van-sticky ref="stickyRef" :offset-top="tabsOffsetTop" class="confirm-material__sticky">
         <div ref="stickyInnerRef">
@@ -35,6 +35,7 @@ import { useRouter } from 'vue-router';
 import SearchPanel from './components/SearchPanel.vue';
 import PendingList from './components/PendingList.vue';
 import ResultPanel from './components/ResultPanel.vue';
+import { goBackOrHome } from '@/utils/navigation';
 
 const router = useRouter();
 const navRef = ref(null);
@@ -52,7 +53,14 @@ const tabs = [
   { label: '结果提示', value: 'result' },
 ];
 
-const getNavEl = () => navRef.value?.getNavEl?.();
+const getNavEl = () => {
+  const target = navRef.value;
+  if (!target) return null;
+  if (target instanceof HTMLElement) return target;
+  if (target.$el instanceof HTMLElement) return target.$el;
+  if (target.$?.subTree?.el instanceof HTMLElement) return target.$?.subTree?.el;
+  return null;
+};
 const showTabs = computed(() => activeTab.value !== 'pending');
 const paginationStickyTop = computed(
   () => navHeight.value + (showTabs.value ? stickyHeight.value : 0)
@@ -126,7 +134,7 @@ watch(showTabs, (visible) => {
 });
 
 function handleBack() {
-  router.back();
+  goBackOrHome(router);
 }
 
 function showResultByCode(rawCode) {

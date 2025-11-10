@@ -2,7 +2,7 @@
 <template>
   <div class="page-container page-material-info">
     <!-- 顶部栏 -->
-    <dc-nav-bar ref="navRef" title="物料信息维护" left-arrow @click-left="handleBack" />
+    <van-nav-bar ref="navRef" title="物料信息维护" left-arrow @click-left="handleBack" />
     <!-- 搜索区（吸顶） -->
     <van-sticky
       :offset-top="stickyTop"
@@ -151,6 +151,7 @@ import { ref, reactive, nextTick, getCurrentInstance, unref } from 'vue';
 import { useRouter } from 'vue-router';
 import { closeToast, showToast } from 'vant';
 import Api from '@/api';
+import { goBackOrHome } from '@/utils/navigation';
 
 defineOptions({ name: 'MaterialInfo' });
 
@@ -509,11 +510,7 @@ function doAction(action) {
 }
 
 function handleBack() {
-  if (window?.history?.length > 1) {
-    router.back();
-    return;
-  }
-  router.replace({ name: 'apps' });
+  goBackOrHome(router);
 }
 
 // 原有联动逻辑（照搬）
