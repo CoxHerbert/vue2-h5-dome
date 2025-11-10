@@ -1,16 +1,18 @@
 <template>
   <div class="recruit-onboarding-audit">
-    <van-nav-bar
+    <!-- <van-nav-bar
       :title="t('recruit.onboarding.auditResult.title')"
       left-arrow
       fixed
       @click-left="handleBack"
-    />
+    /> -->
 
     <div class="recruit-onboarding-audit__body">
       <section v-if="detail" class="personal-card">
         <header class="personal-card__header">
-          <div class="personal-card__title">{{ t('recruit.onboarding.auditResult.sections.personalInfo') }}</div>
+          <div class="personal-card__title">
+            {{ t('recruit.onboarding.auditResult.sections.personalInfo') }}
+          </div>
           <LanguageSelector
             variant="compact"
             trigger-class="personal-card__language-trigger"
@@ -47,15 +49,21 @@
 
         <div class="personal-card__content">
           <div class="info-item">
-            <div class="info-item__label">{{ t('recruit.onboarding.auditResult.fields.position') }}</div>
+            <div class="info-item__label">
+              {{ t('recruit.onboarding.auditResult.fields.position') }}
+            </div>
             <div class="info-item__value">{{ detail.positionDict || '-' }}</div>
           </div>
           <div class="info-item">
-            <div class="info-item__label">{{ t('recruit.onboarding.auditResult.fields.workYear') }}</div>
+            <div class="info-item__label">
+              {{ t('recruit.onboarding.auditResult.fields.workYear') }}
+            </div>
             <div class="info-item__value">{{ detail.workYear || '-' }}</div>
           </div>
           <div class="info-item">
-            <div class="info-item__label">{{ t('recruit.onboarding.auditResult.fields.isAccommodation') }}</div>
+            <div class="info-item__label">
+              {{ t('recruit.onboarding.auditResult.fields.isAccommodation') }}
+            </div>
             <div class="info-item__value">{{ translateStatus(detail.isAccommodation) }}</div>
           </div>
         </div>
@@ -102,7 +110,9 @@
               </div>
               <div class="progress-card__body">
                 <div class="progress-card__title">{{ step.title }}</div>
-                <div v-if="step.description" class="progress-card__desc">{{ step.description }}</div>
+                <div v-if="step.description" class="progress-card__desc">
+                  {{ step.description }}
+                </div>
               </div>
             </li>
           </ul>
@@ -247,8 +257,12 @@ const loadDetail = async () => {
     const res = await Api.recruit.onboarding.getLaborRegisterDetail({ createUser });
     const payload = res?.data?.data || res?.data || null;
     if (payload) {
-      const company = companyOptions.value.find((item) => String(item.value) === String(payload.companyId));
-      const position = positionOptions.value.find((item) => String(item.value) === String(payload.jobGradeDictCode));
+      const company = companyOptions.value.find(
+        (item) => String(item.value) === String(payload.companyId)
+      );
+      const position = positionOptions.value.find(
+        (item) => String(item.value) === String(payload.jobGradeDictCode)
+      );
       detail.value = {
         ...payload,
         companyDict: payload.companyDict || company?.label || '',
@@ -296,13 +310,21 @@ const stepItems = computed(() => {
   } else if (status === '复试不通过') {
     steps = [...regularSteps, { status: '复试不通过', description: data.finalConclusion }];
   } else if (status === '拒绝入职') {
-    steps = [...regularSteps, { status: '复试已通过', description: data.finalConclusion }, { status: '拒绝入职', descriptionKey: 'refuseEntry' }];
+    steps = [
+      ...regularSteps,
+      { status: '复试已通过', description: data.finalConclusion },
+      { status: '拒绝入职', descriptionKey: 'refuseEntry' },
+    ];
   }
 
   return steps.map((item) => ({
     status: item.status,
     title: translateStatus(item.status),
-    description: item.description || (item.descriptionKey ? t(`recruit.onboarding.auditResult.stepDesc.${item.descriptionKey}`) : ''),
+    description:
+      item.description ||
+      (item.descriptionKey
+        ? t(`recruit.onboarding.auditResult.stepDesc.${item.descriptionKey}`)
+        : ''),
   }));
 });
 
@@ -337,7 +359,9 @@ const confirmStatus = async (nextStatus) => {
   try {
     await showConfirmDialog({
       title: t('recruit.onboarding.auditResult.dialog.title'),
-      message: t(`recruit.onboarding.auditResult.dialog.content.${statusKeyMap[nextStatus] || 'generic'}`),
+      message: t(
+        `recruit.onboarding.auditResult.dialog.content.${statusKeyMap[nextStatus] || 'generic'}`
+      ),
     });
   } catch {
     return;
@@ -371,7 +395,6 @@ onMounted(async () => {
 <style scoped lang="scss">
 .recruit-onboarding-audit {
   --van-primary-color: #2563eb;
-  padding-top: 46px;
   min-height: 100vh;
   background: linear-gradient(180deg, #ecf2ff 0%, #f7f9fc 60%, #f5f7fa 100%);
 
@@ -384,6 +407,7 @@ onMounted(async () => {
   background: #fff;
   border-radius: 16px;
   padding: 20px 16px;
+  padding-top: 10px;
   margin-bottom: 16px;
   box-shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
 
@@ -400,7 +424,6 @@ onMounted(async () => {
     color: #0f172a;
   }
 }
-
 
 .personal-card {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -431,7 +454,7 @@ onMounted(async () => {
 
   &__banner {
     display: flex;
-    padding: 0 20px 16px;
+    padding: 20px 16px;
     background: rgba(15, 23, 42, 0.1);
     backdrop-filter: blur(6px);
   }
@@ -489,7 +512,7 @@ onMounted(async () => {
   }
 
   &__actions {
-    padding: 8px 20px 20px;
+    padding: 8px;
     background: #fff;
     border-top: 1px solid rgba(37, 99, 235, 0.08);
 

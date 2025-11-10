@@ -1,11 +1,11 @@
 <template>
   <div class="recruit-onboarding-success">
-    <van-nav-bar
+    <!-- <van-nav-bar
       :title="t('recruit.onboarding.success.title')"
       left-arrow
       fixed
       @click-left="handleBack"
-    />
+    /> -->
     <div class="recruit-onboarding-success__body">
       <van-icon name="passed" class="success-icon" />
       <h1>{{ t('recruit.onboarding.success.heading') }}</h1>
@@ -43,7 +43,6 @@ const goHome = () => {
 
 <style scoped lang="scss">
 .recruit-onboarding-success {
-  padding-top: 46px;
   min-height: 100vh;
   background: linear-gradient(180deg, #fff8f1 0%, #ffffff 40%);
 
