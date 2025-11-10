@@ -1,11 +1,10 @@
 <template>
   <div class="recruit-onboarding-self">
-    <van-nav-bar
+    <!-- <van-nav-bar
       :title="t('recruit.onboarding.selfForm.title')"
       left-arrow
-      fixed
       @click-left="handleBack"
-    />
+    /> -->
 
     <div class="recruit-onboarding-self__body">
       <van-form ref="formRef" :show-error="false" @submit="handleSubmit">
@@ -164,7 +163,10 @@
               is-link
               readonly
               :rules="[
-                { validator: () => !!form.nation, message: t('recruit.onboarding.selfForm.validation.nation') },
+                {
+                  validator: () => !!form.nation,
+                  message: t('recruit.onboarding.selfForm.validation.nation'),
+                },
               ]"
               @click="openPicker('nation')"
             />
@@ -210,7 +212,7 @@
         </section>
 
         <section class="section">
-          <header class="section__title">
+          <header class="section__title mb8">
             {{ t('recruit.onboarding.selfForm.sections.work') }}
           </header>
           <van-cell-group inset>
@@ -365,23 +367,23 @@ const submitting = ref(false);
 const form = reactive({
   id: null,
   avatarId: '',
-  name: '',
-  age: '',
-  cardNo: '',
+  name: 'zn b',
+  age: '18',
+  cardNo: '330225199907304839',
   idCardFront: '',
   idCardBack: '',
-  mobile: '',
-  nation: '',
-  address: '',
-  education: '',
-  graduateSchool: '',
-  passportNumber: '',
-  companyId: '',
-  companyDict: '',
-  jobGradeDictCode: '',
-  positionDict: '',
-  workYear: '',
-  isAccommodation: '',
+  mobile: '15824423899',
+  nation: '汉族',
+  address: '测试街道',
+  education: '初中及以下',
+  graduateSchool: '小学生',
+  passportNumber: 'huzhao001',
+  companyId: '1901902647122264066',
+  companyDict: '昌科',
+  jobGradeDictCode: '0',
+  positionDict: '钳工',
+  workYear: '1年以下',
+  isAccommodation: '是',
   applyStatus: '',
 });
 
@@ -626,7 +628,6 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .recruit-onboarding-self {
-  padding-top: 46px;
   min-height: 100vh;
   background: #f5f7fa;
   display: flex;
@@ -637,6 +638,12 @@ onMounted(async () => {
     overflow-y: auto;
     padding: 16px 12px 80px;
     box-sizing: border-box;
+    .mb8 {
+      margin-bottom: 8px;
+    }
+    :deep(.van-cell-group) {
+      margin: 0;
+    }
   }
 
   &__footer {

@@ -412,6 +412,9 @@ const downloadAt = (index) => {
 .dc-uploader {
   display: inline-flex;
   flex-direction: column;
+  .van-cell-group {
+    margin: 0;
+  }
 }
 .dc-uploader__header {
   display: flex;
@@ -436,14 +439,14 @@ const downloadAt = (index) => {
     padding: 0 !important; /* 无内边距 */
     display: flex;
     align-items: center; /* 垂直居中 */
+    justify-content: space-between;
     min-height: 44px; /* 可选：行高更友好 */
   }
   :deep(.van-cell__title) {
     display: flex;
     align-items: center; /* 文本与右侧图标基线对齐更自然 */
-    gap: 0; /* 不需要额外间距 */
-    flex: 1;
-    min-width: 0; /* 允许文本区域收缩以显示省略号 */
+    width: 120px;
+    overflow: hidden;
   }
   :deep(.van-cell__title span) {
     overflow: hidden;
