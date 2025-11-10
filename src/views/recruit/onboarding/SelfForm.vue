@@ -10,11 +10,15 @@
     <div class="recruit-onboarding-self__body">
       <van-form ref="formRef" :show-error="false" @submit="handleSubmit">
         <section class="section">
-          <header class="section__title">{{ t('recruit.onboarding.selfForm.sections.personal') }}</header>
-          <LanguageSelector
-            variant="cell"
-            :title="t('recruit.onboarding.selfForm.fields.language')"
-          />
+          <div class="section__header">
+            <header class="section__title">{{ t('recruit.onboarding.selfForm.sections.personal') }}</header>
+            <LanguageSelector
+              variant="compact"
+              trigger-class="section__language-trigger"
+              :title="t('recruit.onboarding.selfForm.fields.language')"
+              :cancel-text="t('login.language.cancel')"
+            />
+          </div>
           <van-cell-group inset>
             <van-field
               name="avatarId"
@@ -561,11 +565,29 @@ onMounted(async () => {
 .section {
   margin-bottom: 16px;
 
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 8px 8px;
+  }
+
   &__title {
     font-size: 16px;
     font-weight: 600;
     color: #323233;
-    margin: 0 8px 8px;
+    margin: 0;
+    flex: 1;
+  }
+
+  :deep(.section__language-trigger) {
+    margin: 0;
+    font-size: 12px;
+    color: #2563ff;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 4px 12px rgba(37, 99, 255, 0.18);
+    flex-shrink: 0;
   }
 }
 
