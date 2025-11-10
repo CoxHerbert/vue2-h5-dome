@@ -32,9 +32,14 @@
 <script>
 import { nextTick } from 'vue';
 import { Html5Qrcode } from 'html5-qrcode';
+import Api from '@/api';
+import { getLoginEnv } from '@/utils/env';
+import { initWxSDK, wxScanQRCode } from '@/utils/wxsdk';
+import { initWwSDK, wwScanQRCode } from '@/utils/wwxsdk';
 
 export default {
   name: 'DcScanCode',
+  emits: ['confirm', 'error'],
   data() {
     return {
       loading: false,
@@ -48,6 +53,9 @@ export default {
       frameWidth: 0, // 运行时计算
       frameHeight: 0, // 运行时计算
       showScanLine: true,
+      // SDK 初始化状态
+      wxInitPromise: null,
+      wwInitPromise: null,
     };
   },
   computed: {
@@ -62,16 +70,66 @@ export default {
     this.stopScan();
   },
   methods: {
-    open() {
+    async open(options = {}) {
+      const env = getLoginEnv();
+
+      try {
+        if (env === 'WECHAT_MP') {
+          return await this.openWechatScan(options);
+        }
+
+        if (env === 'WECHAT_ENTERPRISE') {
+          return await this.openWecomScan(options);
+        }
+
+        return await this.openH5Scan();
+      } catch (error) {
+        // 用户主动取消时不再降级
+        if (this.isUserCancelError(error) || env === 'normal') {
+          throw this.normalizeError(error);
+        }
+
+        console.warn('[dc-scan-code] SDK 扫码失败，尝试切换为 H5 扫码', error);
+        return this.openH5Scan();
+      }
+    },
+
+    openH5Scan() {
       return new Promise((resolve, reject) => {
-        this.resolveFn = resolve;
-        this.rejectFn = reject;
+        this.resolveFn = (result) => {
+          const normalized = this.normalizeScanResult(result);
+          this.$emit('confirm', normalized);
+          resolve(normalized);
+        };
+        this.rejectFn = (err) => {
+          const error = this.normalizeError(err);
+          if (!this.isUserCancelError(error)) {
+            this.$emit('error', error);
+          }
+          reject(error);
+        };
         this.show = true;
         nextTick(() => {
           this.calcFrameSize();
           this.startScan();
         });
       });
+    },
+
+    async openWechatScan(options = {}) {
+      await this.ensureWxSDK();
+      const result = await wxScanQRCode(options);
+      const normalized = this.normalizeScanResult(result);
+      this.$emit('confirm', normalized);
+      return normalized;
+    },
+
+    async openWecomScan(options = {}) {
+      await this.ensureWwSDK();
+      const result = await wwScanQRCode(options);
+      const normalized = this.normalizeScanResult(result);
+      this.$emit('confirm', normalized);
+      return normalized;
     },
 
     // 根据屏幕尺寸计算竖向取景框（与截图一致）
@@ -152,6 +210,104 @@ export default {
       this.show = false;
       this.resolveFn = null;
       this.rejectFn = null;
+    },
+
+    async ensureWxSDK() {
+      if (!this.wxInitPromise) {
+        const url = window.location.href.split('#')[0];
+        this.wxInitPromise = Api.common.wechat
+          .getWxConfig(url)
+          .then((res) =>
+            new Promise((resolve, reject) => {
+              initWxSDK(
+                res?.data || {},
+                () => resolve(),
+                (err) => {
+                  this.wxInitPromise = null;
+                  reject(err);
+                }
+              );
+            })
+          )
+          .catch((err) => {
+            this.wxInitPromise = null;
+            throw err;
+          });
+      }
+
+      return this.wxInitPromise;
+    },
+
+    async ensureWwSDK() {
+      if (!this.wwInitPromise) {
+        const url = window.location.href.split('#')[0];
+        this.wwInitPromise = Api.common.wechat
+          .getWwConfig(url)
+          .then((res) =>
+            new Promise((resolve, reject) => {
+              initWwSDK(
+                res?.data || {},
+                () => resolve(),
+                (err) => {
+                  this.wwInitPromise = null;
+                  reject(err);
+                }
+              );
+            })
+          )
+          .catch((err) => {
+            this.wwInitPromise = null;
+            throw err;
+          });
+      }
+
+      return this.wwInitPromise;
+    },
+
+    normalizeScanResult(payload) {
+      if (payload == null) return '';
+
+      if (typeof payload === 'string') {
+        const str = payload.trim();
+        if (!str) return '';
+        const parts = str.split(',');
+        return parts.length > 1 ? parts[parts.length - 1].trim() : str;
+      }
+
+      if (typeof payload === 'object') {
+        const candidate =
+          payload.resultStr ??
+          payload.resultString ??
+          payload.text ??
+          payload.code ??
+          payload.rawData;
+
+        if (typeof candidate === 'string') {
+          return this.normalizeScanResult(candidate);
+        }
+
+        if (candidate != null) {
+          return this.normalizeScanResult(String(candidate));
+        }
+      }
+
+      return String(payload);
+    },
+
+    normalizeError(error) {
+      if (error instanceof Error) return error;
+      const message =
+        error?.message ||
+        error?.errMsg ||
+        error?.desc ||
+        error?.toString?.() ||
+        '扫码失败';
+      return new Error(message);
+    },
+
+    isUserCancelError(error) {
+      const message = (error?.message || error?.errMsg || '').toLowerCase();
+      return message.includes('cancel');
     },
   },
 };
