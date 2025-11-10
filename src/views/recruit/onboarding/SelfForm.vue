@@ -11,6 +11,10 @@
       <van-form ref="formRef" :show-error="false" @submit="handleSubmit">
         <section class="section">
           <header class="section__title">{{ t('recruit.onboarding.selfForm.sections.personal') }}</header>
+          <LanguageSelector
+            variant="cell"
+            :title="t('recruit.onboarding.selfForm.fields.language')"
+          />
           <van-cell-group inset>
             <van-field
               name="avatarId"

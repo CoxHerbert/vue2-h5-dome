@@ -162,6 +162,7 @@ export default {
         },
         fields: {
           avatarId: 'Ảnh CMND',
+          language: 'Ngôn ngữ giao diện',
           name: 'Họ và tên',
           age: 'Tuổi',
           cardNo: 'Số CMND',
