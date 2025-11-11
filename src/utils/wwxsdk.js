@@ -75,9 +75,6 @@ export function wwScanQRCode(options = {}, success, error) {
       success: function (res) {
         if (isScanCancelled(res)) {
           console.log('企业微信扫码已取消:', res);
-          if (typeof error === 'function') {
-            error(res);
-          }
           return;
         }
 
@@ -87,9 +84,6 @@ export function wwScanQRCode(options = {}, success, error) {
       },
       cancel: function (res) {
         console.log('企业微信扫码取消:', res);
-        if (typeof error === 'function') {
-          error(res);
-        }
       },
       error: function (err) {
         if (typeof error === 'function') {

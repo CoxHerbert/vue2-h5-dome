@@ -111,15 +111,15 @@ export function wxScanQRCode(options = {}, success, error) {
             success: function (res) {
                 if (isScanCancelled(res)) {
                     console.log('微信扫码已取消:', res);
-                    if (typeof error === 'function') {
-                        error(res);
-                    }
                     return;
                 }
 
                 if (typeof success === 'function') {
                     success(res);
                 }
+            },
+            cancel: function (res) {
+                console.log('微信扫码取消:', res);
             },
             error: function (err) {
                 if (typeof error === 'function') {
