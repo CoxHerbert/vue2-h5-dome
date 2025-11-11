@@ -49,6 +49,7 @@ export default {
       scanning: false,
       resolveFn: null,
       rejectFn: null,
+      openPromise: null,
       // UI 配置
       frameWidth: 0, // 运行时计算
       frameHeight: 0, // 运行时计算
@@ -90,28 +91,45 @@ export default {
       }
     },
 
-    async open(options = {}) {
-      const env = getLoginEnv();
-
-      try {
-        if (env === 'WECHAT_MP') {
-          return await this.openWechatScan(options);
-        }
-
-        if (env === 'WECHAT_ENTERPRISE') {
-          return await this.openWecomScan(options);
-        }
-
-        return await this.openH5Scan();
-      } catch (error) {
-        // 用户主动取消时不再降级
-        if (this.isUserCancelError(error) || env === 'normal') {
-          throw this.normalizeError(error);
-        }
-
-        console.warn('[dc-scan-code] SDK 扫码失败，尝试切换为 H5 扫码', error);
-        return this.openH5Scan();
+    open(options = {}) {
+      if (this.loading && this.openPromise) {
+        return this.openPromise;
       }
+
+      this.loading = true;
+
+      const runner = async () => {
+        const env = getLoginEnv();
+
+        try {
+          if (env === 'WECHAT_MP') {
+            return await this.openWechatScan(options);
+          }
+
+          if (env === 'WECHAT_ENTERPRISE') {
+            return await this.openWecomScan(options);
+          }
+
+          return await this.openH5Scan();
+        } catch (error) {
+          // 用户主动取消时不再降级
+          if (this.isUserCancelError(error) || env === 'normal') {
+            throw this.normalizeError(error);
+          }
+
+          console.warn('[dc-scan-code] SDK 扫码失败，尝试切换为 H5 扫码', error);
+          return this.openH5Scan();
+        }
+      };
+
+      const promise = runner();
+
+      this.openPromise = promise.finally(() => {
+        this.loading = false;
+        this.openPromise = null;
+      });
+
+      return this.openPromise;
     },
 
     openH5Scan() {
