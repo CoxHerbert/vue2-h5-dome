@@ -1,5 +1,19 @@
 <template>
-  <div>
+  <div class="dc-scan-code">
+    <div
+      v-if="hasTriggerSlot"
+      class="dc-scan-code__trigger"
+      :class="{ 'is-disabled': isDisabled }"
+      @click.stop="handleTriggerClick"
+    >
+      <slot
+        :open="handleTriggerClick"
+        :loading="loading"
+        :disabled="isDisabled"
+        :show="show"
+      ></slot>
+    </div>
+
     <van-popup
       v-model:show="show"
       position="top"
@@ -39,7 +53,17 @@ import { initWwSDK, wwScanQRCode } from '@/utils/wwxsdk';
 
 export default {
   name: 'DcScanCode',
-  emits: ['confirm', 'error'],
+  props: {
+    modelValue: {
+      type: [String, Number],
+      default: '',
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['confirm', 'error', 'change', 'update:modelValue'],
   data() {
     return {
       loading: false,
@@ -60,6 +84,12 @@ export default {
     };
   },
   computed: {
+    hasTriggerSlot() {
+      return Boolean(this.$slots.default);
+    },
+    isDisabled() {
+      return this.disabled || this.loading;
+    },
     frameStyle() {
       return {
         '--frame-w': this.frameWidth + 'px',
@@ -136,6 +166,8 @@ export default {
       return new Promise((resolve, reject) => {
         this.resolveFn = (result) => {
           const normalized = this.normalizeScanResult(result);
+          this.$emit('update:modelValue', normalized);
+          this.$emit('change', normalized);
           this.$emit('confirm', normalized);
           resolve(normalized);
         };
@@ -158,6 +190,8 @@ export default {
       await this.ensureWxSDK();
       const result = await wxScanQRCode(options);
       const normalized = this.normalizeScanResult(result);
+      this.$emit('update:modelValue', normalized);
+      this.$emit('change', normalized);
       this.$emit('confirm', normalized);
       return normalized;
     },
@@ -166,6 +200,8 @@ export default {
       await this.ensureWwSDK();
       const result = await wwScanQRCode(options);
       const normalized = this.normalizeScanResult(result);
+      this.$emit('update:modelValue', normalized);
+      this.$emit('change', normalized);
       this.$emit('confirm', normalized);
       return normalized;
     },
@@ -293,7 +329,7 @@ export default {
             (res) =>
               new Promise((resolve, reject) => {
                 console.log(res, '--------');
-                const { code, data } = res.data;
+                const { data } = res.data;
                 initWwSDK(
                   data || {},
                   () => resolve(),
@@ -354,11 +390,35 @@ export default {
       const message = (error?.message || error?.errMsg || '').toLowerCase();
       return message.includes('cancel');
     },
+
+    handleTriggerClick() {
+      if (this.isDisabled) {
+        return;
+      }
+      this.open().catch(() => {
+        // 错误会通过 error 事件向外抛出
+      });
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+.dc-scan-code {
+  position: relative;
+
+  &__trigger {
+    display: inline-flex;
+    cursor: pointer;
+
+    &.is-disabled {
+      cursor: not-allowed;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+  }
+}
+
 .scan-code {
   position: relative;
   width: 100%;
