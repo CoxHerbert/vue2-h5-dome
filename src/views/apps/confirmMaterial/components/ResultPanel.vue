@@ -69,7 +69,7 @@
       </div>
     </van-dialog>
 
-    <dc-scan-code v-if="showScanner" ref="scannerRef" @confirm="handleScanResult" />
+    <dc-scan-code v-if="showScanner" ref="scannerRef" />
     <van-number-keyboard safe-area-inset-bottom />
   </div>
 </template>
@@ -78,6 +78,7 @@
 import { ref, computed } from 'vue';
 import { showFailToast, showLoadingToast, showSuccessToast } from 'vant';
 import Api from '@/api';
+import { useScanCode } from '@/composables/useScanCode';
 
 const tabs = [
   { label: '全部', value: 'all' },
@@ -89,8 +90,7 @@ const activeTab = ref('all');
 const detailInfo = ref({ detailList: [] });
 const showConfirm = ref(false);
 const dialogTitle = ref('');
-const showScanner = ref(false);
-const scannerRef = ref(null);
+const { scanVisible: showScanner, scanCodeRef: scannerRef, openScan: openScanModal } = useScanCode();
 
 const checkAll = computed({
   get() {
@@ -201,21 +201,12 @@ async function handleSubmit() {
 }
 
 function handleScan() {
-  showScanner.value = true;
-  scannerRef.value
-    ?.open()
+  openScanModal()
     .then((code) => {
       if (!code) return;
       applyScanResult(code);
     })
-    .catch(() => {})
-    .finally(() => {
-      showScanner.value = false;
-    });
-}
-
-function handleScanResult(code) {
-  applyScanResult(code);
+    .catch(() => {});
 }
 
 function applyScanResult(code) {

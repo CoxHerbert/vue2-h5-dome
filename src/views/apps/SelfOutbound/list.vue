@@ -77,19 +77,20 @@
       </div>
     </van-popup>
 
-    <dc-scan-code v-if="scanVisible" ref="scanCodeRef" @confirm="handleScanCode" />
+    <dc-scan-code v-if="scanVisible" ref="scanCodeRef" />
     <van-number-keyboard safe-area-inset-bottom />
   </div>
 </template>
 
 <script setup>
 import { closeToast, showConfirmDialog, showLoadingToast, showToast } from 'vant';
-import { nextTick, reactive, ref, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import Api from '@/api';
 import { useDictStore } from '@/store/dict';
 import ProductList from './components/ProductList.vue';
 import { goBackOrHome } from '@/utils/navigation';
+import { useScanCode } from '@/composables/useScanCode';
 
 const router = useRouter();
 const dictStore = useDictStore();
@@ -113,8 +114,7 @@ const barcode = reactive({
 
 const snCode = ref('');
 const productList = ref([]);
-const scanVisible = ref(false);
-const scanCodeRef = ref(null);
+const { scanVisible, scanCodeRef, openScan: openScanModal } = useScanCode();
 const productPopupVisible = ref(false);
 const productCandidates = ref([]);
 
@@ -195,24 +195,14 @@ async function handleScan() {
     showToast({ message: '请选择仓库', type: 'fail' });
     return;
   }
-  scanVisible.value = true;
-  await nextTick();
   try {
-    const code = await scanCodeRef.value?.open?.();
+    const code = await openScanModal();
     if (!code) return;
     snCode.value = code;
     await handleSearch();
   } catch (error) {
     console.error('scan failed', error);
-  } finally {
-    scanVisible.value = false;
   }
-}
-
-function handleScanCode(code) {
-  if (!code) return;
-  snCode.value = code;
-  handleSearch();
 }
 
 async function handleSearch() {

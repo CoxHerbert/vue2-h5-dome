@@ -121,11 +121,12 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, nextTick, reactive, ref, unref } from 'vue';
+import { computed, getCurrentInstance, reactive, ref, unref } from 'vue';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import Api from '@/api';
 import { goBackOrHome } from '@/utils/navigation';
+import { useScanCode } from '@/composables/useScanCode';
 
 defineOptions({ name: 'WireInspectionSubmit' });
 
@@ -133,8 +134,7 @@ const { proxy } = getCurrentInstance();
 const router = useRouter();
 
 const formRef = ref(null);
-const scanCodeRef = ref(null);
-const scanVisible = ref(false);
+const { scanVisible, scanCodeRef, openScan: openScanModal } = useScanCode();
 
 let uid = 0;
 
@@ -230,9 +230,7 @@ function onPickerConfirm({ selectedOptions, selectedValues }) {
 
 async function handleScanLocator() {
   try {
-    scanVisible.value = true;
-    await nextTick();
-    const code = await scanCodeRef.value.open();
+    const code = await openScanModal();
     if (code) {
       form.locatorNo = code;
     }
@@ -240,16 +238,12 @@ async function handleScanLocator() {
     if (err && err.message !== '用户取消扫码') {
       showToast({ message: err.message || '扫码失败', type: 'fail' });
     }
-  } finally {
-    scanVisible.value = false;
   }
 }
 
 async function handleScanRow() {
   try {
-    scanVisible.value = true;
-    await nextTick();
-    const code = await scanCodeRef.value.open();
+    const code = await openScanModal();
     if (!code) return;
     const res = await Api.application.wireInspection.getDrawContent({ key: code });
     const payload = res?.data || {};
@@ -261,8 +255,6 @@ async function handleScanRow() {
     if (err && err.message !== '用户取消扫码') {
       showToast({ type: 'fail', message: err.message || '扫码失败' });
     }
-  } finally {
-    scanVisible.value = false;
   }
 }
 

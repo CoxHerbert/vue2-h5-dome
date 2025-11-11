@@ -18,18 +18,18 @@
       </van-button>
     </div>
 
-    <dc-scan-code v-if="showScanner" ref="scannerRef" @confirm="handleScanResult" />
+    <dc-scan-code v-if="showScanner" ref="scannerRef" />
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue';
+import { ref } from 'vue';
+import { useScanCode } from '@/composables/useScanCode';
 
 const emit = defineEmits(['search']);
 
 const keyword = ref('');
-const showScanner = ref(false);
-const scannerRef = ref(null);
+const { scanVisible: showScanner, scanCodeRef: scannerRef, openScan: openScanModal } = useScanCode();
 
 function emitSearch() {
   const value = keyword.value.trim();
@@ -38,27 +38,15 @@ function emitSearch() {
 }
 
 function handleScan() {
-  showScanner.value = true;
-  nextTick(() => {
-    scannerRef.value
-      ?.open()
-      .then((code) => {
-        if (!code) return;
-        keyword.value = code;
-        emitSearch();
-      })
-      .catch(() => {})
-      .finally(() => {
-        showScanner.value = false;
-      });
-  });
+  openScanModal()
+    .then((code) => {
+      if (!code) return;
+      keyword.value = code;
+      emitSearch();
+    })
+    .catch(() => {});
 }
 
-function handleScanResult(code) {
-  if (!code) return;
-  keyword.value = code;
-  emitSearch();
-}
 </script>
 
 <style scoped>

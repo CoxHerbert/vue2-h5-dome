@@ -67,7 +67,7 @@
       </van-button>
     </div>
     <van-back-top />
-    <dc-scan-code v-if="showScan" ref="scanCodeRef" @confirm="handleScanConfirm" />
+    <dc-scan-code v-if="showScan" ref="scanCodeRef" />
   </div>
 </template>
 
@@ -79,6 +79,7 @@ import Api from '@/api';
 import ProjectOverview from './components/ProjectOverview.vue';
 import WorkRouteCard from './components/WorkRouteCard.vue';
 import { goBackOrHome } from '@/utils/navigation';
+import { useScanCode } from '@/composables/useScanCode';
 
 const router = useRouter();
 
@@ -86,8 +87,7 @@ const snCode = ref('');
 const activeTab = ref('detail');
 const planInfo = reactive({});
 const workRoutes = ref([]);
-const showScan = ref(false);
-const scanCodeRef = ref();
+const { scanVisible: showScan, scanCodeRef, openScan: openScanModal } = useScanCode();
 
 // 颜色枚举
 const colorEnum = {
@@ -175,27 +175,13 @@ const handleSearch = async () => {
 };
 
 const openScan = () => {
-  showScan.value = true;
-  requestAnimationFrame(() => {
-    scanCodeRef.value
-      ?.open?.()
-      ?.then((val) => {
-        if (!val) return;
-        snCode.value = val;
-        handleSearch();
-        showScan.value = false;
-      })
-      ?.catch(() => {
-        showScan.value = false;
-      });
-  });
-};
-
-const handleScanConfirm = (value) => {
-  if (!value) return;
-  snCode.value = value;
-  showScan.value = false;
-  handleSearch();
+  openScanModal()
+    .then((val) => {
+      if (!val) return;
+      snCode.value = val;
+      handleSearch();
+    })
+    .catch(() => {});
 };
 
 const updateRouteComplete = ({ routeId, value }) => {

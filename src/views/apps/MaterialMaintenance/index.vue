@@ -132,7 +132,7 @@
     <div v-if="!formData.id" class="no-data">暂无数据, 请先扫码查询</div>
 
     <!-- 扫码弹窗（按你备注保留原有逻辑/接口） -->
-    <dc-scan-code v-if="show" ref="scanCodeRef" @confirm="handleScanCode" />
+    <dc-scan-code v-if="scanVisible" ref="scanCodeRef" />
 
     <!-- 统一 Picker 弹层：字典 / 选项共用 -->
     <van-popup v-model:show="picker.show" position="bottom" round>
@@ -147,11 +147,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick, getCurrentInstance, unref } from 'vue';
+import { ref, reactive, getCurrentInstance, unref } from 'vue';
 import { useRouter } from 'vue-router';
 import { closeToast, showToast } from 'vant';
 import Api from '@/api';
 import { goBackOrHome } from '@/utils/navigation';
+import { useScanCode } from '@/composables/useScanCode';
 
 defineOptions({ name: 'MaterialInfo' });
 
@@ -162,7 +163,6 @@ const pageBodyRef = ref(null);
 const stickyTop = ref(0);
 const isSearchSticky = ref(false);
 
-const show = ref(false);
 const snCode = ref('');
 const formData = reactive({});
 const formRef = ref(null);
@@ -426,29 +426,16 @@ function onNumberInput(item, val) {
 }
 
 /** 扫码/查询/提交 */
-const scanCodeRef = ref(null);
+const { scanVisible, scanCodeRef, openScan: openScanModal } = useScanCode();
 
 function scanCode() {
-  show.value = true;
-  nextTick(() => {
-    scanCodeRef.value
-      ?.open()
-      .then((val) => {
-        if (!val) return;
-        snCode.value = val;
-        handleSearch();
-        show.value = false;
-      })
-      .catch(() => {
-        show.value = false;
-      });
-  });
-}
-
-function handleScanCode(code) {
-  if (!code) return;
-  snCode.value = code;
-  handleSearch();
+  openScanModal()
+    .then((val) => {
+      if (!val) return;
+      snCode.value = val;
+      handleSearch();
+    })
+    .catch(() => {});
 }
 
 function handleSearch() {
