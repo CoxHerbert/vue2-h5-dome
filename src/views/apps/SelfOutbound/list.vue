@@ -41,7 +41,13 @@
       <van-button type="primary" block @click="handleSubmit">提交</van-button>
     </div>
 
-    <van-floating-bubble axis="xy" icon="scan" magnetic @click="handleScan" />
+    <dc-scan-code
+      v-model="snCode"
+      @confirm="handleScanConfirm"
+      @error="handleScanError"
+    >
+      <van-floating-bubble axis="xy" icon="scan" magnetic />
+    </dc-scan-code>
 
     <van-popup
       v-model:show="productPopupVisible"
@@ -77,14 +83,13 @@
       </div>
     </van-popup>
 
-    <dc-scan-code v-if="scanVisible" ref="scanCodeRef" @confirm="handleScanCode" />
     <van-number-keyboard safe-area-inset-bottom />
   </div>
 </template>
 
 <script setup>
 import { closeToast, showConfirmDialog, showLoadingToast, showToast } from 'vant';
-import { nextTick, reactive, ref, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import Api from '@/api';
 import { useDictStore } from '@/store/dict';
@@ -113,8 +118,6 @@ const barcode = reactive({
 
 const snCode = ref('');
 const productList = ref([]);
-const scanVisible = ref(false);
-const scanCodeRef = ref(null);
 const productPopupVisible = ref(false);
 const productCandidates = ref([]);
 
@@ -190,30 +193,17 @@ watch(
   { immediate: true }
 );
 
-async function handleScan() {
-  if (!form.warehouseId) {
-    showToast({ message: '请选择仓库', type: 'fail' });
-    return;
-  }
-  scanVisible.value = true;
-  await nextTick();
-  try {
-    const code = await scanCodeRef.value?.open?.();
-    if (!code) return;
-    snCode.value = code;
-    await handleSearch();
-  } catch (error) {
-    console.error('scan failed', error);
-  } finally {
-    scanVisible.value = false;
-  }
-}
-
-function handleScanCode(code) {
+const handleScanConfirm = async (code) => {
   if (!code) return;
   snCode.value = code;
-  handleSearch();
-}
+  await handleSearch();
+};
+
+const handleScanError = (error) => {
+  const message = error?.message || '';
+  if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
+  showToast({ message: message || '扫码失败', type: 'fail' });
+};
 
 async function handleSearch() {
   if (!form.warehouseId) {

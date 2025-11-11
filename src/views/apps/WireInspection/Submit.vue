@@ -13,9 +13,16 @@
             :rules="[{ required: true, message: '请输入库位编码' }]"
           >
             <template #button>
-              <van-button size="small" type="primary" @click="handleScanLocator">
-                扫码
-              </van-button>
+              <dc-scan-code
+                ref="scanCodeRef"
+                v-model="form.locatorNo"
+                @confirm="handleLocatorScanSuccess"
+                @error="handleScanError"
+              >
+                <van-button size="small" type="primary" @click="handleScanLocator">
+                  扫码
+                </van-button>
+              </dc-scan-code>
             </template>
           </van-field>
         </van-cell-group>
@@ -24,9 +31,16 @@
           <div class="section__title">明细信息</div>
           <div class="section__actions">
             <van-button size="small" type="primary" plain @click="addRow()">新增行</van-button>
-            <van-button size="small" type="success" plain @click="handleScanRow">
-              扫码录入
-            </van-button>
+            <dc-scan-code
+              ref="rowScanRef"
+              v-model="rowScanCode"
+              @confirm="handleRowScanConfirm"
+              @error="handleScanError"
+            >
+              <van-button size="small" type="success" plain @click="handleScanRow">
+                扫码录入
+              </van-button>
+            </dc-scan-code>
           </div>
         </div>
 
@@ -112,8 +126,6 @@
       <van-button block type="success" @click="handleSubmit">提交</van-button>
     </div>
 
-    <dc-scan-code v-if="scanVisible" ref="scanCodeRef" />
-
     <van-popup v-model:show="picker.show" position="bottom" round>
       <van-picker :columns="picker.columns" @confirm="onPickerConfirm" @cancel="picker.show = false" />
     </van-popup>
@@ -121,7 +133,7 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, nextTick, reactive, ref, unref } from 'vue';
+import { computed, getCurrentInstance, reactive, ref, unref } from 'vue';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import Api from '@/api';
@@ -134,7 +146,8 @@ const router = useRouter();
 
 const formRef = ref(null);
 const scanCodeRef = ref(null);
-const scanVisible = ref(false);
+const rowScanRef = ref(null);
+const rowScanCode = ref('');
 
 let uid = 0;
 
@@ -228,41 +241,51 @@ function onPickerConfirm({ selectedOptions, selectedValues }) {
   picker.show = false;
 }
 
+function isCancelError(err) {
+  const message = err?.message || '';
+  return message.includes('取消') || message.toLowerCase().includes('cancel');
+}
+
+function handleScanError(err) {
+  if (isCancelError(err)) return;
+  showToast({ message: err?.message || '扫码失败', type: 'fail' });
+}
+
+function handleLocatorScanSuccess(code) {
+  if (!code) return;
+  form.locatorNo = code;
+}
+
 async function handleScanLocator() {
   try {
-    scanVisible.value = true;
-    await nextTick();
-    const code = await scanCodeRef.value.open();
-    if (code) {
-      form.locatorNo = code;
-    }
+    const code = await scanCodeRef.value?.open?.();
+    handleLocatorScanSuccess(code);
   } catch (err) {
-    if (err && err.message !== '用户取消扫码') {
-      showToast({ message: err.message || '扫码失败', type: 'fail' });
-    }
-  } finally {
-    scanVisible.value = false;
+    handleScanError(err);
   }
 }
 
-async function handleScanRow() {
+async function handleRowScanConfirm(code) {
+  if (!code) return;
   try {
-    scanVisible.value = true;
-    await nextTick();
-    const code = await scanCodeRef.value.open();
-    if (!code) return;
     const res = await Api.application.wireInspection.getDrawContent({ key: code });
     const payload = res?.data || {};
     const { code: status, data, msg } = payload;
     if (status !== 200 || !data) throw new Error(msg || '未获取到明细信息');
     addRow({ ...data, drawQty: String(data?.drawQty ?? '') });
     showToast({ type: 'success', message: '扫码成功' });
+    rowScanCode.value = '';
   } catch (err) {
-    if (err && err.message !== '用户取消扫码') {
-      showToast({ type: 'fail', message: err.message || '扫码失败' });
-    }
-  } finally {
-    scanVisible.value = false;
+    handleScanError(err);
+  }
+}
+
+async function handleScanRow() {
+  try {
+    const code = await rowScanRef.value?.open?.();
+    await handleRowScanConfirm(code);
+  } catch (err) {
+    handleScanError(err);
   }
 }
 

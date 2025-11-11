@@ -18,15 +18,20 @@
             <van-button class="search-btn" round type="primary" size="small" @click="handleSearch">
               搜索
             </van-button>
-            <van-button
-              class="scan-btn"
-              round
-              size="small"
-              plain
-              type="primary"
-              icon="scan"
-              @click="openScan"
-            />
+            <dc-scan-code
+              v-model="snCode"
+              @confirm="handleScanSuccess"
+              @error="handleScanError"
+            >
+              <van-button
+                class="scan-btn"
+                round
+                size="small"
+                plain
+                type="primary"
+                icon="scan"
+              />
+            </dc-scan-code>
           </div>
         </div>
       </div>
@@ -67,7 +72,6 @@
       </van-button>
     </div>
     <van-back-top />
-    <dc-scan-code v-if="showScan" ref="scanCodeRef" @confirm="handleScanConfirm" />
   </div>
 </template>
 
@@ -86,8 +90,6 @@ const snCode = ref('');
 const activeTab = ref('detail');
 const planInfo = reactive({});
 const workRoutes = ref([]);
-const showScan = ref(false);
-const scanCodeRef = ref();
 
 // 颜色枚举
 const colorEnum = {
@@ -174,28 +176,16 @@ const handleSearch = async () => {
   }
 };
 
-const openScan = () => {
-  showScan.value = true;
-  requestAnimationFrame(() => {
-    scanCodeRef.value
-      ?.open?.()
-      ?.then((val) => {
-        if (!val) return;
-        snCode.value = val;
-        handleSearch();
-        showScan.value = false;
-      })
-      ?.catch(() => {
-        showScan.value = false;
-      });
-  });
+const handleScanSuccess = (val) => {
+  if (!val) return;
+  snCode.value = val;
+  handleSearch();
 };
 
-const handleScanConfirm = (value) => {
-  if (!value) return;
-  snCode.value = value;
-  showScan.value = false;
-  handleSearch();
+const handleScanError = (error) => {
+  const message = error?.message || '';
+  if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
+  showFailToast(message || '扫码失败');
 };
 
 const updateRouteComplete = ({ routeId, value }) => {

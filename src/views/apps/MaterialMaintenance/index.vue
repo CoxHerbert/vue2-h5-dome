@@ -23,9 +23,16 @@
         <van-button type="success" @click="doAction('handleSearch')">
           <van-icon name="search" size="18" /> 查询
         </van-button>
-        <van-button type="primary" @click="doAction('scanCode')">
-          <van-icon name="scan" size="18" />
-        </van-button>
+        <dc-scan-code
+          ref="scanCodeRef"
+          v-model="snCode"
+          @confirm="handleScanConfirm"
+          @error="handleScanError"
+        >
+          <van-button type="primary" @click="doAction('scanCode')">
+            <van-icon name="scan" size="18" />
+          </van-button>
+        </dc-scan-code>
       </div>
     </van-sticky>
 
@@ -131,9 +138,6 @@
     <!-- 无数据提示 -->
     <div v-if="!formData.id" class="no-data">暂无数据, 请先扫码查询</div>
 
-    <!-- 扫码弹窗（按你备注保留原有逻辑/接口） -->
-    <dc-scan-code v-if="show" ref="scanCodeRef" @confirm="handleScanCode" />
-
     <!-- 统一 Picker 弹层：字典 / 选项共用 -->
     <van-popup v-model:show="picker.show" position="bottom" round>
       <van-picker
@@ -147,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick, getCurrentInstance, unref } from 'vue';
+import { ref, reactive, getCurrentInstance, unref } from 'vue';
 import { useRouter } from 'vue-router';
 import { closeToast, showToast } from 'vant';
 import Api from '@/api';
@@ -162,7 +166,6 @@ const pageBodyRef = ref(null);
 const stickyTop = ref(0);
 const isSearchSticky = ref(false);
 
-const show = ref(false);
 const snCode = ref('');
 const formData = reactive({});
 const formRef = ref(null);
@@ -428,27 +431,27 @@ function onNumberInput(item, val) {
 /** 扫码/查询/提交 */
 const scanCodeRef = ref(null);
 
-function scanCode() {
-  show.value = true;
-  nextTick(() => {
-    scanCodeRef.value
-      ?.open()
-      .then((val) => {
-        if (!val) return;
-        snCode.value = val;
-        handleSearch();
-        show.value = false;
-      })
-      .catch(() => {
-        show.value = false;
-      });
-  });
+function handleScanConfirm(val) {
+  if (!val) return;
+  snCode.value = val;
+  handleSearch();
 }
 
-function handleScanCode(code) {
-  if (!code) return;
-  snCode.value = code;
-  handleSearch();
+function handleScanError(error) {
+  const message = error?.message || '';
+  if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
+  showToast({ type: 'fail', message: message || '扫码失败' });
+}
+
+function scanCode() {
+  scanCodeRef.value
+    ?.open?.()
+    .then((val) => {
+      handleScanConfirm(val);
+    })
+    .catch((error) => {
+      handleScanError(error);
+    });
 }
 
 function handleSearch() {

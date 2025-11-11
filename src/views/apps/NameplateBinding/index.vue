@@ -83,18 +83,22 @@
     </div>
 
     <!-- 悬浮：扫码（只显示 icon；避开底部按钮） -->
-    <dc-scan-code v-model="snCode" @change="handleScanChange" @error="handleScanError">
-      <template #default="{ loading, disabled }">
-        <van-floating-bubble
-          class="float-bubble"
-          :class="{ 'is-disabled': disabled || loading }"
-          :offset="scanBubbleOffset"
-          axis="xy"
-          magnetic="x"
-        >
-          <van-icon name="scan" size="22" />
-        </van-floating-bubble>
-      </template>
+    <dc-scan-code
+      ref="scanCodeRef"
+      v-model="snCode"
+      @confirm="handleScanSuccess"
+      @error="handleScanError"
+    >
+      <van-floating-bubble
+        class="float-bubble"
+        :class="{ 'is-disabled': isScanning }"
+        :offset="scanBubbleOffset"
+        axis="xy"
+        magnetic="x"
+        @click="handleOpenScan"
+      >
+        <van-icon name="scan" size="22" />
+      </van-floating-bubble>
     </dc-scan-code>
   </div>
 </template>
@@ -132,6 +136,8 @@ const footerH = ref(96);
 
 // 仅保留扫码浮窗（不再有回到顶部）
 const scanBubbleOffset = ref({ x: 16, y: 120 });
+const isScanning = ref(false);
+const scanCodeRef = ref(null);
 
 const measureFooter = () => {
   footerH.value = footerRef.value?.offsetHeight || 96;
@@ -181,16 +187,32 @@ const handleSearch = () => {
   indeCode();
 };
 
-const handleScanChange = (code) => {
+const handleScanError = (error) => {
+  const msg = (error?.message || '').trim();
+  if (msg.toLowerCase().includes('cancel') || msg.includes('取消')) return;
+  showToast({ type: 'fail', message: `扫码失败: ${msg || '未知错误'}`, duration: 3000 });
+};
+
+const handleScanSuccess = (code) => {
   if (!code) return;
   snCode.value = code;
   indeCode();
 };
 
-const handleScanError = (error) => {
-  const msg = (error?.message || '').trim();
-  if (msg.toLowerCase().includes('cancel') || msg.includes('取消')) return;
-  showToast({ type: 'fail', message: `扫码失败: ${msg || '未知错误'}`, duration: 3000 });
+const handleOpenScan = () => {
+  if (isScanning.value) return;
+  isScanning.value = true;
+  scanCodeRef.value
+    ?.open?.()
+    .then((code) => {
+      handleScanSuccess(code);
+    })
+    .catch((error) => {
+      handleScanError(error);
+    })
+    .finally(() => {
+      isScanning.value = false;
+    });
 };
 
 // 查询 & 提交

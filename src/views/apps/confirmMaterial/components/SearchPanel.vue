@@ -13,23 +13,25 @@
         <van-icon name="search" size="18" />
         查询
       </van-button>
-      <van-button class="search-panel__scan" type="success" block @click="handleScan">
-        <van-icon name="scan" size="18" />
-      </van-button>
+      <dc-scan-code
+        v-model="keyword"
+        @confirm="handleScanSuccess"
+        @error="handleScanError"
+      >
+        <van-button class="search-panel__scan" type="success" block>
+          <van-icon name="scan" size="18" />
+        </van-button>
+      </dc-scan-code>
     </div>
-
-    <dc-scan-code v-if="showScanner" ref="scannerRef" @confirm="handleScanResult" />
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue';
+import { ref } from 'vue';
 
 const emit = defineEmits(['search']);
 
 const keyword = ref('');
-const showScanner = ref(false);
-const scannerRef = ref(null);
 
 function emitSearch() {
   const value = keyword.value.trim();
@@ -37,28 +39,18 @@ function emitSearch() {
   emit('search', value);
 }
 
-function handleScan() {
-  showScanner.value = true;
-  nextTick(() => {
-    scannerRef.value
-      ?.open()
-      .then((code) => {
-        if (!code) return;
-        keyword.value = code;
-        emitSearch();
-      })
-      .catch(() => {})
-      .finally(() => {
-        showScanner.value = false;
-      });
-  });
-}
-
-function handleScanResult(code) {
+function handleScanSuccess(code) {
   if (!code) return;
   keyword.value = code;
   emitSearch();
 }
+
+function handleScanError(error) {
+  const message = error?.message || '';
+  if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
+  console.error('scan failed', error);
+}
+
 </script>
 
 <style scoped>

@@ -6,9 +6,11 @@
         <van-tabs v-model:active="activeTab" shrink background="#fff" class="result-panel__tabs">
           <van-tab v-for="tab in tabs" :key="tab.value" :title="tab.label" :name="tab.value" />
         </van-tabs>
-        <van-button type="primary" size="small" @click="handleScan">
-          <van-icon name="scan" size="16" />扫码确认
-        </van-button>
+        <dc-scan-code v-model="scanCode" @confirm="handleScanConfirm" @error="handleScanError">
+          <van-button type="primary" size="small">
+            <van-icon name="scan" size="16" />扫码确认
+          </van-button>
+        </dc-scan-code>
       </div>
     </div>
 
@@ -69,7 +71,6 @@
       </div>
     </van-dialog>
 
-    <dc-scan-code v-if="showScanner" ref="scannerRef" @confirm="handleScanResult" />
     <van-number-keyboard safe-area-inset-bottom />
   </div>
 </template>
@@ -89,8 +90,7 @@ const activeTab = ref('all');
 const detailInfo = ref({ detailList: [] });
 const showConfirm = ref(false);
 const dialogTitle = ref('');
-const showScanner = ref(false);
-const scannerRef = ref(null);
+const scanCode = ref('');
 
 const checkAll = computed({
   get() {
@@ -200,22 +200,14 @@ async function handleSubmit() {
   }
 }
 
-function handleScan() {
-  showScanner.value = true;
-  scannerRef.value
-    ?.open()
-    .then((code) => {
-      if (!code) return;
-      applyScanResult(code);
-    })
-    .catch(() => {})
-    .finally(() => {
-      showScanner.value = false;
-    });
+function isCancelError(error) {
+  const message = error?.message || '';
+  return message.includes('取消') || message.toLowerCase().includes('cancel');
 }
 
-function handleScanResult(code) {
-  applyScanResult(code);
+function handleScanError(error) {
+  if (isCancelError(error)) return;
+  showFailToast(error?.message || '扫码失败');
 }
 
 function applyScanResult(code) {
@@ -225,6 +217,12 @@ function applyScanResult(code) {
       item.checked = true;
     }
   });
+}
+
+function handleScanConfirm(code) {
+  if (!code) return;
+  scanCode.value = code;
+  applyScanResult(code);
 }
 
 // 对外暴露
