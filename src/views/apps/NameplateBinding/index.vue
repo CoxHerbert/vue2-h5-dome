@@ -29,18 +29,21 @@
       </van-button>
     </div>
 
-    <dc-scan-v2 @scan-success="handleScanSuccess" @scan-error="handleScanError">
-      <template #default="{ loading }">
-        <dc-drag-button :bottom="400" :loading="loading">
-          <van-icon name="scan" size="34" />
-        </dc-drag-button>
-      </template>
-    </dc-scan-v2>
+    <dc-drag-button :bottom="400" :loading="scanLoading" @click="handleScanClick">
+      <van-icon name="scan" size="34" />
+    </dc-drag-button>
+
+    <dc-scan-code
+      v-if="scanVisible"
+      ref="scanCodeRef"
+      @confirm="handleScanConfirm"
+      @error="handleScanError"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import { showConfirmDialog, showLoadingToast, showToast } from 'vant';
 
 import Api from '@/api';
@@ -52,6 +55,9 @@ const productList = ref({});
 const step = ref(0);
 const disable = ref(true);
 const btnState = ref(false);
+const scanVisible = ref(false);
+const scanLoading = ref(false);
+const scanCodeRef = ref(null);
 
 const hasProduct = computed(() => Object.keys(productList.value || {}).length > 0);
 
@@ -62,17 +68,40 @@ const resetState = () => {
   disable.value = true;
 };
 
-const handleScanSuccess = (scanResult) => {
-  snCode.value = scanResult;
+const handleScanConfirm = (code) => {
+  if (!code) return;
+  snCode.value = code;
   indeCode();
 };
 
 const handleScanError = (error) => {
+  const message = error?.message || '';
+  const normalized = message.trim();
+  if (normalized.toLowerCase().includes('cancel') || normalized.includes('取消')) {
+    return;
+  }
   showToast({
     type: 'fail',
-    message: `扫码失败: ${error?.message || '未知错误'}`,
+    message: `扫码失败: ${normalized || '未知错误'}`,
     duration: 3000,
   });
+};
+
+const handleScanClick = async () => {
+  try {
+    scanLoading.value = true;
+    scanVisible.value = true;
+    await nextTick();
+    const code = await scanCodeRef.value?.open?.();
+    if (code) {
+      handleScanConfirm(code);
+    }
+  } catch (error) {
+    handleScanError(error);
+  } finally {
+    scanVisible.value = false;
+    scanLoading.value = false;
+  }
 };
 
 const handleManualConfirm = () => {
