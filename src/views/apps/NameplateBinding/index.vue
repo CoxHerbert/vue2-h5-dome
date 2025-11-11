@@ -70,6 +70,8 @@ const resetState = () => {
 
 const handleScanConfirm = (code) => {
   if (!code) return;
+  scanVisible.value = false;
+  scanLoading.value = false;
   snCode.value = code;
   indeCode();
 };
