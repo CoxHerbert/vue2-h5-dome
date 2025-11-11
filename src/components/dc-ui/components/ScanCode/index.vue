@@ -255,17 +255,25 @@ export default {
         const url = window.location.href.split('#')[0];
         this.wxInitPromise = Api.common.wechat
           .getWxConfig(url)
-          .then((res) =>
-            new Promise((resolve, reject) => {
-              initWxSDK(
-                res?.data || {},
-                () => resolve(),
-                (err) => {
+          .then(
+            (res) =>
+              new Promise((resolve, reject) => {
+                console.log(res, 'ensureWxSDK');
+                const { code, data } = res.data;
+                if (code === 200) {
+                  initWxSDK(
+                    data || {},
+                    () => resolve(),
+                    (err) => {
+                      this.wxInitPromise = null;
+                      reject(err);
+                    }
+                  );
+                } else {
                   this.wxInitPromise = null;
-                  reject(err);
+                  reject();
                 }
-              );
-            })
+              })
           )
           .catch((err) => {
             this.wxInitPromise = null;
@@ -281,17 +289,20 @@ export default {
         const url = window.location.href.split('#')[0];
         this.wwInitPromise = Api.common.wechat
           .getWwConfig(url)
-          .then((res) =>
-            new Promise((resolve, reject) => {
-              initWwSDK(
-                res?.data || {},
-                () => resolve(),
-                (err) => {
-                  this.wwInitPromise = null;
-                  reject(err);
-                }
-              );
-            })
+          .then(
+            (res) =>
+              new Promise((resolve, reject) => {
+                console.log(res, '--------');
+                const { code, data } = res.data;
+                initWwSDK(
+                  data || {},
+                  () => resolve(),
+                  (err) => {
+                    this.wwInitPromise = null;
+                    reject(err);
+                  }
+                );
+              })
           )
           .catch((err) => {
             this.wwInitPromise = null;
@@ -335,11 +346,7 @@ export default {
     normalizeError(error) {
       if (error instanceof Error) return error;
       const message =
-        error?.message ||
-        error?.errMsg ||
-        error?.desc ||
-        error?.toString?.() ||
-        '扫码失败';
+        error?.message || error?.errMsg || error?.desc || error?.toString?.() || '扫码失败';
       return new Error(message);
     },
 
