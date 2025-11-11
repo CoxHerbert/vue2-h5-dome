@@ -116,7 +116,7 @@ const handleManualConfirm = () => {
 
 const indeCode = () => {
   if (!snCode.value) return;
-  Api.qms.sn.SnRecordCode(snCode.value).then((res) => {
+  Api.application.nameplateBinding.SnRecordCode(snCode.value).then((res) => {
     const { data } = res || {};
     stepFunc(data);
   });
@@ -160,7 +160,7 @@ const submitSureData = async () => {
         ? null
         : (productList.value.bindCustomerNameplate || '').replace(/\n/g, ''),
     };
-    const res = await Api.qms.sn.SnRecordsubmit(payload);
+    const res = await Api.application.nameplateBinding.SnRecordsubmit(payload);
     if (res?.code === 200) {
       showToast({ type: 'success', message: '操作成功', duration: 2000 });
       resetState();
