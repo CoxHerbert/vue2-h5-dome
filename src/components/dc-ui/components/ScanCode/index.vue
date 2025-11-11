@@ -151,13 +151,17 @@ export default {
 
           return await this.openH5Scan();
         } catch (error) {
-          // 用户主动取消时不再降级
-          if (this.isUserCancelError(error) || env === 'normal') {
-            throw this.normalizeError(error);
-          }
+          if (error?.code === 'SCAN_CANCELLED') {
+            return;
+          } else {
+            // 用户主动取消时不再降级
+            if (this.isUserCancelError(error) || env === 'normal') {
+              throw this.normalizeError(error);
+            }
 
-          console.warn('[dc-scan-code] SDK 扫码失败，尝试切换为 H5 扫码', error);
-          return this.openH5Scan();
+            console.warn('[dc-scan-code] SDK 扫码失败，尝试切换为 H5 扫码', error);
+            return this.openH5Scan();
+          }
         }
       };
 

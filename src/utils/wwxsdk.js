@@ -74,20 +74,31 @@ export function wwScanQRCode(options = {}, success, error) {
       needResult: scanOptions.needResult,
       success: function (res) {
         if (isScanCancelled(res)) {
-          console.log('企业微信扫码已取消:', res);
+          error(
+            Object.assign(new Error('企业微信扫码已取消'), {
+              code: 'SCAN_CANCELLED',
+              detail: res,
+            })
+          );
           return;
         }
-
         if (typeof success === 'function') {
           success(res);
         }
       },
       cancel: function (res) {
         console.log('企业微信扫码取消:', res);
+        error(
+          Object.assign(new Error('企业微信扫码已取消'), {
+            code: 'SCAN_CANCELLED',
+            detail: res,
+          })
+        );
       },
       error: function (err) {
+        console.error('企业微信扫码失败:', err);
         if (typeof error === 'function') {
-          error(err);
+          reject({ code: 'error', detail: err });
         }
       },
     });
@@ -110,7 +121,12 @@ export function wwScanQRCode(options = {}, success, error) {
         success: function (res) {
           console.log('企业微信扫码成功:', res);
           if (isScanCancelled(res)) {
-            reject(Object.assign(new Error('企业微信扫码已取消'), { code: 'SCAN_CANCELLED', detail: res }));
+            reject(
+              Object.assign(new Error('企业微信扫码已取消'), {
+                code: 'SCAN_CANCELLED',
+                detail: res,
+              })
+            );
             return;
           }
 
@@ -118,11 +134,13 @@ export function wwScanQRCode(options = {}, success, error) {
         },
         cancel: function (res) {
           console.log('企业微信扫码取消:', res);
-          reject(Object.assign(new Error('企业微信扫码已取消'), { code: 'SCAN_CANCELLED', detail: res }));
+          reject(
+            Object.assign(new Error('企业微信扫码已取消'), { code: 'SCAN_CANCELLED', detail: res })
+          );
         },
         error: function (err) {
           console.error('企业微信扫码失败:', err);
-          reject(err);
+          reject({ code: 'error', detail: err });
         },
       });
     } catch (error) {
