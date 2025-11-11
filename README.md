@@ -47,6 +47,26 @@ src
 └── views/              # 业务页面（Home、Apps、Recruit、Account 等）
 ```
 
+## 核心模块详解
+
+- **入口与应用生命周期**：`src/main.js` 负责实例化应用，挂载路由、Pinia、国际化、权限守卫以及 `src/plugins` 中的业务插件；`src/App.vue` 管理全局布局骨架。
+- **权限与导航**：`src/permission.js` 借助 Vue Router 守卫、`nprogress` 以及国际化文案更新页面标题，协同 `src/router/auth-helpers.js` 处理 401 回跳、静默登录和 URL token 白名单。
+- **网络层**：`src/utils/http.js` 对 Axios 进行了深度封装，覆盖 BaseURL 拼接、Basic/Token 头注入、数据加密、重复请求取消、401 刷新与自动重试、错误提示等能力；`src/axios/index.js` 输出统一实例供 `src/api` 调用。
+- **状态管理**：`src/store` 内含 `auth`、`user`、`permission` 等模块，负责令牌刷新、用户信息缓存和权限粒度控制。
+- **全局插件体系**：`src/plugins/index.js` 将字典、GraphQL 客户端以及工具方法注入全局属性，`dict-plugin`/`dict-client` 组合完成业务字典拉取与缓存。
+- **自定义指令**：`src/directives` 提供如防重复点击 (`anti-click`) 与权限指令 (`perm`)；`src/directives/index.js` 会在应用初始化阶段注册这些指令。
+- **配置项**：`src/config/website.js` 存放 OAuth、菜单、租户等全局配置，`src/config/env.js` 读取 `VITE_APP_API` 并作为网络层默认域名前缀。
+- **样式与主题**：`src/styles` 包含基础变量、Vant 自定义主题以及混入文件，配合 `src/styles/index.scss` 统一注入。
+- **国际化**：`src/locales` 收录中英双语文案与 `translate` 辅助方法，`LanguageSelector` 组件通过全局注册可在任意页面触发语言切换。
+- **页面视图**：`src/views` 细分首页、应用广场、招聘流程、账号中心等业务场景，同时复用 `components` 与 `composables` 中的通用能力。
+
+## 配置与运行时
+
+- `.env.*` 文件控制 `VITE_APP_API`、`VITE_APP_BASE_URL` 等环境变量；`vite.config.js` 将别名 `@` 指向 `src` 目录，便于模块引用。
+- `src/permission.js` 与 `src/utils/http.js` 共享登录态恢复逻辑，通过 `sessionStorage` 维护目标路由并避免刷新后丢失上下文。
+- `src/plugins/wiki-graphql.js` 暴露 Apollo Client，可在组件中通过 `app.config.globalProperties.apolloClient` 直接访问。
+- `public/` 目录承载静态资源、SVG 与图标，构建时会被原样复制到产物根目录。
+
 ## 国际化语言选择
 
 - `src/components/LanguageSelector.vue` 提供固定文案的底部弹出选择器。
@@ -63,6 +83,7 @@ src
 - 使用 ESLint@9 + `eslint-plugin-vue` 约束代码风格。
 - 使用 Vitest + Vue Test Utils 进行单元测试。
 - 推荐在提交代码前执行 `npm run lint` 与 `npm run test`。
+- `tests/http.spec.js` 演示了利用 `axios-mock-adapter` 对网络层进行单元验证，可作为扩展其它接口测试的模板。
 
 ## 贡献指南
 
@@ -71,3 +92,7 @@ src
 3. 提交 Pull Request，并描述改动内容与测试情况。
 
 欢迎反馈问题或提交改进建议，共同完善移动端业务脚手架。
+
+## 指令文件
+
+仓库根目录新增 `AGENTS.md`，记录 Codex 执行前必须遵循的操作须知。后续任务在动手前请先阅读该文件，以确保改动与项目规范保持一致。
