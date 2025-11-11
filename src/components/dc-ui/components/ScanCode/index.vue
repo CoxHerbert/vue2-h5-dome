@@ -66,10 +66,30 @@ export default {
       };
     },
   },
+  mounted() {
+    this.preInitSdk();
+  },
   beforeUnmount() {
     this.stopScan();
   },
   methods: {
+    preInitSdk() {
+      const env = getLoginEnv();
+
+      if (env === 'WECHAT_MP') {
+        this.ensureWxSDK().catch((err) => {
+          console.error('[dc-scan-code] 微信 SDK 初始化失败', err);
+        });
+        return;
+      }
+
+      if (env === 'WECHAT_ENTERPRISE') {
+        this.ensureWwSDK().catch((err) => {
+          console.error('[dc-scan-code] 企业微信 SDK 初始化失败', err);
+        });
+      }
+    },
+
     async open(options = {}) {
       const env = getLoginEnv();
 
