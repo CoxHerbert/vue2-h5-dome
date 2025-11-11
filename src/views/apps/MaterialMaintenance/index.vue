@@ -23,9 +23,16 @@
         <van-button type="success" @click="doAction('handleSearch')">
           <van-icon name="search" size="18" /> 查询
         </van-button>
-        <van-button type="primary" @click="doAction('scanCode')">
-          <van-icon name="scan" size="18" />
-        </van-button>
+        <dc-scan-code
+          ref="scanCodeRef"
+          v-model="snCode"
+          @confirm="handleScanConfirm"
+          @error="handleScanError"
+        >
+          <van-button type="primary" @click="doAction('scanCode')">
+            <van-icon name="scan" size="18" />
+          </van-button>
+        </dc-scan-code>
       </div>
     </van-sticky>
 
@@ -131,9 +138,6 @@
     <!-- 无数据提示 -->
     <div v-if="!formData.id" class="no-data">暂无数据, 请先扫码查询</div>
 
-    <!-- 扫码弹窗（按你备注保留原有逻辑/接口） -->
-    <dc-scan-code v-if="scanVisible" ref="scanCodeRef" />
-
     <!-- 统一 Picker 弹层：字典 / 选项共用 -->
     <van-popup v-model:show="picker.show" position="bottom" round>
       <van-picker
@@ -152,7 +156,6 @@ import { useRouter } from 'vue-router';
 import { closeToast, showToast } from 'vant';
 import Api from '@/api';
 import { goBackOrHome } from '@/utils/navigation';
-import { useScanCode } from '@/composables/useScanCode';
 
 defineOptions({ name: 'MaterialInfo' });
 
@@ -426,16 +429,29 @@ function onNumberInput(item, val) {
 }
 
 /** 扫码/查询/提交 */
-const { scanVisible, scanCodeRef, openScan: openScanModal } = useScanCode();
+const scanCodeRef = ref(null);
+
+function handleScanConfirm(val) {
+  if (!val) return;
+  snCode.value = val;
+  handleSearch();
+}
+
+function handleScanError(error) {
+  const message = error?.message || '';
+  if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
+  showToast({ type: 'fail', message: message || '扫码失败' });
+}
 
 function scanCode() {
-  openScanModal()
+  scanCodeRef.value
+    ?.open?.()
     .then((val) => {
-      if (!val) return;
-      snCode.value = val;
-      handleSearch();
+      handleScanConfirm(val);
     })
-    .catch(() => {});
+    .catch((error) => {
+      handleScanError(error);
+    });
 }
 
 function handleSearch() {

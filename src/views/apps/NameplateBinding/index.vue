@@ -83,18 +83,23 @@
     </div>
 
     <!-- 悬浮：扫码（只显示 icon；避开底部按钮） -->
-    <van-floating-bubble
-      class="float-bubble"
-      :class="{ 'is-disabled': isScanning }"
-      :offset="scanBubbleOffset"
-      axis="xy"
-      magnetic="x"
-      @click="handleOpenScan"
+    <dc-scan-code
+      ref="scanCodeRef"
+      v-model="snCode"
+      @confirm="handleScanSuccess"
+      @error="handleScanError"
     >
-      <van-icon name="scan" size="22" />
-    </van-floating-bubble>
-
-    <dc-scan-code v-if="showScan" ref="scanCodeRef" />
+      <van-floating-bubble
+        class="float-bubble"
+        :class="{ 'is-disabled': isScanning }"
+        :offset="scanBubbleOffset"
+        axis="xy"
+        magnetic="x"
+        @click="handleOpenScan"
+      >
+        <van-icon name="scan" size="22" />
+      </van-floating-bubble>
+    </dc-scan-code>
   </div>
 </template>
 
@@ -104,7 +109,6 @@ import QrcodeVue from 'qrcode.vue';
 import { showConfirmDialog, showLoadingToast, showToast } from 'vant';
 import Api from '@/api';
 import { withBase } from '@/utils/util';
-import { useScanCode } from '@/composables/useScanCode';
 
 const NAV_H = 46; // 固定 NavBar 高度
 
@@ -133,7 +137,7 @@ const footerH = ref(96);
 // 仅保留扫码浮窗（不再有回到顶部）
 const scanBubbleOffset = ref({ x: 16, y: 120 });
 const isScanning = ref(false);
-const { scanVisible: showScan, scanCodeRef, openScan: openScanModal } = useScanCode();
+const scanCodeRef = ref(null);
 
 const measureFooter = () => {
   footerH.value = footerRef.value?.offsetHeight || 96;
@@ -189,14 +193,19 @@ const handleScanError = (error) => {
   showToast({ type: 'fail', message: `扫码失败: ${msg || '未知错误'}`, duration: 3000 });
 };
 
+const handleScanSuccess = (code) => {
+  if (!code) return;
+  snCode.value = code;
+  indeCode();
+};
+
 const handleOpenScan = () => {
   if (isScanning.value) return;
   isScanning.value = true;
-  openScanModal()
+  scanCodeRef.value
+    ?.open?.()
     .then((code) => {
-      if (!code) return;
-      snCode.value = code;
-      indeCode();
+      handleScanSuccess(code);
     })
     .catch((error) => {
       handleScanError(error);

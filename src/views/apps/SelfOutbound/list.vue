@@ -41,7 +41,14 @@
       <van-button type="primary" block @click="handleSubmit">提交</van-button>
     </div>
 
-    <van-floating-bubble axis="xy" icon="scan" magnetic @click="handleScan" />
+    <dc-scan-code
+      ref="scanCodeRef"
+      v-model="snCode"
+      @confirm="handleScanConfirm"
+      @error="handleScanError"
+    >
+      <van-floating-bubble axis="xy" icon="scan" magnetic @click="handleScan" />
+    </dc-scan-code>
 
     <van-popup
       v-model:show="productPopupVisible"
@@ -77,7 +84,6 @@
       </div>
     </van-popup>
 
-    <dc-scan-code v-if="scanVisible" ref="scanCodeRef" />
     <van-number-keyboard safe-area-inset-bottom />
   </div>
 </template>
@@ -90,7 +96,6 @@ import Api from '@/api';
 import { useDictStore } from '@/store/dict';
 import ProductList from './components/ProductList.vue';
 import { goBackOrHome } from '@/utils/navigation';
-import { useScanCode } from '@/composables/useScanCode';
 
 const router = useRouter();
 const dictStore = useDictStore();
@@ -114,7 +119,7 @@ const barcode = reactive({
 
 const snCode = ref('');
 const productList = ref([]);
-const { scanVisible, scanCodeRef, openScan: openScanModal } = useScanCode();
+const scanCodeRef = ref(null);
 const productPopupVisible = ref(false);
 const productCandidates = ref([]);
 
@@ -190,18 +195,29 @@ watch(
   { immediate: true }
 );
 
+const handleScanConfirm = async (code) => {
+  if (!code) return;
+  snCode.value = code;
+  await handleSearch();
+};
+
+const handleScanError = (error) => {
+  const message = error?.message || '';
+  if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
+  showToast({ message: message || '扫码失败', type: 'fail' });
+};
+
 async function handleScan() {
   if (!form.warehouseId) {
     showToast({ message: '请选择仓库', type: 'fail' });
     return;
   }
   try {
-    const code = await openScanModal();
-    if (!code) return;
-    snCode.value = code;
-    await handleSearch();
+    const code = await scanCodeRef.value?.open?.();
+    await handleScanConfirm(code);
   } catch (error) {
     console.error('scan failed', error);
+    handleScanError(error);
   }
 }
 

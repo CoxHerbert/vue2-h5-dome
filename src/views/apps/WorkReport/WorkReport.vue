@@ -18,15 +18,22 @@
             <van-button class="search-btn" round type="primary" size="small" @click="handleSearch">
               搜索
             </van-button>
-            <van-button
-              class="scan-btn"
-              round
-              size="small"
-              plain
-              type="primary"
-              icon="scan"
-              @click="openScan"
-            />
+            <dc-scan-code
+              ref="scanCodeRef"
+              v-model="snCode"
+              @confirm="handleScanSuccess"
+              @error="handleScanError"
+            >
+              <van-button
+                class="scan-btn"
+                round
+                size="small"
+                plain
+                type="primary"
+                icon="scan"
+                @click="handleScan"
+              />
+            </dc-scan-code>
           </div>
         </div>
       </div>
@@ -67,7 +74,6 @@
       </van-button>
     </div>
     <van-back-top />
-    <dc-scan-code v-if="showScan" ref="scanCodeRef" />
   </div>
 </template>
 
@@ -79,7 +85,6 @@ import Api from '@/api';
 import ProjectOverview from './components/ProjectOverview.vue';
 import WorkRouteCard from './components/WorkRouteCard.vue';
 import { goBackOrHome } from '@/utils/navigation';
-import { useScanCode } from '@/composables/useScanCode';
 
 const router = useRouter();
 
@@ -87,7 +92,7 @@ const snCode = ref('');
 const activeTab = ref('detail');
 const planInfo = reactive({});
 const workRoutes = ref([]);
-const { scanVisible: showScan, scanCodeRef, openScan: openScanModal } = useScanCode();
+const scanCodeRef = ref(null);
 
 // 颜色枚举
 const colorEnum = {
@@ -174,14 +179,27 @@ const handleSearch = async () => {
   }
 };
 
-const openScan = () => {
-  openScanModal()
+const handleScanSuccess = (val) => {
+  if (!val) return;
+  snCode.value = val;
+  handleSearch();
+};
+
+const handleScanError = (error) => {
+  const message = error?.message || '';
+  if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
+  showFailToast(message || '扫码失败');
+};
+
+const handleScan = () => {
+  scanCodeRef.value
+    ?.open?.()
     .then((val) => {
-      if (!val) return;
-      snCode.value = val;
-      handleSearch();
+      handleScanSuccess(val);
     })
-    .catch(() => {});
+    .catch((error) => {
+      handleScanError(error);
+    });
 };
 
 const updateRouteComplete = ({ routeId, value }) => {

@@ -13,23 +13,27 @@
         <van-icon name="search" size="18" />
         查询
       </van-button>
-      <van-button class="search-panel__scan" type="success" block @click="handleScan">
-        <van-icon name="scan" size="18" />
-      </van-button>
+      <dc-scan-code
+        ref="scannerRef"
+        v-model="keyword"
+        @confirm="handleScanSuccess"
+        @error="handleScanError"
+      >
+        <van-button class="search-panel__scan" type="success" block @click="handleScan">
+          <van-icon name="scan" size="18" />
+        </van-button>
+      </dc-scan-code>
     </div>
-
-    <dc-scan-code v-if="showScanner" ref="scannerRef" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import { useScanCode } from '@/composables/useScanCode';
 
 const emit = defineEmits(['search']);
 
 const keyword = ref('');
-const { scanVisible: showScanner, scanCodeRef: scannerRef, openScan: openScanModal } = useScanCode();
+const scannerRef = ref(null);
 
 function emitSearch() {
   const value = keyword.value.trim();
@@ -37,14 +41,27 @@ function emitSearch() {
   emit('search', value);
 }
 
+function handleScanSuccess(code) {
+  if (!code) return;
+  keyword.value = code;
+  emitSearch();
+}
+
+function handleScanError(error) {
+  const message = error?.message || '';
+  if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
+  console.error('scan failed', error);
+}
+
 function handleScan() {
-  openScanModal()
+  scannerRef.value
+    ?.open?.()
     .then((code) => {
-      if (!code) return;
-      keyword.value = code;
-      emitSearch();
+      handleScanSuccess(code);
     })
-    .catch(() => {});
+    .catch((error) => {
+      handleScanError(error);
+    });
 }
 
 </script>
