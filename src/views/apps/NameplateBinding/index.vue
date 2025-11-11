@@ -83,22 +83,19 @@
     </div>
 
     <!-- 悬浮：扫码（只显示 icon；避开底部按钮） -->
-    <dc-scan-code
-      ref="scanCodeRef"
-      v-model="snCode"
-      @confirm="handleScanSuccess"
-      @error="handleScanError"
-    >
-      <van-floating-bubble
-        class="float-bubble"
-        :class="{ 'is-disabled': isScanning }"
-        :offset="scanBubbleOffset"
-        axis="xy"
-        magnetic="x"
-        @click="handleOpenScan"
-      >
-        <van-icon name="scan" size="22" />
-      </van-floating-bubble>
+    <dc-scan-code v-model="snCode" @confirm="handleScanSuccess" @error="handleScanError">
+      <template #default="{ open, disabled, loading }">
+        <van-floating-bubble
+          class="float-bubble"
+          :class="{ 'is-disabled': disabled || loading }"
+          :offset="scanBubbleOffset"
+          axis="xy"
+          magnetic="x"
+          @click="open"
+        >
+          <van-icon name="scan" size="22" />
+        </van-floating-bubble>
+      </template>
     </dc-scan-code>
   </div>
 </template>
@@ -109,8 +106,6 @@ import QrcodeVue from 'qrcode.vue';
 import { showConfirmDialog, showLoadingToast, showToast } from 'vant';
 import Api from '@/api';
 import { withBase } from '@/utils/util';
-
-const NAV_H = 46; // 固定 NavBar 高度
 
 // 页面状态
 const snCode = ref('');
@@ -136,8 +131,6 @@ const footerH = ref(96);
 
 // 仅保留扫码浮窗（不再有回到顶部）
 const scanBubbleOffset = ref({ x: 16, y: 120 });
-const isScanning = ref(false);
-const scanCodeRef = ref(null);
 
 const measureFooter = () => {
   footerH.value = footerRef.value?.offsetHeight || 96;
@@ -197,22 +190,6 @@ const handleScanSuccess = (code) => {
   if (!code) return;
   snCode.value = code;
   indeCode();
-};
-
-const handleOpenScan = () => {
-  if (isScanning.value) return;
-  isScanning.value = true;
-  scanCodeRef.value
-    ?.open?.()
-    .then((code) => {
-      handleScanSuccess(code);
-    })
-    .catch((error) => {
-      handleScanError(error);
-    })
-    .finally(() => {
-      isScanning.value = false;
-    });
 };
 
 // 查询 & 提交
