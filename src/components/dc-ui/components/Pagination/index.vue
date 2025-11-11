@@ -178,7 +178,7 @@ const props = defineProps({
   offset: { type: Number, default: 200 },
   immediate: { type: Boolean, default: true },
   itemKey: { type: Function, default: (item, idx) => item?.id ?? item?.no ?? idx },
-  navSelector: { type: String, default: '.van-nav-bar--fixed' },
+  navSelector: { type: String, default: '.dc-nav-bar' },
   getNavEl: { type: Function, default: null },
   backTopThreshold: { type: Number, default: 300 },
   addVisible: { type: Boolean, default: true },
@@ -242,7 +242,11 @@ let headerResizeObs = null;
 const resolveNavEl = () => {
   if (typeof props.getNavEl === 'function') return props.getNavEl();
   if (props.navSelector) return document.querySelector(props.navSelector);
-  return document.querySelector('.van-nav-bar--fixed') || document.querySelector('.nav-primary');
+  return (
+    document.querySelector('.dc-nav-bar') ||
+    document.querySelector('.van-nav-bar') ||
+    document.querySelector('.nav-primary')
+  );
 };
 
 const measureAndApplyTop = () => {

@@ -1,6 +1,6 @@
 <template>
   <div class="dc-apps page">
-    <van-nav-bar :title="t('routes.apps')" fixed />
+    <dc-nav-bar :title="t('routes.apps')" />
 
     <div class="dc-apps__content">
       <van-grid class="dc-apps__grid" :column-num="4" :gutter="12" clickable :border="false">
@@ -80,7 +80,7 @@ const apps = [
 
   &__content {
     padding: 24px 16px;
-    padding-top: calc(72px + var(--van-safe-area-top, 0px));
+    padding-top: calc(24px + var(--van-safe-area-top, 0px));
     box-sizing: border-box;
   }
 

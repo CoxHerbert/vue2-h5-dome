@@ -1,18 +1,14 @@
 <template>
   <div class="me-work-time">
-    <!-- 顶部固定导航 -->
-    <van-nav-bar
+    <!-- 顶部导航 -->
+    <dc-nav-bar
       class="me-work-time__nav"
       :title="t('me.workTime.title')"
       left-arrow
-      fixed
       :border="false"
       safe-area-inset-top
-      placeholder
       @click-left="handleBack"
     />
-    <!-- 占位：确保内容不被固定导航遮挡（若 van-nav-bar 已内置 placeholder 可删除本行） -->
-    <div class="me-work-time__nav-spacer" aria-hidden="true"></div>
 
     <main class="me-work-time__body">
       <!-- 日期卡片：月视图 / 周视图（收起） -->
@@ -219,11 +215,6 @@ watch(
 </script>
 
 <style scoped lang="scss">
-/* 统一定义导航高度，若你的 van-nav-bar 高度不同，请在此处调整 */
-:root {
-  --dc-nav-height: 46px;
-}
-
 .me-work-time {
   min-height: 100vh;
   background: #f7f8fa;
@@ -233,23 +224,11 @@ watch(
   position: relative;
 
   &__nav {
-    /* 强制固定到顶部（即使外层没正确传 fixed 或被覆盖也能兜底） */
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000; /* 覆盖下方内容与弹层 */
-    background: #fff; /* 若需要透明，可改为 transparent */
-  }
-
-  /* 占位，避免主内容被固定导航遮挡 */
-  &__nav-spacer {
-    height: calc(var(--dc-nav-height) + env(safe-area-inset-top));
-    height: calc(var(--dc-nav-height) + constant(safe-area-inset-top));
+    background: #fff;
   }
 
   &__body {
-    margin-top: 46px;
+    margin-top: 16px;
     display: flex;
     flex-direction: column;
     row-gap: 12px;

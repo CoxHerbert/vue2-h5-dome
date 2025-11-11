@@ -1,5 +1,5 @@
 <template>
-  <van-nav-bar title="东创知识库" left-arrow @click-left="onClickLeft" />
+  <dc-nav-bar title="东创知识库" left-arrow @click-left="onClickLeft" />
   <div class="page-sop-doc dc-sop-doc">
     <!-- eslint-disable-next-line vue/no-v-html -->
     <div class="contents" v-html="contentHtml"></div>

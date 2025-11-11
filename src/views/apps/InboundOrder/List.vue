@@ -14,7 +14,7 @@
       @add="handleCreate"
     >
       <template #nav>
-        <van-nav-bar ref="navRef" title="入库单" fixed left-arrow @click-left="goBack" />
+        <dc-nav-bar ref="navRef" title="入库单" left-arrow @click-left="goBack" />
       </template>
 
       <template #item="{ item, index }">

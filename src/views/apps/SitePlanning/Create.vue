@@ -1,6 +1,6 @@
 <template>
   <div class="site-planning-create">
-    <van-nav-bar title="现场计划单" fixed left-arrow @click-left="handleBack" />
+    <dc-nav-bar title="现场计划单" left-arrow @click-left="handleBack" />
 
     <div class="base-wrapper ptop56">
       <div class="baseinfo">
@@ -154,7 +154,7 @@ async function handleSave() {
   box-sizing: border-box;
 
   .ptop56 {
-    margin-top: 56px;
+    margin-top: 24px;
   }
 
   .base-wrapper {

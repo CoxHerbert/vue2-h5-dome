@@ -1,6 +1,6 @@
 <template>
   <div class="page app-page">
-    <van-nav-bar :title="title" fixed />
+    <dc-nav-bar :title="title" />
     <div class="app-page__content">
       <van-empty :description="description" />
     </div>
@@ -31,7 +31,7 @@ const { title, description } = toRefs(props);
 }
 
 .app-page__content {
-  min-height: calc(100vh - 96px);
+  min-height: calc(100vh - 56px);
   display: flex;
   align-items: center;
   justify-content: center;

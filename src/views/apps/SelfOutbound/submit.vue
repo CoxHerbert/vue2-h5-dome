@@ -1,6 +1,6 @@
 <template>
   <div class="self-outbound-submit">
-    <van-nav-bar title="出库提交" left-arrow @click-left="handleBack" />
+    <dc-nav-bar title="出库提交" left-arrow @click-left="handleBack" />
     <div class="self-outbound-submit__body">
       <van-empty description="表单配置暂未完成" />
     </div>

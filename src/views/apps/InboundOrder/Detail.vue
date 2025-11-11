@@ -1,6 +1,6 @@
 <template>
   <div class="page inbound-order-detail">
-    <van-nav-bar ref="navRef" title="入库单详情" fixed left-arrow @click-left="goBack" />
+    <dc-nav-bar ref="navRef" title="入库单详情" left-arrow @click-left="goBack" />
 
     <!-- 加载态 -->
     <div v-if="loading" class="page-body">

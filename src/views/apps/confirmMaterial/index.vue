@@ -1,6 +1,6 @@
 <template>
   <div class="confirm-material">
-    <van-nav-bar ref="navRef" title="确认领料" left-arrow @click-left="handleBack" />
+    <dc-nav-bar ref="navRef" title="确认领料" left-arrow @click-left="handleBack" />
     <div class="confirm-material__content">
       <van-sticky ref="stickyRef" :offset-top="tabsOffsetTop" class="confirm-material__sticky">
         <div ref="stickyInnerRef">

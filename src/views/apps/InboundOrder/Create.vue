@@ -2,7 +2,7 @@
 <template>
   <div class="cnt">
     <!-- 顶部导航 -->
-    <van-nav-bar ref="navRef" title="新增入库单" fixed left-arrow @click-left="goBack" />
+    <dc-nav-bar ref="navRef" title="新增入库单" left-arrow @click-left="goBack" />
 
     <!-- 基本信息 -->
     <div class="base-wrapper mtop20">

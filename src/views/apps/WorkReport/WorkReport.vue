@@ -1,6 +1,6 @@
 <template>
   <div class="work-report page">
-    <van-nav-bar title="工时汇报" left-arrow @click-left="handleBack" />
+    <dc-nav-bar title="工时汇报" left-arrow @click-left="handleBack" />
 
     <div class="work-report__content">
       <!-- 普通白卡：搜索 + 扫码（不吸顶） -->

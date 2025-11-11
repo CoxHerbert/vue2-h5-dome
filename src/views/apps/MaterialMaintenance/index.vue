@@ -2,7 +2,7 @@
 <template>
   <div class="page-container page-material-info">
     <!-- 顶部栏 -->
-    <van-nav-bar ref="navRef" title="物料信息维护" left-arrow @click-left="handleBack" />
+    <dc-nav-bar ref="navRef" title="物料信息维护" left-arrow @click-left="handleBack" />
     <!-- 搜索区（吸顶） -->
     <van-sticky
       :offset-top="stickyTop"

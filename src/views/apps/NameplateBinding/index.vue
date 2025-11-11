@@ -2,7 +2,7 @@
 <template>
   <div class="nameplate-binding">
     <!-- 顶部导航 -->
-    <van-nav-bar left-arrow title="铭牌绑定" class="np-navbar" @click-left="handleBack" />
+    <dc-nav-bar left-arrow title="铭牌绑定" class="np-navbar" @click-left="handleBack" />
 
     <!-- 内容（搜索不吸顶） -->
     <div class="nameplate-binding__content">

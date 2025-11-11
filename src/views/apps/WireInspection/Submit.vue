@@ -1,6 +1,6 @@
 <template>
   <div class="page wire-inspection-submit">
-    <van-nav-bar title="线材质检" left-arrow fixed @click-left="goBack" />
+    <dc-nav-bar title="线材质检" left-arrow @click-left="goBack" />
 
     <div class="wire-inspection-submit__body">
       <van-form ref="formRef" :model="form" scroll-to-error>

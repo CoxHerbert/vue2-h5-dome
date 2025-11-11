@@ -1,7 +1,7 @@
 <template>
   <div class="page mine">
     <div class="top-bg"></div>
-    <van-nav-bar :title="t('me.navTitle')" :border="false" class="mine-nav" safe-area-inset-top />
+    <dc-nav-bar :title="t('me.navTitle')" :border="false" class="mine-nav" safe-area-inset-top />
     <section class="profile-card">
       <div class="bg-index bg-index-2"></div>
       <div class="bg-index bg-index-1"></div>

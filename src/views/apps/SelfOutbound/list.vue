@@ -1,6 +1,6 @@
 <template>
   <div class="self-outbound-list">
-    <van-nav-bar title="自助出库" left-arrow @click-left="handleBack" />
+    <dc-nav-bar title="自助出库" left-arrow @click-left="handleBack" />
 
     <div class="self-outbound-list__body">
       <van-form class="self-outbound-list__form" :model="form">

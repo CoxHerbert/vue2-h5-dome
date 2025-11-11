@@ -1,13 +1,13 @@
 <!-- src/views/recruit/campus/apply.vue -->
 <template>
-  <van-nav-bar title="简历投递" @click-right="onClickRight">
+  <dc-nav-bar title="简历投递" @click-right="onClickRight">
     <template #right>
       <span class="help">
         帮助文档
         <van-icon name="question-o" size="18" />
       </span>
     </template>
-  </van-nav-bar>
+  </dc-nav-bar>
   <img class="banner" :src="$assetUrl('/images/recruit/campus/apply/banner.svg')" alt="banner" />
   <dc-recruit-form
     v-model="form"

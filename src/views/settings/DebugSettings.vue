@@ -1,6 +1,6 @@
 <template>
   <div class="debug-settings">
-    <van-nav-bar title="调试设置" left-arrow @click-left="handleBack" />
+    <dc-nav-bar title="调试设置" left-arrow @click-left="handleBack" />
 
     <section class="debug-settings__content">
       <van-cell-group inset>

@@ -1,6 +1,6 @@
 <template>
   <div class="missing-material page">
-    <van-nav-bar title="缺料明细" left-arrow @click-left="handleBack" />
+    <dc-nav-bar title="缺料明细" left-arrow @click-left="handleBack" />
 
     <div class="missing-material__content">
       <div v-if="dataList.length" class="missing-material__scroll">
