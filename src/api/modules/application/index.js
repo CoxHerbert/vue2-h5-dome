@@ -4,12 +4,14 @@ import planSheep from './planSheep';
 import workReport from './workReport';
 import materialMaintenance from './materialMaintenance';
 import wireInspection from './wireInspection';
+import nameplateBinding from './nameplateBinding';
 
 export default {
   planSheep,
   workReport,
   materialMaintenance,
   wireInspection,
+  nameplateBinding,
   // 入库单列表
   inventoryList(params) {
     return request({

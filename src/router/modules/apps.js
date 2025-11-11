@@ -122,7 +122,7 @@ export default {
       path: 'nameplate-binding',
       name: 'appsNameplateBinding',
       meta: { title: '铭牌绑定', requiresAuth: true },
-      component: () => import('@/views/apps/NameplateBinding.vue'),
+      component: () => import('@/views/apps/NameplateBinding/index.vue'),
     },
   ],
 };
