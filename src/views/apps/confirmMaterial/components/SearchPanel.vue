@@ -14,12 +14,11 @@
         查询
       </van-button>
       <dc-scan-code
-        ref="scannerRef"
         v-model="keyword"
         @confirm="handleScanSuccess"
         @error="handleScanError"
       >
-        <van-button class="search-panel__scan" type="success" block @click="handleScan">
+        <van-button class="search-panel__scan" type="success" block>
           <van-icon name="scan" size="18" />
         </van-button>
       </dc-scan-code>
@@ -33,7 +32,6 @@ import { ref } from 'vue';
 const emit = defineEmits(['search']);
 
 const keyword = ref('');
-const scannerRef = ref(null);
 
 function emitSearch() {
   const value = keyword.value.trim();
@@ -51,17 +49,6 @@ function handleScanError(error) {
   const message = error?.message || '';
   if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
   console.error('scan failed', error);
-}
-
-function handleScan() {
-  scannerRef.value
-    ?.open?.()
-    .then((code) => {
-      handleScanSuccess(code);
-    })
-    .catch((error) => {
-      handleScanError(error);
-    });
 }
 
 </script>

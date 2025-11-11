@@ -6,13 +6,8 @@
         <van-tabs v-model:active="activeTab" shrink background="#fff" class="result-panel__tabs">
           <van-tab v-for="tab in tabs" :key="tab.value" :title="tab.label" :name="tab.value" />
         </van-tabs>
-        <dc-scan-code
-          ref="scannerRef"
-          v-model="scanCode"
-          @confirm="handleScanConfirm"
-          @error="handleScanError"
-        >
-          <van-button type="primary" size="small" @click="handleScan">
+        <dc-scan-code v-model="scanCode" @confirm="handleScanConfirm" @error="handleScanError">
+          <van-button type="primary" size="small">
             <van-icon name="scan" size="16" />扫码确认
           </van-button>
         </dc-scan-code>
@@ -95,7 +90,6 @@ const activeTab = ref('all');
 const detailInfo = ref({ detailList: [] });
 const showConfirm = ref(false);
 const dialogTitle = ref('');
-const scannerRef = ref(null);
 const scanCode = ref('');
 
 const checkAll = computed({
@@ -229,17 +223,6 @@ function handleScanConfirm(code) {
   if (!code) return;
   scanCode.value = code;
   applyScanResult(code);
-}
-
-function handleScan() {
-  scannerRef.value
-    ?.open?.()
-    .then((code) => {
-      handleScanConfirm(code);
-    })
-    .catch((error) => {
-      handleScanError(error);
-    });
 }
 
 // 对外暴露

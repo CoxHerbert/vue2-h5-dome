@@ -19,7 +19,6 @@
               搜索
             </van-button>
             <dc-scan-code
-              ref="scanCodeRef"
               v-model="snCode"
               @confirm="handleScanSuccess"
               @error="handleScanError"
@@ -31,7 +30,6 @@
                 plain
                 type="primary"
                 icon="scan"
-                @click="handleScan"
               />
             </dc-scan-code>
           </div>
@@ -92,7 +90,6 @@ const snCode = ref('');
 const activeTab = ref('detail');
 const planInfo = reactive({});
 const workRoutes = ref([]);
-const scanCodeRef = ref(null);
 
 // 颜色枚举
 const colorEnum = {
@@ -189,17 +186,6 @@ const handleScanError = (error) => {
   const message = error?.message || '';
   if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
   showFailToast(message || '扫码失败');
-};
-
-const handleScan = () => {
-  scanCodeRef.value
-    ?.open?.()
-    .then((val) => {
-      handleScanSuccess(val);
-    })
-    .catch((error) => {
-      handleScanError(error);
-    });
 };
 
 const updateRouteComplete = ({ routeId, value }) => {

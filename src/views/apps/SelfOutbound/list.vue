@@ -42,12 +42,11 @@
     </div>
 
     <dc-scan-code
-      ref="scanCodeRef"
       v-model="snCode"
       @confirm="handleScanConfirm"
       @error="handleScanError"
     >
-      <van-floating-bubble axis="xy" icon="scan" magnetic @click="handleScan" />
+      <van-floating-bubble axis="xy" icon="scan" magnetic />
     </dc-scan-code>
 
     <van-popup
@@ -119,7 +118,6 @@ const barcode = reactive({
 
 const snCode = ref('');
 const productList = ref([]);
-const scanCodeRef = ref(null);
 const productPopupVisible = ref(false);
 const productCandidates = ref([]);
 
@@ -206,20 +204,6 @@ const handleScanError = (error) => {
   if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
   showToast({ message: message || '扫码失败', type: 'fail' });
 };
-
-async function handleScan() {
-  if (!form.warehouseId) {
-    showToast({ message: '请选择仓库', type: 'fail' });
-    return;
-  }
-  try {
-    const code = await scanCodeRef.value?.open?.();
-    await handleScanConfirm(code);
-  } catch (error) {
-    console.error('scan failed', error);
-    handleScanError(error);
-  }
-}
 
 async function handleSearch() {
   if (!form.warehouseId) {
