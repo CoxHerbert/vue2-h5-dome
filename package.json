@@ -24,6 +24,7 @@
     "markdown-it": "^14.1.0",
     "nprogress": "^0.2.0",
     "pinia": "^2.1.7",
+    "qrcode.vue": "^3.6.0",
     "sm-crypto": "^0.3.13",
     "socket.io-client": "^4.8.1",
     "vant": "^4.9.0",
