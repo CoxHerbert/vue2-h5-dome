@@ -36,8 +36,16 @@
           </div>
         </div>
 
-        <!-- 底部按钮 -->
-        <van-button class="btn" type="success" block @click="handleManualClose">关闭</van-button>
+        <!-- 底部按钮（美化版） -->
+        <van-button
+          class="btn btn-close"
+          round
+          size="large"
+          icon="cross"
+          @click="handleManualClose"
+        >
+          关闭
+        </van-button>
       </div>
     </van-popup>
   </div>
@@ -524,15 +532,67 @@ export default {
     }
   }
 
+  /* 底部关闭按钮（渐变工具栏风格） */
   .btn {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
-    border-radius: 0;
     z-index: 10000;
-    /* 适配 iOS 安全区 */
-    padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+
+    /* 上圆角、下贴边 */
+    border: none;
+    border-radius: 16px 16px 0 0;
+
+    /* 高度 & 安全区 */
+    height: 56px;
+    padding: 0 16px;
+    padding-bottom: calc(env(safe-area-inset-bottom));
+
+    /* 质感：渐变 + 玻璃高光 + 阴影 */
+    background: linear-gradient(135deg, #34c759, #14b85a);
+    color: #fff;
+    box-shadow:
+      0 -8px 24px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+    /* 顶部分割线 */
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06));
+      pointer-events: none;
+    }
+
+    /* 按压反馈 */
+    transition:
+      transform 0.12s ease,
+      filter 0.2s ease;
+    &:active {
+      transform: translateY(1px);
+      filter: brightness(0.95);
+    }
+
+    /* Vant 内部内容微调 */
+    :deep(.van-button__content) {
+      height: 100%;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    :deep(.van-icon) {
+      font-size: 18px;
+    }
+  }
+
+  /* 细腻的玻璃态（可选） */
+  .btn.btn-close {
+    backdrop-filter: saturate(160%) blur(10px);
   }
 }
 </style>
