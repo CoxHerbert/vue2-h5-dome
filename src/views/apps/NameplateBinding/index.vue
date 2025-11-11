@@ -93,12 +93,23 @@ const handleManualConfirm = () => {
   indeCode();
 };
 
-const indeCode = () => {
+const indeCode = async () => {
   if (!snCode.value) return;
-  Api.application.nameplateBinding.SnRecordCode(snCode.value).then((res) => {
-    const { data } = res || {};
+
+  try {
+    const res = await Api.application.nameplateBinding.SnRecordCode(snCode.value);
+    const { code: statusCode, data, msg } = res?.data || {};
+
+    if (statusCode !== 200) {
+      showToast({ type: 'fail', message: msg || 'SN码查询失败', duration: 2000 });
+      return;
+    }
+
     stepFunc(data);
-  });
+  } catch (error) {
+    const message = error?.message || 'SN码查询失败';
+    showToast({ type: 'fail', message, duration: 2000 });
+  }
 };
 
 const stepFunc = (data) => {
@@ -140,10 +151,14 @@ const submitSureData = async () => {
         : (productList.value.bindCustomerNameplate || '').replace(/\n/g, ''),
     };
     const res = await Api.application.nameplateBinding.SnRecordsubmit(payload);
-    if (res?.code === 200) {
+    const { code: statusCode, msg } = res?.data || {};
+
+    if (statusCode === 200) {
       showToast({ type: 'success', message: '操作成功', duration: 2000 });
       resetState();
       snCode.value = '';
+    } else {
+      showToast({ type: 'fail', message: msg || '操作失败', duration: 2000 });
     }
   } finally {
     loading.close();
