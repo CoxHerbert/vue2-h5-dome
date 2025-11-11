@@ -82,6 +82,7 @@ export default {
       resolveFn: null,
       rejectFn: null,
       openPromise: null,
+      stopPromise: null,
       // UI 配置
       frameWidth: 0, // 运行时计算
       frameHeight: 0, // 运行时计算
@@ -232,8 +233,16 @@ export default {
       return { width: this.frameWidth, height: this.frameHeight };
     },
 
-    startScan() {
+    async startScan() {
       if (this.scanning) return;
+
+      if (this.stopPromise) {
+        try {
+          await this.stopPromise;
+        } catch (err) {
+          console.warn('[dc-scan-code] 上一次扫码停止失败', err);
+        }
+      }
       if (!this.scanner) {
         this.scanner = new Html5Qrcode('reader');
       }
@@ -269,12 +278,33 @@ export default {
 
     stopScan() {
       window.removeEventListener('resize', this.handleResize);
-      if (this.scanner && this.scanning) {
-        this.scanner.stop().catch((err) => {
-          console.error('停止扫码失败:', err);
-        });
-      }
       this.scanning = false;
+
+      if (!this.scanner) {
+        return Promise.resolve();
+      }
+
+      if (this.stopPromise) {
+        return this.stopPromise;
+      }
+
+      const stopTask = Promise.resolve()
+        .then(() => this.scanner.stop?.())
+        .catch((err) => {
+          console.error('停止扫码失败:', err);
+        })
+        .finally(() => {
+          try {
+            this.scanner?.clear?.();
+          } catch (err) {
+            console.error('清理扫码实例失败:', err);
+          }
+          this.stopPromise = null;
+        });
+
+      this.stopPromise = stopTask;
+
+      return stopTask;
     },
 
     handleResize() {
