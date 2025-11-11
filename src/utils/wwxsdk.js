@@ -44,6 +44,17 @@ export function initWwSDK(config, success, error) {
  * @param {Function} error - 失败回调（兼容旧版本）
  * @returns {Promise} 返回Promise对象（新版本）
  */
+function isScanCancelled(res) {
+  if (!res || typeof res !== 'object') {
+    return false;
+  }
+
+  const errInfo = String(res.err_Info || '').toLowerCase();
+  const errMsg = String(res.errMsg || '').toLowerCase();
+
+  return errInfo === 'cancel' || errMsg.includes(':cancel');
+}
+
 export function wwScanQRCode(options = {}, success, error) {
   // 默认配置
   const defaultOptions = {
@@ -62,13 +73,23 @@ export function wwScanQRCode(options = {}, success, error) {
       scanType: scanOptions.scanType,
       needResult: scanOptions.needResult,
       success: function (res) {
+        if (isScanCancelled(res)) {
+          console.log('企业微信扫码已取消:', res);
+          if (typeof error === 'function') {
+            error(res);
+          }
+          return;
+        }
+
         if (typeof success === 'function') {
           success(res);
         }
       },
       cancel: function (res) {
         console.log('企业微信扫码取消:', res);
-        resolve(res);
+        if (typeof error === 'function') {
+          error(res);
+        }
       },
       error: function (err) {
         if (typeof error === 'function') {
@@ -94,11 +115,16 @@ export function wwScanQRCode(options = {}, success, error) {
         needResult: scanOptions.needResult,
         success: function (res) {
           console.log('企业微信扫码成功:', res);
+          if (isScanCancelled(res)) {
+            reject(Object.assign(new Error('企业微信扫码已取消'), { code: 'SCAN_CANCELLED', detail: res }));
+            return;
+          }
+
           resolve(res);
         },
         cancel: function (res) {
           console.log('企业微信扫码取消:', res);
-          resolve(res);
+          reject(Object.assign(new Error('企业微信扫码已取消'), { code: 'SCAN_CANCELLED', detail: res }));
         },
         error: function (err) {
           console.error('企业微信扫码失败:', err);

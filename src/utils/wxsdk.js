@@ -4,6 +4,17 @@
 import wx from 'weixin-js-sdk';
 import commonApi from '@/api/modules/common';
 
+function isScanCancelled(res) {
+    if (!res || typeof res !== 'object') {
+        return false;
+    }
+
+    const errInfo = String(res.err_Info || '').toLowerCase();
+    const errMsg = String(res.errMsg || '').toLowerCase();
+
+    return errInfo === 'cancel' || errMsg.includes(':cancel');
+}
+
 /**
  * 初始化微信JS-SDK
  * @param {Object} config - 微信JS-SDK配置参数
@@ -98,6 +109,14 @@ export function wxScanQRCode(options = {}, success, error) {
             needResult: scanOptions.needResult,
             scanType: scanOptions.scanType,
             success: function (res) {
+                if (isScanCancelled(res)) {
+                    console.log('微信扫码已取消:', res);
+                    if (typeof error === 'function') {
+                        error(res);
+                    }
+                    return;
+                }
+
                 if (typeof success === 'function') {
                     success(res);
                 }
@@ -125,6 +144,11 @@ export function wxScanQRCode(options = {}, success, error) {
                 scanType: scanOptions.scanType,
                 success: function (res) {
                     console.log('微信扫码成功:', res);
+                    if (isScanCancelled(res)) {
+                        reject(Object.assign(new Error('微信扫码已取消'), { code: 'SCAN_CANCELLED', detail: res }));
+                        return;
+                    }
+
                     resolve(res);
                 },
                 error: function (err) {
