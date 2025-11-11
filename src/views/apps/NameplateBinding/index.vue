@@ -319,6 +319,7 @@ const handleSubmit = async () => {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
+  margin: 0 10px 10px;
 
   &__header {
     display: flex;
