@@ -51,7 +51,7 @@
           axis="xy"
           icon="scan"
           magnetic
-          :class="{ 'is-disabled': disabled }"
+          :class="['self-outbound-list__scan-bubble', { 'is-disabled': disabled }]"
           @click="open"
         />
       </template>
@@ -459,6 +459,10 @@ async function handleSubmit() {
     font-size: 12px;
     color: #646566;
   }
+}
+
+:deep(.self-outbound-list__scan-bubble) {
+  bottom: calc(env(safe-area-inset-bottom) + 120px);
 }
 
 :deep(.van-floating-bubble.is-disabled) {
