@@ -46,7 +46,15 @@
       @confirm="handleScanConfirm"
       @error="handleScanError"
     >
-      <van-floating-bubble axis="xy" icon="scan" magnetic />
+      <template #default="{ open, disabled }">
+        <van-floating-bubble
+          axis="xy"
+          icon="scan"
+          magnetic
+          :class="['self-outbound-list__scan-bubble', { 'is-disabled': disabled }]"
+          @click="open"
+        />
+      </template>
     </dc-scan-code>
 
     <van-popup
@@ -451,5 +459,14 @@ async function handleSubmit() {
     font-size: 12px;
     color: #646566;
   }
+}
+
+:deep(.self-outbound-list__scan-bubble) {
+  bottom: calc(env(safe-area-inset-bottom) + 120px);
+}
+
+:deep(.van-floating-bubble.is-disabled) {
+  pointer-events: none;
+  opacity: 0.6;
 }
 </style>

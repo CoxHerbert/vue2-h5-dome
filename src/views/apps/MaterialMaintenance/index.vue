@@ -23,15 +23,12 @@
         <van-button type="success" @click="doAction('handleSearch')">
           <van-icon name="search" size="18" /> 查询
         </van-button>
-        <dc-scan-code
-          ref="scanCodeRef"
-          v-model="snCode"
-          @confirm="handleScanConfirm"
-          @error="handleScanError"
-        >
-          <van-button type="primary" @click="doAction('scanCode')">
-            <van-icon name="scan" size="18" />
-          </van-button>
+        <dc-scan-code v-model="snCode" @confirm="handleScanConfirm" @error="handleScanError">
+          <template #default="{ open, disabled, loading }">
+            <van-button type="primary" :loading="loading" :disabled="disabled" @click="open">
+              <van-icon name="scan" size="18" />
+            </van-button>
+          </template>
         </dc-scan-code>
       </div>
     </van-sticky>
@@ -429,7 +426,6 @@ function onNumberInput(item, val) {
 }
 
 /** 扫码/查询/提交 */
-const scanCodeRef = ref(null);
 
 function handleScanConfirm(val) {
   if (!val) return;
@@ -441,17 +437,6 @@ function handleScanError(error) {
   const message = error?.message || '';
   if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
   showToast({ type: 'fail', message: message || '扫码失败' });
-}
-
-function scanCode() {
-  scanCodeRef.value
-    ?.open?.()
-    .then((val) => {
-      handleScanConfirm(val);
-    })
-    .catch((error) => {
-      handleScanError(error);
-    });
 }
 
 function handleSearch() {
@@ -484,8 +469,8 @@ function handleSearch() {
 }
 
 function doAction(action) {
-  if (['scanCode', 'handleSearch', 'search'].includes(action)) {
-    return action === 'scanCode' ? scanCode() : handleSearch();
+  if (['handleSearch', 'search'].includes(action)) {
+    return handleSearch();
   }
   if (action === 'submit') {
     formRef.value?.validate?.().then(() => {

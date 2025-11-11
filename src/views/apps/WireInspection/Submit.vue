@@ -14,14 +14,21 @@
           >
             <template #button>
               <dc-scan-code
-                ref="scanCodeRef"
                 v-model="form.locatorNo"
                 @confirm="handleLocatorScanSuccess"
                 @error="handleScanError"
               >
-                <van-button size="small" type="primary" @click="handleScanLocator">
-                  扫码
-                </van-button>
+                <template #default="{ open, disabled, loading }">
+                  <van-button
+                    size="small"
+                    type="primary"
+                    :loading="loading"
+                    :disabled="disabled"
+                    @click="open"
+                  >
+                    扫码
+                  </van-button>
+                </template>
               </dc-scan-code>
             </template>
           </van-field>
@@ -32,14 +39,22 @@
           <div class="section__actions">
             <van-button size="small" type="primary" plain @click="addRow()">新增行</van-button>
             <dc-scan-code
-              ref="rowScanRef"
               v-model="rowScanCode"
               @confirm="handleRowScanConfirm"
               @error="handleScanError"
             >
-              <van-button size="small" type="success" plain @click="handleScanRow">
-                扫码录入
-              </van-button>
+              <template #default="{ open, disabled, loading }">
+                <van-button
+                  size="small"
+                  type="success"
+                  plain
+                  :loading="loading"
+                  :disabled="disabled"
+                  @click="open"
+                >
+                  扫码录入
+                </van-button>
+              </template>
             </dc-scan-code>
           </div>
         </div>
@@ -145,8 +160,6 @@ const { proxy } = getCurrentInstance();
 const router = useRouter();
 
 const formRef = ref(null);
-const scanCodeRef = ref(null);
-const rowScanRef = ref(null);
 const rowScanCode = ref('');
 
 let uid = 0;
@@ -256,15 +269,6 @@ function handleLocatorScanSuccess(code) {
   form.locatorNo = code;
 }
 
-async function handleScanLocator() {
-  try {
-    const code = await scanCodeRef.value?.open?.();
-    handleLocatorScanSuccess(code);
-  } catch (err) {
-    handleScanError(err);
-  }
-}
-
 async function handleRowScanConfirm(code) {
   if (!code) return;
   try {
@@ -275,15 +279,6 @@ async function handleRowScanConfirm(code) {
     addRow({ ...data, drawQty: String(data?.drawQty ?? '') });
     showToast({ type: 'success', message: '扫码成功' });
     rowScanCode.value = '';
-  } catch (err) {
-    handleScanError(err);
-  }
-}
-
-async function handleScanRow() {
-  try {
-    const code = await rowScanRef.value?.open?.();
-    await handleRowScanConfirm(code);
   } catch (err) {
     handleScanError(err);
   }
