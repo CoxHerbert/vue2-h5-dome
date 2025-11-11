@@ -44,6 +44,17 @@ export function initWwSDK(config, success, error) {
  * @param {Function} error - 失败回调（兼容旧版本）
  * @returns {Promise} 返回Promise对象（新版本）
  */
+function isScanCancelled(res) {
+  if (!res || typeof res !== 'object') {
+    return false;
+  }
+
+  const errInfo = String(res.err_Info || '').toLowerCase();
+  const errMsg = String(res.errMsg || '').toLowerCase();
+
+  return errInfo === 'cancel' || errMsg.includes(':cancel');
+}
+
 export function wwScanQRCode(options = {}, success, error) {
   // 默认配置
   const defaultOptions = {
@@ -62,17 +73,32 @@ export function wwScanQRCode(options = {}, success, error) {
       scanType: scanOptions.scanType,
       needResult: scanOptions.needResult,
       success: function (res) {
+        if (isScanCancelled(res)) {
+          error(
+            Object.assign(new Error('企业微信扫码已取消'), {
+              code: 'SCAN_CANCELLED',
+              detail: res,
+            })
+          );
+          return;
+        }
         if (typeof success === 'function') {
           success(res);
         }
       },
       cancel: function (res) {
         console.log('企业微信扫码取消:', res);
-        resolve(res);
+        error(
+          Object.assign(new Error('企业微信扫码已取消'), {
+            code: 'SCAN_CANCELLED',
+            detail: res,
+          })
+        );
       },
       error: function (err) {
+        console.error('企业微信扫码失败:', err);
         if (typeof error === 'function') {
-          error(err);
+          reject({ code: 'error', detail: err });
         }
       },
     });
@@ -94,15 +120,27 @@ export function wwScanQRCode(options = {}, success, error) {
         needResult: scanOptions.needResult,
         success: function (res) {
           console.log('企业微信扫码成功:', res);
+          if (isScanCancelled(res)) {
+            reject(
+              Object.assign(new Error('企业微信扫码已取消'), {
+                code: 'SCAN_CANCELLED',
+                detail: res,
+              })
+            );
+            return;
+          }
+
           resolve(res);
         },
         cancel: function (res) {
           console.log('企业微信扫码取消:', res);
-          resolve(res);
+          reject(
+            Object.assign(new Error('企业微信扫码已取消'), { code: 'SCAN_CANCELLED', detail: res })
+          );
         },
         error: function (err) {
           console.error('企业微信扫码失败:', err);
-          reject(err);
+          reject({ code: 'error', detail: err });
         },
       });
     } catch (error) {
