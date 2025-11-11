@@ -1,11 +1,10 @@
 <template>
   <div class="recruit-onboarding-audit">
-    <!-- <van-nav-bar
+    <van-nav-bar
       :title="t('recruit.onboarding.auditResult.title')"
       left-arrow
-      fixed
       @click-left="handleBack"
-    /> -->
+    />
 
     <div class="recruit-onboarding-audit__body">
       <section v-if="detail" class="personal-card">

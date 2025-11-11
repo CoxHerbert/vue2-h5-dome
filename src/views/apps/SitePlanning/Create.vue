@@ -1,8 +1,8 @@
 <template>
   <div class="site-planning-create">
-    <van-nav-bar title="现场计划单" fixed left-arrow @click-left="handleBack" />
+    <van-nav-bar title="现场计划单" left-arrow @click-left="handleBack" />
 
-    <div class="base-wrapper ptop56">
+    <div class="base-wrapper ptop16">
       <div class="baseinfo">
         <van-card class="info-card" :border="false">
           <template #desc>
@@ -153,8 +153,8 @@ async function handleSave() {
   padding-bottom: 100px;
   box-sizing: border-box;
 
-  .ptop56 {
-    margin-top: 56px;
+  .ptop16 {
+    margin-top: 16px;
   }
 
   .base-wrapper {

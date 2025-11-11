@@ -1,6 +1,6 @@
 <template>
   <div class="page wire-inspection-submit">
-    <van-nav-bar title="线材质检" left-arrow fixed @click-left="goBack" />
+    <van-nav-bar title="线材质检" left-arrow @click-left="goBack" />
 
     <div class="wire-inspection-submit__body">
       <van-form ref="formRef" :model="form" scroll-to-error>
@@ -70,10 +70,18 @@
 
             <div class="detail-card__meta">
               <div class="meta-row"><span class="label">BOM编码</span>{{ row.bomNo || '—' }}</div>
-              <div class="meta-row"><span class="label">BOM版本</span>{{ row.bomVersion || '—' }}</div>
+              <div class="meta-row">
+                <span class="label">BOM版本</span>{{ row.bomVersion || '—' }}
+              </div>
               <div class="meta-row"><span class="label">执行单号</span>{{ row.no || '—' }}</div>
-              <div class="meta-row"><span class="label">物料编码</span>{{ row.exeMaterialNumber || row.itemMaterialNumber || '—' }}</div>
-              <div class="meta-row"><span class="label">物料名称</span>{{ row.exeMaterialName || row.itemMaterialName || '—' }}</div>
+              <div class="meta-row">
+                <span class="label">物料编码</span
+                >{{ row.exeMaterialNumber || row.itemMaterialNumber || '—' }}
+              </div>
+              <div class="meta-row">
+                <span class="label">物料名称</span
+                >{{ row.exeMaterialName || row.itemMaterialName || '—' }}
+              </div>
               <div class="meta-row"><span class="label">专案号</span>{{ row.mtoNo || '—' }}</div>
             </div>
 
@@ -142,7 +150,11 @@
     </div>
 
     <van-popup v-model:show="picker.show" position="bottom" round>
-      <van-picker :columns="picker.columns" @confirm="onPickerConfirm" @cancel="picker.show = false" />
+      <van-picker
+        :columns="picker.columns"
+        @confirm="onPickerConfirm"
+        @cancel="picker.show = false"
+      />
     </van-popup>
   </div>
 </template>
@@ -330,7 +342,6 @@ async function handleSubmit() {
 
 .wire-inspection-submit__body {
   flex: 1;
-  padding-top: calc(46px + var(--van-safe-area-top, 0px));
   padding-bottom: 72px;
   box-sizing: border-box;
   overflow: auto;

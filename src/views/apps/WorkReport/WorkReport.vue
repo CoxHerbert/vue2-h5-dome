@@ -18,19 +18,8 @@
             <van-button class="search-btn" round type="primary" size="small" @click="handleSearch">
               搜索
             </van-button>
-            <dc-scan-code
-              v-model="snCode"
-              @confirm="handleScanSuccess"
-              @error="handleScanError"
-            >
-              <van-button
-                class="scan-btn"
-                round
-                size="small"
-                plain
-                type="primary"
-                icon="scan"
-              />
+            <dc-scan-code v-model="snCode" @confirm="handleScanSuccess" @error="handleScanError">
+              <van-button class="scan-btn" round size="small" plain type="primary" icon="scan" />
             </dc-scan-code>
           </div>
         </div>

@@ -1,6 +1,6 @@
 <template>
   <div class="page app-page">
-    <van-nav-bar :title="title" fixed />
+    <van-nav-bar :title="title" />
     <div class="app-page__content">
       <van-empty :description="description" />
     </div>

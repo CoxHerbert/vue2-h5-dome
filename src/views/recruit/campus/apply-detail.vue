@@ -1,5 +1,5 @@
 <template>
-  <van-nav-bar title="投递详情" fixed placeholder left-arrow @click-left="onClickLeft" />
+  <van-nav-bar title="投递详情" placeholder left-arrow @click-left="onClickLeft" />
 
   <div class="page">
     <div class="page-top-bg"></div>

@@ -5,9 +5,6 @@
       class="me-work-time__nav"
       :title="t('me.workTime.title')"
       left-arrow
-      fixed
-      :border="false"
-      safe-area-inset-top
       placeholder
       @click-left="handleBack"
     />
@@ -232,24 +229,7 @@ watch(
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
   position: relative;
 
-  &__nav {
-    /* 强制固定到顶部（即使外层没正确传 fixed 或被覆盖也能兜底） */
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000; /* 覆盖下方内容与弹层 */
-    background: #fff; /* 若需要透明，可改为 transparent */
-  }
-
-  /* 占位，避免主内容被固定导航遮挡 */
-  &__nav-spacer {
-    height: calc(var(--dc-nav-height) + env(safe-area-inset-top));
-    height: calc(var(--dc-nav-height) + constant(safe-area-inset-top));
-  }
-
   &__body {
-    margin-top: 46px;
     display: flex;
     flex-direction: column;
     row-gap: 12px;
