@@ -1,204 +1,252 @@
 <template>
-	<view :class="{ 'wf-flex-end': flexEnd }">
-		<view class="wf-popup-list" :class="{ 'wf-popup-show': show,'wf-z_index':show && position!='relative' }" :style="{ width: width, backgroundColor: backgroundColor, borderRadius: radius, color: color, position: position, left: left, right: right, bottom: bottom, top: top,transform:`translate(${translateX},${translateY})` }">
-			<view class="wf-triangle" :style="{
-					borderWidth: borderWidth,
-					borderColor: `transparent transparent ${backgroundColor} transparent`,
-					left: triangleLeft,
-					right: triangleRight,
-					top: triangleTop,
-					bottom: triangleBottom
-				}"
-			 v-if="direction == 'top'"></view>
-			<view class="wf-triangle" :style="{
-					borderWidth: borderWidth,
-					borderColor: `${backgroundColor}  transparent transparent transparent`,
-					left: triangleLeft,
-					right: triangleRight,
-					top: triangleTop,
-					bottom: triangleBottom
-				}"
-			 v-if="direction == 'bottom'"></view>
-			<view class="wf-triangle" :style="{
-					borderWidth: borderWidth,
-					borderColor: `transparent  ${backgroundColor} transparent transparent`,
-					left: triangleLeft,
-					right: triangleRight,
-					top: triangleTop,
-					bottom: triangleBottom
-				}"
-			 v-if="direction == 'left'"></view>
-			<view class="wf-triangle" :style="{
-					borderWidth: borderWidth,
-					borderColor: `transparent transparent  transparent ${backgroundColor}`,
-					left: triangleLeft,
-					right: triangleRight,
-					top: triangleTop,
-					bottom: triangleBottom
-				}"
-			 v-if="direction == 'right'"></view>
-			<slot />
-		</view>
-		<view @touchmove.stop.prevent="stop" class="wf-popup-mask" :class="{ 'wf-popup-show': show }" :style="{ backgroundColor: maskBgColor }"
-		 v-if="mask" @tap="handleClose"></view>
-	</view>
+  <div class="wf-popover" :class="{ 'wf-popover--flex-end': flexEnd }">
+    <transition name="wf-popover-fade">
+      <div
+        v-if="show"
+        class="wf-popover__panel"
+        :class="`wf-popover__panel--${direction}`"
+        :style="panelStyle"
+      >
+        <span v-if="showArrow" class="wf-popover__arrow" :style="arrowStyle"></span>
+        <slot />
+      </div>
+    </transition>
+    <van-overlay
+      v-if="mask"
+      :show="show"
+      :z-index="overlayZIndex"
+      :custom-style="overlayStyle"
+      @click="handleClose"
+    />
+  </div>
 </template>
+
 <script>
-	export default {
-		name: 'wfPopover',
-		emits: ['close'],
-		props: {
-			//宽度
-			width: {
-				type: String,
-				default: '300rpx'
-			},
-			//popup圆角
-			radius: {
-				type: String,
-				default: '8rpx'
-			},
-			//popup 定位 left right top bottom值
-			left: {
-				type: String,
-				default: 'auto'
-			},
-			right: {
-				type: String,
-				default: 'auto'
-			},
-			top: {
-				type: String,
-				default: 'auto'
-			},
-			bottom: {
-				type: String,
-				default: 'auto'
-			},
-			translateX:{
-				type: String,
-				default: '0'
-			},
-			translateY:{
-				type: String,
-				default: '0'
-			},
-			//背景颜色
-			backgroundColor: {
-				type: String,
-				default: '#4c4c4c'
-			},
-			//字体颜色
-			color: {
-				type: String,
-				default: '#fff'
-			},
-			//三角border-width
-			borderWidth: {
-				type: String,
-				default: '12rpx'
-			},
-			//三角形方向 top left right bottom
-			direction: {
-				type: String,
-				default: 'top'
-			},
-			//定位 left right top bottom值
-			triangleLeft: {
-				type: String,
-				default: 'auto'
-			},
-			triangleRight: {
-				type: String,
-				default: 'auto'
-			},
-			triangleTop: {
-				type: String,
-				default: 'auto'
-			},
-			triangleBottom: {
-				type: String,
-				default: 'auto'
-			},
-			//定位 relative absolute  fixed
-			position: {
-				type: String,
-				default: 'fixed'
-			},
-			//flex-end
-			flexEnd: {
-				type: Boolean,
-				default: false
-			},
-			//是否需要mask
-			mask: {
-				type: Boolean,
-				default: true
-			},
-			maskBgColor: {
-				type: String,
-				default: 'rgba(0, 0, 0, 0)'
-			},
-			//控制显示
-			show: {
-				type: Boolean,
-				default: false
-			}
-		},
-		methods: {
-			handleClose() {
-				if (!this.show) {
-					return
-				}
-				this.$emit('close', {})
-			},
-			stop() {
-				return false
-			}
-		}
-	}
+export default {
+  name: 'wfPopover',
+  emits: ['close'],
+  props: {
+    width: {
+      type: [String, Number],
+      default: '300rpx',
+    },
+    radius: {
+      type: [String, Number],
+      default: '8rpx',
+    },
+    left: {
+      type: [String, Number],
+      default: 'auto',
+    },
+    right: {
+      type: [String, Number],
+      default: 'auto',
+    },
+    top: {
+      type: [String, Number],
+      default: 'auto',
+    },
+    bottom: {
+      type: [String, Number],
+      default: 'auto',
+    },
+    translateX: {
+      type: String,
+      default: '0',
+    },
+    translateY: {
+      type: String,
+      default: '0',
+    },
+    backgroundColor: {
+      type: String,
+      default: '#4c4c4c',
+    },
+    color: {
+      type: String,
+      default: '#fff',
+    },
+    borderWidth: {
+      type: [String, Number],
+      default: '12rpx',
+    },
+    direction: {
+      type: String,
+      default: 'top',
+      validator: (val) => ['top', 'bottom', 'left', 'right'].includes(val),
+    },
+    triangleLeft: {
+      type: [String, Number],
+      default: 'auto',
+    },
+    triangleRight: {
+      type: [String, Number],
+      default: 'auto',
+    },
+    triangleTop: {
+      type: [String, Number],
+      default: 'auto',
+    },
+    triangleBottom: {
+      type: [String, Number],
+      default: 'auto',
+    },
+    position: {
+      type: String,
+      default: 'fixed',
+    },
+    flexEnd: {
+      type: Boolean,
+      default: false,
+    },
+    mask: {
+      type: Boolean,
+      default: true,
+    },
+    maskBgColor: {
+      type: String,
+      default: 'rgba(0, 0, 0, 0)',
+    },
+    show: {
+      type: Boolean,
+      default: false,
+    },
+    zIndex: {
+      type: Number,
+      default: 998,
+    },
+  },
+  computed: {
+    panelStyle() {
+      return {
+        width: this.normalizeSize(this.width),
+        backgroundColor: this.backgroundColor,
+        borderRadius: this.normalizeSize(this.radius),
+        color: this.color,
+        position: this.position,
+        left: this.normalizePosition(this.left),
+        right: this.normalizePosition(this.right),
+        bottom: this.normalizePosition(this.bottom),
+        top: this.normalizePosition(this.top),
+        transform: `translate(${this.translateX}, ${this.translateY})`,
+        zIndex: this.zIndex,
+      };
+    },
+    overlayStyle() {
+      return { background: this.maskBgColor };
+    },
+    overlayZIndex() {
+      return Math.max(0, this.zIndex - 2);
+    },
+    showArrow() {
+      return ['top', 'bottom', 'left', 'right'].includes(this.direction);
+    },
+    arrowStyle() {
+      const base = {
+        borderWidth: this.normalizeSize(this.borderWidth),
+        left: this.normalizePosition(this.triangleLeft),
+        right: this.normalizePosition(this.triangleRight),
+        top: this.normalizePosition(this.triangleTop),
+        bottom: this.normalizePosition(this.triangleBottom),
+        zIndex: this.zIndex - 1,
+      };
+      const color = this.backgroundColor;
+      switch (this.direction) {
+        case 'bottom':
+          return {
+            ...base,
+            borderColor: `${color} transparent transparent transparent`,
+          };
+        case 'left':
+          return {
+            ...base,
+            borderColor: `transparent ${color} transparent transparent`,
+          };
+        case 'right':
+          return {
+            ...base,
+            borderColor: `transparent transparent transparent ${color}`,
+          };
+        default:
+          return {
+            ...base,
+            borderColor: `transparent transparent ${color} transparent`,
+          };
+      }
+    },
+  },
+  methods: {
+    handleClose() {
+      if (!this.show) return;
+      this.$emit('close');
+    },
+    normalizeSize(value) {
+      if (value === undefined || value === null || value === '') return undefined;
+      if (typeof value === 'number') return `${value}px`;
+      const str = `${value}`.trim();
+      if (!str) return undefined;
+      if (str.endsWith('rpx')) {
+        const numeric = Number.parseFloat(str.slice(0, -3));
+        if (Number.isNaN(numeric)) return undefined;
+        return `${numeric / 2}px`;
+      }
+      if (str.endsWith('px')) {
+        return str;
+      }
+      const numeric = Number.parseFloat(str);
+      return Number.isNaN(numeric) ? undefined : `${numeric}px`;
+    },
+    normalizePosition(value) {
+      if (value === undefined || value === null || value === '' || value === 'auto') {
+        return value === 'auto' ? 'auto' : undefined;
+      }
+      if (typeof value === 'number') return `${value}px`;
+      const str = `${value}`.trim();
+      if (!str) return undefined;
+      if (str === 'auto') return 'auto';
+      if (str.endsWith('%')) return str;
+      return this.normalizeSize(str);
+    },
+  },
+};
 </script>
 
 <style scoped>
-	.wf-popup-list {
-		z-index: 1;
-		transition: all 0.3s ease-in-out;
-		opacity: 0;
-		visibility: hidden;
-	}
+.wf-popover {
+  position: relative;
+}
 
-	.wf-flex-end {
-		width: 100%;
-		display: flex;
-		justify-content: flex-end;
-	}
+.wf-popover--flex-end {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
 
-	.wf-triangle {
-		position: absolute;
-		width: 0;
-		height: 0;
-		border-style: solid;
-		z-index: 997;
-	}
+.wf-popover__panel {
+  transition: opacity 0.2s ease;
+  opacity: 1;
+  padding: 8px 0;
+}
 
-	.wf-popup-mask {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 995;
-		transition: all 0.3s ease-in-out;
-		opacity: 0;
-		visibility: hidden;
-	}
+.wf-popover__panel--top,
+.wf-popover__panel--bottom {
+  display: inline-block;
+}
 
-	.wf-popup-show {
-		opacity: 1;
-		visibility: visible;
-	}
+.wf-popover__arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
 
-	.wf-z_index {
-		z-index: 996;
-	}
+.wf-popover-fade-enter-active,
+.wf-popover-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.wf-popover-fade-enter-from,
+.wf-popover-fade-leave-to {
+  opacity: 0;
+}
 </style>

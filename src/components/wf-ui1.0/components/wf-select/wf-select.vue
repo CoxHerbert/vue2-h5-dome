@@ -1,60 +1,70 @@
 <template>
-	<view class="wf-select">
-		<u-input v-model="textLabel" type="select" :placeholder="getPlaceholder(column, column.type)" @click="onClick" />
-		<u-select
-			v-model="show"
-			:list="dic"
-			mode="single-column"
-			:label-name="labelKey"
-			:value-name="valueKey"
-			:child-name="childrenKey"
-			:title="column.label"
-			@confirm="handleSubmit"
-		></u-select>
-	</view>
+  <div class="wf-select">
+    <u-input
+      v-model="textLabel"
+      type="text"
+      :placeholder="getPlaceholder(column, column.type)"
+      :disabled="disabled"
+      readonly
+      @click="onClick"
+    />
+    <u-select
+      v-model="show"
+      :list="dic"
+      mode="single-column"
+      :label-name="labelKey"
+      :value-name="valueKey"
+      :child-name="childrenKey"
+      :title="column.label"
+      @confirm="handleSubmit"
+    ></u-select>
+  </div>
 </template>
 
 <script>
-import Props from '../../mixins/props.js'
+import Props from '../../mixins/props.js';
+
 export default {
-	name: 'wf-select',
-	mixins: [Props],
-	watch: {
-		dic: {
-			handler(val) {
-					if (!this.validateNull(val)) this.initTextLabel()
-			},
-			deep: true
-		}
-	},
-	data() {
-		return {
-			defaultValue: [],
-			show: false
-		}
-	},
-	methods: {
-		onClick() {
-			if (!this.disabled) this.show = true
-			this.handleClick()
-		},
-		handleSubmit(data) {
-			const text = []
-			const textLabel = []
-			data.forEach(d => {
-				text.push(d['value'])
-				textLabel.push(d['label'] || '')
-			})
-			this.$set(this, 'text', text.join(','))
-			this.$set(this, 'textLabel', textLabel.join(','))
-			this.$emit('label-change', textLabel.join(','))
-		}
-	}
-}
+  name: 'wf-select',
+  mixins: [Props],
+  data() {
+    return {
+      show: false,
+    };
+  },
+  watch: {
+    dic: {
+      handler(val) {
+        if (!this.validateNull(val)) this.initTextLabel();
+      },
+      deep: true,
+    },
+  },
+  methods: {
+    onClick() {
+      if (this.disabled) return;
+      this.show = true;
+      this.handleClick();
+    },
+    handleSubmit(data) {
+      const values = [];
+      const labels = [];
+      data.forEach((item) => {
+        values.push(item.value);
+        labels.push(item.label || '');
+      });
+      const valueText = values.join(',');
+      const labelText = labels.join(',');
+      this.text = valueText;
+      this.textLabel = labelText;
+      this.$emit('label-change', labelText);
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
 .wf-select {
-	width: 100%;
+  width: 100%;
 }
 </style>
