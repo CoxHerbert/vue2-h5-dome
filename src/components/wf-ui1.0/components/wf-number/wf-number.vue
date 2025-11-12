@@ -1,17 +1,17 @@
 <template>
-	<view class="wf-number">
-		<u-number-box
-			v-model="number"
-			:min="column.min || 0"
-			:max="column.max || 99999"
-			:step="column.step"
-			:disabled="disabled"
-			:positive-integer="false"
-			@click.native="handleClick"
-			@focus="handleFocus"
-			@blur="handleBlur"
-		></u-number-box>
-	</view>
+        <div class="wf-number">
+                <u-number-box
+                        v-model="number"
+                        :min="column.min || 0"
+                        :max="column.max || 99999"
+                        :step="column.step"
+                        :disabled="disabled"
+                        :positive-integer="false"
+                        @click="handleClick"
+                        @focus="handleFocus"
+                        @blur="handleBlur"
+                ></u-number-box>
+        </div>
 </template>
 
 <script>

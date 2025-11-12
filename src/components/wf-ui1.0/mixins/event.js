@@ -29,8 +29,8 @@ export default {
 			if (typeof this.change === 'function' && this.column.cell !== true) {
 				this.change({ value: result, column: this.column, index: this.dynamicIndex })
 			}
-			this.$emit('input', result)
-			this.$emit('change', result)
-		},
+                        this.$emit('update:modelValue', result)
+                        this.$emit('change', result)
+                },
 	}
 }

@@ -1,9 +1,9 @@
 <template>
-	<view class="wf-radio">
-		<u-radio-group v-model="text" :disabled="disabled" @click.native="handleClick">
-			<u-radio v-for="(item, index) in dic" :key="index" :name="item[valueKey]">{{ item[labelKey] }}</u-radio>
-		</u-radio-group>
-	</view>
+        <div class="wf-radio">
+                <u-radio-group v-model="text" :disabled="disabled" @click="handleClick">
+                        <u-radio v-for="(item, index) in dic" :key="index" :name="item[valueKey]">{{ item[labelKey] }}</u-radio>
+                </u-radio-group>
+        </div>
 </template>
 
 <script>
