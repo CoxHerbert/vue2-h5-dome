@@ -6,11 +6,13 @@ import homeModule from './modules/home';
 import appsModule from './modules/apps.js';
 import meModule from './modules/me';
 import settingsModule from './modules/settings';
+import workflowModule from './modules/workflow';
 
 const routes = [
   loginModule,
   recruitModule,
   settingsModule,
+  workflowModule,
   {
     path: '/sop-doc/:docKey?',
     name: 'sop-doc',
