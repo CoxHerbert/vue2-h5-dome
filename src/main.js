@@ -14,6 +14,7 @@ import '@/styles/index.scss';
 import plugins from './plugins/index';
 import vant from 'vant';
 import dcUI from './components/dc-ui/index.js';
+import wfUI from './components/wf-ui/index.js';
 import { registerComponents } from './components/index';
 import { setupDirectives } from './directives';
 import { attachNProgress } from '@/router/nprogress';
@@ -28,6 +29,7 @@ async function bootstrap() {
   app.use(pinia);
   setActivePinia(pinia);
   app.use(dcUI);
+  app.use(wfUI);
   app.use(vant);
   app.use(i18n);
   app.use(router);
