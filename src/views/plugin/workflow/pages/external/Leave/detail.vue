@@ -70,10 +70,10 @@
 <script>
 import { defineComponent } from 'vue';
 import { Base64 } from '@/utils/base64.js';
-import WkfFlow from '../../../components/wf-flow/index';
-import WkfUserSelect from '../../../components/wf-user-select/index';
-import WkfButton from '../../../components/wf-button/index';
-import WkfExamForm from '../../../components/wf-exam-form/index';
+import WkfFlow from '../../../components/wf-flow/index.vue';
+import WkfUserSelect from '../../../components/wf-user-select/index.vue';
+import WkfButton from '../../../components/wf-button/index.vue';
+import WkfExamForm from '../../../components/wf-exam-form/index.vue';
 import exForm from '../../../mixins/ex-form';
 
 export default defineComponent({

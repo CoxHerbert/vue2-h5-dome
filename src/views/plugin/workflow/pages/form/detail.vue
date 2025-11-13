@@ -109,11 +109,11 @@ import { defineComponent } from 'vue';
 import { Base64 } from '@/utils/base64.js';
 import RendererComparePanel from '@/components/dc/renderer/RendererComparePanel.vue';
 import { isRendererTestEnvironment } from '@/utils/env';
-import WkfFlow from '../../components/wf-flow/index';
+import WkfFlow from '../../components/wf-flow/index.vue';
 import WfBpmn from '../../components/wf-bpmn/index.vue';
-import WkfUserSelect from '../../components/wf-user-select/index';
-import WkfButton from '../../components/wf-button/index';
-import WkfExamForm from '../../components/wf-exam-form/index';
+import WkfUserSelect from '../../components/wf-user-select/index.vue';
+import WkfButton from '../../components/wf-button/index.vue';
+import WkfExamForm from '../../components/wf-exam-form/index.vue';
 import exForm from '../../mixins/ex-form';
 import draft from '../../mixins/draft';
 
@@ -204,12 +204,20 @@ export default defineComponent({
                     };
                     formList.forEach((f) => {
                         const { content, appContent, taskName, taskKey } = f;
-                        // #ifdef H5 || APP
-                        const { option } = this.handleResolveOption(eval('(' + content + ')'), taskForm, 'done');
-                        // #endif
-                        // #ifdef MP
-                        const { option } = this.handleResolveOption(JSON.parse(appContent), taskForm, 'done');
-                        // #endif
+                        let resolved;
+
+                        try {
+                            resolved = this.handleResolveOption(eval('(' + content + ')'), taskForm, 'done');
+                        } catch (error) {
+                            try {
+                                resolved = this.handleResolveOption(JSON.parse(appContent), taskForm, 'done');
+                            } catch (parseError) {
+                                console.error('[workflow] 无法解析流程表单分组配置', error, parseError);
+                                return;
+                            }
+                        }
+
+                        const { option } = resolved;
                         options.group.push({
                             label: taskName || taskKey,
                             column: option.column,
@@ -219,12 +227,21 @@ export default defineComponent({
                     this.summaryOption = options;
                 }
                 if (allForm) {
-                    // #ifdef H5 || APP
-                    const { option, vars } = this.handleResolveOption(eval('(' + allForm + ')'), taskForm, status);
-                    // #endif
-                    // #ifdef MP
-                    const { option, vars } = this.handleResolveOption(JSON.parse(allAppForm), taskForm, status);
-                    // #endif
+                    let resolved;
+
+                    try {
+                        resolved = this.handleResolveOption(eval('(' + allForm + ')'), taskForm, status);
+                    } catch (error) {
+                        try {
+                            resolved = this.handleResolveOption(JSON.parse(allAppForm), taskForm, status);
+                        } catch (parseError) {
+                            console.error('[workflow] 无法解析流程表单配置', error, parseError);
+                            this.waiting = false;
+                            return;
+                        }
+                    }
+
+                    const { option, vars } = resolved;
                     option.menuBtn = false;
                     for (let key in variables) {
                         if (this.validateNull(variables[key])) delete variables[key];

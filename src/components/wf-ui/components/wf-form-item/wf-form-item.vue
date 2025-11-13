@@ -186,11 +186,11 @@
 </template>
 
 <script>
-import WfFeasibility from '@/pages/plugin/workflow/components/wf-feasibility/wf-feasibility.vue';
-import WfUserSelect from '@/pages/plugin/workflow/components/custom-fileds/wf-user-select/index.vue';
-import Customtable from '@/pages/plugin/workflow/components/custom-fileds/wf-customtable-select/index.vue';
-import MaterialTable from '@/pages/plugin/workflow/components/custom-fileds/wf-material-select/index.vue';
-import Vaguecustomtableselect from '@/pages/plugin/workflow/components/custom-fileds/wf-fuzzymaterial-select/index.vue';
+import WfFeasibility from '@/views/plugin/workflow/components/wf-feasibility/wf-feasibility.vue';
+import WfUserSelect from '@/views/plugin/workflow/components/custom-fileds/wf-user-select/index.vue';
+import Customtable from '@/views/plugin/workflow/components/custom-fileds/wf-customtable-select/index.vue';
+import MaterialTable from '@/views/plugin/workflow/components/custom-fileds/wf-material-select/index.vue';
+import Vaguecustomtableselect from '@/views/plugin/workflow/components/custom-fileds/wf-fuzzymaterial-select/index.vue';
 import { DATE_LIST } from '../../util/variable.js';
 import { mpFormInitVal } from '../../util/dataformat.js';
 

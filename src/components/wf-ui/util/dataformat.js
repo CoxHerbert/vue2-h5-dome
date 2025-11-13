@@ -1,6 +1,5 @@
 import { validateNull, detailDataType, findObject, createObj } from './index.js';
 import {
-    KEY_COMPONENT_NAME,
     DIC_SPLIT,
     ARRAY_LIST,
     DATE_LIST,

@@ -83,8 +83,8 @@ import { defineComponent } from 'vue';
 import { Base64 } from '@/utils/base64.js';
 import RendererComparePanel from '@/components/dc/renderer/RendererComparePanel.vue';
 import { isRendererTestEnvironment } from '@/utils/env';
-import wkfUserSelect from '../../components/wf-user-select/index';
-import wkfExamForm from '../../components/wf-exam-form/index';
+import wkfUserSelect from '../../components/wf-user-select/index.vue';
+import wkfExamForm from '../../components/wf-exam-form/index.vue';
 import exForm from '../../mixins/ex-form';
 import draft from '../../mixins/draft';
 
@@ -135,12 +135,20 @@ export default defineComponent({
             this.getStartForm(processDefId).then((res) => {
                 let { form, appForm, startForm } = res;
                 if (form) {
-                    // #ifdef H5 || APP
-                    const option = { ...eval('(' + form + ')'), labelPosition: 'top' };
-                    // #endif
-                    // #ifdef MP
-                    const option = { ...JSON.parse(appForm), labelPosition: 'top' };
-                    // #endif
+                    let option;
+
+                    try {
+                        option = { ...eval('(' + form + ')'), labelPosition: 'top' };
+                    } catch (error) {
+                        try {
+                            option = { ...JSON.parse(appForm), labelPosition: 'top' };
+                        } catch (parseError) {
+                            console.error('[workflow] 无法解析流程表单配置', error, parseError);
+                            this.waiting = false;
+                            return;
+                        }
+                    }
+
                     const { column, group } = option;
 
                     const groupArr = [];

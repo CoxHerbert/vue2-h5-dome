@@ -44,7 +44,7 @@
 <script>
 import { defineComponent } from 'vue';
 import { todoList, doneList, myDoneList, sendList } from '../../api/process.js';
-import wkfCard from '../../components/wf-card/index';
+import wkfCard from '../../components/wf-card/index.vue';
 
 export default defineComponent({
     name: 'WorkflowMinePage',
