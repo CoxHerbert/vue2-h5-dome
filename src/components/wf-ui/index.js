@@ -8,11 +8,25 @@ const prototypes = {
   wfImage: 'https://oss.nutflow.vip/rider',
 };
 
+const componentModules = import.meta.glob('./components/**/*.vue', { eager: true });
+const components = Object.values(componentModules)
+  .map((module) => module?.default)
+  .filter((component) => component && (component.name || component.__name));
+
 export default {
-  install(appLike) {
-    const target = appLike.config?.globalProperties || appLike.prototype || {};
+  install(app) {
+    components.forEach((component) => {
+      const name = component.name || component.__name;
+      if (name) {
+        app.component(name, component);
+      }
+    });
+
+    const target = app.config?.globalProperties;
     Object.keys(prototypes).forEach((key) => {
-      target[key] = prototypes[key];
+      if (target) {
+        target[key] = prototypes[key];
+      }
       if (typeof uni !== 'undefined' && uni.$u) {
         uni.$u[key] = prototypes[key];
       }
