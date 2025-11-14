@@ -43,7 +43,7 @@
     <van-floating-bubble
       axis="xy"
       magnetic="x"
-      :offset="{ x: 20, y: 120 }"
+      :gap="{ x: 16, y: 88 }"
       class="create-bubble"
       @click.stop="handleJump(girdList[1])"
     >
