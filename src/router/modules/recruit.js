@@ -1,5 +1,3 @@
-import { ensureAuthRouteGuard } from '@/router/ensure-auth';
-
 export default {
   path: '/recruit',
   name: 'recruit',
@@ -18,7 +16,6 @@ export default {
           path: 'apply', // 校招投递表单
           name: 'recruit-campus-apply',
           meta: { title: 'routes.recruit.campusApply', requiresAuth: false },
-          beforeEnter: ensureAuthRouteGuard({ type: 'campus_applicant', mode: 'social' }),
           component: () => import('@/views/recruit/campus/apply.vue'),
         },
         // ===== 新增：投递详情（评审状态） =====

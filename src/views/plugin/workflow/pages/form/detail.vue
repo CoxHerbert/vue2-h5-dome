@@ -1,44 +1,79 @@
 <template>
   <div class="workflow-form-detail">
-    <van-skeleton v-if="waiting" :row="6" animate />
+    <!-- 顶部导航栏 -->
+    <van-nav-bar title="流程详情" left-arrow @click-left="handleBack" />
+
+    <!-- 加一点左右间距，骨架屏和内容共用同一容器 -->
+    <div v-if="waiting" class="detail">
+      <van-skeleton :row="6" animate />
+    </div>
+
     <div v-else class="detail">
-      <section class="detail-head card flex-between flex-c">
-        <div class="detail-avatar" aria-hidden="true">{{ avatarText }}</div>
-        <div class="flex-one c">
-          <div class="leave bold txt-cut1">{{ process.processDefinitionName }}</div>
-          <div class="name">{{ process.startUsername }}</div>
+      <!-- 头部：头像 + 标题 + 发起人 + 状态标签 -->
+      <section class="detail-head flex-between flex-c">
+        <div class="detail-head-info">
+          <div class="detail-avatar" aria-hidden="true">{{ avatarText }}</div>
+          <div class="flex-one c">
+            <div class="leave bold txt-cut1">{{ process.processDefinitionName }}</div>
+            <div class="name">{{ process.startUsername }}</div>
+          </div>
         </div>
-        <van-tag v-if="process.status === 'todo'" type="success" size="small">审核中</van-tag>
-        <van-tag v-else-if="process.status === 'delay'" type="danger" size="small">已超时</van-tag>
-        <template v-else-if="process.status === 'done'">
-          <van-tag v-if="process.processIsFinished === 'unfinished'" type="success" size="small"
-            >审核中</van-tag
+        <div class="detail-head-status">
+          <van-tag v-if="process.status === 'todo'" type="success" size="small">审核中</van-tag>
+          <van-tag v-else-if="process.status === 'delay'" type="danger" size="small"
+            >已超时</van-tag
           >
-          <van-tag v-else-if="process.processIsFinished === 'finished'" type="success" size="small"
-            >已结束</van-tag
-          >
-          <van-tag v-else-if="process.processIsFinished === 'terminate'" type="danger" size="small"
-            >已终止</van-tag
-          >
-          <van-tag v-else-if="process.processIsFinished === 'withdraw'" type="danger" size="small"
-            >已撤销</van-tag
-          >
-          <van-tag v-else-if="process.processIsFinished === 'recall'" type="danger" size="small"
-            >已撤回</van-tag
-          >
-          <van-tag v-else-if="process.processIsFinished === 'reject'" type="danger" size="small"
-            >已驳回</van-tag
-          >
-          <van-tag v-else-if="process.processIsFinished === 'deleted'" type="danger" size="small"
-            >已删除</van-tag
-          >
-        </template>
+          <template v-else-if="process.status === 'done'">
+            <van-tag v-if="process.processIsFinished === 'unfinished'" type="success" size="small">
+              审核中
+            </van-tag>
+            <van-tag
+              v-else-if="process.processIsFinished === 'finished'"
+              type="success"
+              size="small"
+            >
+              已结束
+            </van-tag>
+            <van-tag
+              v-else-if="process.processIsFinished === 'terminate'"
+              type="danger"
+              size="small"
+            >
+              已终止
+            </van-tag>
+            <van-tag
+              v-else-if="process.processIsFinished === 'withdraw'"
+              type="danger"
+              size="small"
+            >
+              已撤销
+            </van-tag>
+            <van-tag v-else-if="process.processIsFinished === 'recall'" type="danger" size="small">
+              已撤回
+            </van-tag>
+            <van-tag v-else-if="process.processIsFinished === 'reject'" type="danger" size="small">
+              已驳回
+            </van-tag>
+            <van-tag v-else-if="process.processIsFinished === 'deleted'" type="danger" size="small">
+              已删除
+            </van-tag>
+          </template>
+        </div>
       </section>
-      <section class="card detail-tabs" aria-label="流程详情切换">
+
+      <!-- Tabs -->
+      <section class="detail-tabs" aria-label="流程详情切换">
         <van-tabs v-model:active="current" :border="false">
-          <van-tab v-for="(tab, index) in tabList" :key="tab.name" :title="tab.name" :name="index" />
+          <van-tab
+            v-for="(tab, index) in tabList"
+            :key="tab.name"
+            :title="tab.name"
+            :name="index"
+          />
         </van-tabs>
       </section>
+
+      <!-- 内容 -->
       <div class="content">
         <div v-show="current === 0" class="detail-card card">
           <section
@@ -83,6 +118,7 @@
           <WfBpmn :bpmn-option="h5bpmn" />
         </section>
       </div>
+
       <wkf-user-select
         ref="user-select"
         :check-type="checkType"
@@ -117,6 +153,7 @@
     </div>
   </div>
 </template>
+
 <script>
 import { defineComponent } from 'vue';
 import { showToast } from 'vant';
@@ -169,6 +206,18 @@ export default defineComponent({
     this.resolveRouteParams(this.$route.query);
   },
   methods: {
+    // 顶部返回：优先返回上一页，没有上一页则回到工作台（home）
+    handleBack() {
+      if (window.history.length > 1) {
+        this.$router.back();
+      } else {
+        this.handleNavigateTo({
+          name: 'WorkflowWorkbench',
+          replace: true,
+        });
+      }
+    },
+
     resolveRouteParams(query = {}) {
       const { p } = query;
       if (!p) return;
@@ -195,10 +244,10 @@ export default defineComponent({
         this.process = process;
         const { variables, status } = process;
 
-        if (status == 'todo') {
+        if (status === 'todo') {
           // 查询是否有草稿箱
           this.initDraft({ taskId })
-            .then((data) => {
+            .then(() => {
               this.tempVariables = { ...variables };
               this.recoverDraftShow = true;
             })
@@ -216,7 +265,6 @@ export default defineComponent({
             menuBtn: false,
             detail: true,
             labelPosition: 'top',
-            // labelWidth: 240,
             group: [],
           };
           formList.forEach((f) => {
@@ -250,7 +298,6 @@ export default defineComponent({
             resolved = this.handleResolveOption(eval('(' + allForm + ')'), taskForm, status);
           } catch (error) {
             try {
-              console.log();
               resolved = this.handleResolveOption(JSON.parse(allAppForm), taskForm, status);
             } catch (parseError) {
               console.error('[workflow] 无法解析流程表单配置', error, parseError);
@@ -261,7 +308,7 @@ export default defineComponent({
 
           const { option, vars } = resolved;
           option.menuBtn = false;
-          for (let key in variables) {
+          for (const key in variables) {
             if (this.validateNull(variables[key])) delete variables[key];
           }
           // 如果是可行性评估
@@ -279,7 +326,6 @@ export default defineComponent({
           this.option = {
             ...option,
             labelPosition: 'top',
-            // labelWidth: 200,
           };
           this.vars = vars;
         }
@@ -298,17 +344,14 @@ export default defineComponent({
     handleResolveOption(option, taskForm, status) {
       const { column, group } = option;
       let vars = [];
-      if (status != 'todo') {
+      if (status !== 'todo') {
         // 已办，删除字段默认值
         option.detail = true;
-        console.log(column.length);
         if (column && column.length > 0) {
-          // 处理column
           column.forEach((col) => this.handleResolveEvent(col));
         }
 
         if (group && group.length > 0) {
-          // 处理group
           group.forEach((gro) => {
             if (gro.column && gro.column.length > 0) {
               gro.column.forEach((col) => this.handleResolveEvent(col));
@@ -339,17 +382,18 @@ export default defineComponent({
     handleResolveEvent(col) {
       const _this = this;
       delete col.value;
-      // #ifndef MP
-      let event = ['change', 'blur', 'click', 'focus'];
+      const event = ['change', 'blur', 'click', 'focus'];
       event.forEach((e) => {
         if (col[e]) col[e] = eval((col[e] + '').replace(/this/g, '_this'));
       });
-      if (col.event)
-        Object.keys(col.event).forEach(
-          (key) => (col.event[key] = eval((col.event[key] + '').replace(/this/g, '_this')))
-        );
-      // #endif
-      if (col.type == 'dynamic') col.children.column.forEach((cc) => _this.handleResolveEvent(cc));
+      if (col.event) {
+        Object.keys(col.event).forEach((key) => {
+          col.event[key] = eval((col.event[key] + '').replace(/this/g, '_this'));
+        });
+      }
+      if (col.type === 'dynamic') {
+        col.children.column.forEach((cc) => _this.handleResolveEvent(cc));
+      }
     },
     // 审核
     handleExamine(pass) {
@@ -384,7 +428,7 @@ export default defineComponent({
                 }, 1000);
               })
               .catch(() => {
-                if (typeof done == 'function') done();
+                if (typeof done === 'function') done();
                 this.submitLoading = false;
               });
           } else {
@@ -407,11 +451,14 @@ export default defineComponent({
           .catch(() => {
             this.submitLoading = false;
           });
-      } else showToast({ message: '找不到需要提交的表单', type: 'fail' });
+      } else {
+        showToast({ message: '找不到需要提交的表单', type: 'fail' });
+      }
     },
   },
 });
 </script>
+
 <style lang="scss" scoped>
 page {
   background: #f6f6f6;
@@ -419,76 +466,112 @@ page {
 
 .workflow-form-detail {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f6f6f6 0%, #f9fafb 100%);
-  padding: 24rpx 24rpx 40rpx;
+  background: #f6f6f6;
+}
+
+/* 页面主体间距 */
+.detail {
+  /* 24rpx 24rpx 40rpx -> 12px 12px 20px */
+  padding: 12px 12px 20px;
   box-sizing: border-box;
+
+  .content {
+    /* 16rpx -> 8px */
+    padding-bottom: 8px;
+  }
+
+  /* 头像 + 标题 + 发起人 + 状态标签 */
+  &-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* 24rpx -> 12px */
+    gap: 12px;
+    /* 24rpx 30rpx -> 12px 15px */
+    padding: 12px 15px;
+    /* 8rpx -> 4px */
+    margin-bottom: 4px;
+    background-color: #fff;
+    border-bottom: 1px solid #f2f3f5;
+  }
+
+  .detail-head-info {
+    display: flex;
+    align-items: center;
+    /* 24rpx -> 12px */
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .detail-head-status {
+    flex-shrink: 0;
+  }
+
+  .c {
+    flex: 1;
+    min-width: 0;
+
+    .leave {
+      color: #1f2b4a;
+      /* 34rpx -> 17px */
+      font-size: 17px;
+      line-height: 1.4;
+    }
+
+    .name {
+      /* 8rpx -> 4px */
+      margin-top: 4px;
+      color: #7a8499;
+      /* 28rpx -> 14px */
+      font-size: 14px;
+    }
+  }
+
+  /* Tabs 区域，使用 Vant 默认主色 */
+  &-tabs {
+    /* 24rpx -> 12px */
+    margin-bottom: 12px;
+    background-color: #fff;
+
+    :deep(.van-tabs__wrap) {
+      border-bottom: 1px solid #f2f3f5;
+    }
+
+    :deep(.van-tab__text) {
+      /* 28rpx -> 14px */
+      font-size: 14px;
+    }
+  }
 }
 
 .card {
   background-color: #fff;
-  border-radius: 24rpx;
-  box-shadow: 0 12rpx 32rpx rgba(31, 43, 74, 0.08);
-  margin-bottom: 24rpx;
-  padding: 30rpx;
-}
-
-.detail {
-  .content {
-    padding-bottom: 16rpx;
-  }
-
-  &-head {
-    gap: 24rpx;
-
-    .c {
-      flex: 1;
-      min-width: 0;
-
-      .leave {
-        color: #1f2b4a;
-        font-size: 34rpx;
-        line-height: 1.4;
-      }
-
-      .name {
-        margin-top: 8rpx;
-        color: #7a8499;
-        font-size: 28rpx;
-      }
-    }
-  }
-
-  &-tabs {
-    padding: 0;
-
-    :deep(.van-tabs__wrap) {
-      border-radius: 24rpx 24rpx 0 0;
-    }
-
-    :deep(.van-tab__text) {
-      font-size: 28rpx;
-    }
-
-    :deep(.van-tabs__line) {
-      width: 60rpx;
-      height: 6rpx;
-      border-radius: 999px;
-    }
-  }
+  /* 24rpx -> 12px */
+  border-radius: 12px;
+  /* 0 12rpx 32rpx -> 0 6px 16px */
+  box-shadow: 0 6px 16px rgba(31, 43, 74, 0.08);
+  /* 24rpx -> 12px */
+  margin-bottom: 12px;
+  /* 30rpx -> 15px */
+  padding: 15px;
 }
 
 .detail-avatar {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 90rpx;
-  height: 90rpx;
+  /* 90rpx -> 45px */
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   background: linear-gradient(135deg, #fab022 0%, #ffcd4e 100%);
   color: #fff;
-  font-size: 34rpx;
+  /* 34rpx -> 17px */
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: 4rpx;
+  /* 4rpx -> 2px */
+  letter-spacing: 2px;
 }
 
 .detail-card {
@@ -497,7 +580,8 @@ page {
 }
 
 .detail-section {
-  padding: 30rpx 30rpx 10rpx;
+  /* 30rpx 30rpx 10rpx -> 15px 15px 5px */
+  padding: 15px 15px 5px;
 
   & + .detail-section {
     border-top: 1px solid #f2f3f5;
@@ -505,7 +589,8 @@ page {
 }
 
 .flow-wrapper {
-  padding: 24rpx;
+  /* 24rpx -> 12px */
+  padding: 12px;
 }
 
 .bpmn-wrapper {
@@ -513,7 +598,8 @@ page {
 
   :deep(canvas),
   :deep(svg) {
-    border-radius: 0 0 24rpx 24rpx;
+    /* 0 0 24rpx 24rpx -> 0 0 12px 12px */
+    border-radius: 0 0 12px 12px;
   }
 }
 </style>

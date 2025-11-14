@@ -1,6 +1,7 @@
 <template>
   <div>
-    <div class="wf-button safe-area-inset-bottom" v-if="process.status === 'todo'">
+    <!-- 待办状态 -->
+    <div v-if="process.status === 'todo'" class="wf-button wf-button--todo safe-area-inset-bottom">
       <div class="wf-button-left">
         <van-button
           v-if="getButton('wf_pass')"
@@ -23,18 +24,19 @@
           <span v-else>取消申请</span>
         </van-button>
       </div>
-      <div class="wf-button-right" v-if="buttonList.length > 2">
+
+      <div v-if="buttonList.length > 2" class="wf-button-right">
         <wf-popover
           :show="moreBtnShow"
           position="absolute"
           direction="bottom"
-          width="200rpx"
-          right="30rpx"
-          top="-20rpx"
-          translateY="-100%"
-          triangleRight="100rpx"
-          triangleBottom="-22rpx"
-          backgroundColor="#eee"
+          width="200px"
+          right="30px"
+          top="-20px"
+          translate-y="-100%"
+          triangle-right="100px"
+          triangle-bottom="-22px"
+          background-color="#eee"
           @close="moreBtnShow = false"
         >
           <div class="menu-item" @click="handleOperate('draft')">暂存</div>
@@ -58,14 +60,23 @@
             {{ getButton('wf_add_instance').name }}
           </div>
         </wf-popover>
-        <van-button size="small" :loading="loading" type="default" @click="moreBtnShow = !moreBtnShow">
+
+        <van-button
+          class="wf-button__more"
+          size="small"
+          :loading="loading"
+          type="default"
+          @click="moreBtnShow = !moreBtnShow"
+        >
           更多操作
         </van-button>
       </div>
     </div>
+
+    <!-- 已办状态，可撤回 / 撤销 -->
     <div
-      class="wf-button safe-area-inset-bottom"
       v-if="process.status === 'done' && process.isOwner && process.isReturnable"
+      class="wf-button wf-button--done safe-area-inset-bottom"
     >
       <div class="wf-button-center">
         <van-button
@@ -88,14 +99,17 @@
         </van-button>
       </div>
     </div>
-    <div style="height: 110rpx"></div>
+
+    <!-- 占位，避免内容被底部按钮遮挡 -->
+    <div style="height: 110px"></div>
+
     <van-action-sheet
       v-model:show="actionSheetVisible"
       :actions="nodeList"
       cancel-text="取消"
       description="选择要退回到的节点"
-      @select="handleNodeSelect"
       close-on-click-action
+      @select="handleNodeSelect"
     />
     <van-dialog
       v-model:show="modalShow"
@@ -160,7 +174,7 @@ export default defineComponent({
   },
   methods: {
     getButton(type) {
-      return this.buttonList.find((btn) => btn.code === type);
+      return this.buttonList.find((btn) => btn.buttonKey === type);
     },
     handleRollback() {
       if (!this.comment) {
@@ -219,25 +233,93 @@ export default defineComponent({
   bottom: 0;
   z-index: 9;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 20rpx 30rpx;
+  justify-content: center; // 默认居中
+  padding: 20px 30px;
   background: #fff;
-  box-shadow: 0 -6rpx 20rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
+  gap: 20px;
+
+  &--todo {
+    justify-content: space-between;
+  }
+
+  &--done {
+    justify-content: center;
+  }
 }
 
 .wf-button-left,
 .wf-button-right,
 .wf-button-center {
   display: flex;
-  gap: 20rpx;
   align-items: center;
+  gap: 12px;
+}
+
+/* 左侧 / 中间区域占据剩余空间，按钮宽度由 flex 决定 */
+.wf-button-left,
+.wf-button-center {
+  flex: 1;
+}
+
+/* 右侧“更多操作”区域根据内容自适应宽度 */
+.wf-button-right {
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+/* 底部区域内统一按钮风格（仅作用于本组件） */
+/* 不再写死宽度，交给 flex 和 padding 自适应 */
+.wf-button :deep(.van-button) {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  flex: 0 0 auto;
+}
+
+/* 左侧 / 中间的按钮平分可用空间 */
+.wf-button-left :deep(.van-button),
+.wf-button-center :deep(.van-button) {
+  flex: 1 1 0;
+}
+
+/* 右侧按钮根据文字自适应宽度 */
+.wf-button-right :deep(.van-button) {
+  flex: 0 0 auto;
+}
+
+/* “更多操作”按钮不再设置 min-width，完全自适应 */
+.wf-button__more {
+  /* 空着即可，保留类名方便以后扩展 */
+}
+
+/* 主题色可以按你全局规范调 */
+.wf-button :deep(.van-button--primary) {
+  background: linear-gradient(90deg, #3060ed, #4c8dff);
+  border-color: #3060ed;
+}
+
+.wf-button :deep(.van-button--default) {
+  color: #333;
+  border-color: #dddddd;
+}
+
+.wf-button :deep(.van-button--danger) {
+  background: #ff4d4f;
+  border-color: #ff4d4f;
+}
+
+.wf-button :deep(.van-button--warning) {
+  background: #faad14;
+  border-color: #faad14;
 }
 
 .menu-item {
-  padding: 20rpx;
-  font-size: 26rpx;
+  padding: 12px 16px;
+  font-size: 13px;
   color: #222;
 }
 
