@@ -123,7 +123,6 @@ export default defineComponent({
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
   }
 
   &__title {

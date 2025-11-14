@@ -78,29 +78,14 @@
         <div v-show="current === 0" class="detail-card card">
           <section
             v-if="
-              summaryOption &&
-              ((summaryOption.column && summaryOption.column.length > 0) ||
-                (summaryOption.group && summaryOption.group.length > 0))
-            "
-            class="detail-section"
-          >
-            <renderer-compare-panel
-              v-if="enableRendererCompare"
-              v-model="form"
-              :option="summaryOption"
-            />
-            <wf-form v-else ref="summaryForm" v-model="form" :option="summaryOption" />
-          </section>
-          <section
-            v-if="
               option &&
               ((option.column && option.column.length > 0) ||
                 (option.group && option.group.length > 0))
             "
             class="detail-section"
           >
-            <renderer-compare-panel v-if="enableRendererCompare" v-model="form" :option="option" />
-            <wf-form v-else ref="form" v-model="form" :option="option" />
+            <!-- {{ form }} -->
+            <wf-form ref="form" v-model="form" :option="option" />
           </section>
           <section v-if="process.status === 'todo'" class="detail-section">
             <wkf-exam-form
@@ -158,8 +143,6 @@
 import { defineComponent } from 'vue';
 import { showToast } from 'vant';
 import { Base64 } from '@/utils/base64.js';
-import RendererComparePanel from '@/components/dc/renderer/RendererComparePanel.vue';
-import { isRendererTestEnvironment } from '@/utils/env';
 import WkfFlow from '../../components/wf-flow/index.vue';
 import WfBpmn from '../../components/wf-bpmn/index.vue';
 import WkfUserSelect from '../../components/wf-user-select/index.vue';
@@ -171,7 +154,7 @@ import { useAuthStore } from '@/store/auth.js';
 
 export default defineComponent({
   name: 'WorkflowFormDetailPage',
-  components: { WkfFlow, WkfUserSelect, WkfButton, WkfExamForm, WfBpmn, RendererComparePanel },
+  components: { WkfFlow, WkfUserSelect, WkfButton, WkfExamForm, WfBpmn },
   mixins: [exForm, draft],
   data() {
     return {
@@ -188,9 +171,6 @@ export default defineComponent({
     };
   },
   computed: {
-    enableRendererCompare() {
-      return isRendererTestEnvironment();
-    },
     avatarText() {
       const username = this.process?.startUsername || '';
       if (!username) return '';

@@ -1,18 +1,12 @@
 <template>
   <div class="wf-form">
     <div class="wf-form-content">
-      <template
-        v-if="
-          option.column &&
-          option.column.length > 0 &&
-          formCreate
-        "
-      >
+      <template v-if="option.column && option.column.length > 0 && formCreate">
         <template v-for="(item, index) in option.column" :key="index">
           <wkf-form-item
             v-if="item.display !== false && filter(item)"
-            v-model="form[item.prop]"
             :ref="item.prop"
+            v-model="form[item.prop]"
             :column="item"
             :disabled="
               allDisabled ||
@@ -31,13 +25,7 @@
           />
         </template>
       </template>
-      <template
-        v-if="
-          option.group &&
-          option.group.length > 0 &&
-          formCreate
-        "
-      >
+      <template v-if="option.group && option.group.length > 0 && formCreate">
         <van-collapse v-model="activeGroups" :border="false">
           <template v-for="(group, gIndex) in option.group" :key="gIndex">
             <van-collapse-item
@@ -58,8 +46,8 @@
               <template v-for="(item, index) in group.column" :key="index">
                 <wkf-form-item
                   v-if="item.display !== false && filter(item)"
-                  v-model="form[item.prop]"
                   :ref="item.prop"
+                  v-model="form[item.prop]"
                   :column="item"
                   :disabled="
                     allDisabled ||
@@ -100,7 +88,7 @@
       >
         {{ menuBtn.submitText }}
       </van-button>
-      <slot name="menu" />
+      <slot name="menu"></slot>
     </div>
   </div>
 </template>
@@ -114,8 +102,7 @@ import { formInitVal, initRules } from '../../util/dataformat.js';
 import { filter } from '../../util/unsupport.js';
 
 export default {
-  name: 'wkf-form',
-  mixins: [Dic],
+  name: 'WkfForm',
   components: {
     WkfFormItem,
     [Button.name]: Button,
@@ -123,6 +110,7 @@ export default {
     [CollapseItem.name]: CollapseItem,
     [Icon.name]: Icon,
   },
+  mixins: [Dic],
   props: {
     option: {
       type: Object,
@@ -166,7 +154,8 @@ export default {
       return list;
     },
     menuBtn() {
-      const { menuBtn, submitBtn, enptyBtn, submitText, emptyText, detail, readonly, disabled } = this.option;
+      const { menuBtn, submitBtn, enptyBtn, submitText, emptyText, detail, readonly, disabled } =
+        this.option;
       return {
         show: menuBtn === false || detail || readonly || disabled ? false : true,
         submitBtn: submitBtn === false ? false : true,

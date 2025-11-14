@@ -5,8 +5,8 @@
         <template v-for="(item, index) in option.column" :key="index">
           <wf-form-item
             v-if="item.display !== false && filter(item)"
-            v-model="form[item.prop]"
             :ref="item.prop"
+            v-model="form[item.prop]"
             :column="item"
             :disabled="
               allDisabled ||
@@ -46,8 +46,8 @@
               <template v-for="(item, index) in group.column" :key="index">
                 <wf-form-item
                   v-if="item.display !== false && filter(item)"
-                  v-model="form[item.prop]"
                   :ref="item.prop"
+                  v-model="form[item.prop]"
                   :column="item"
                   :disabled="
                     allDisabled ||
@@ -88,7 +88,7 @@
       >
         {{ menuBtn.submitText }}
       </van-button>
-      <slot name="menu" />
+      <slot name="menu"></slot>
     </div>
   </div>
 </template>
@@ -101,14 +101,14 @@ import { formInitVal, initRules } from '../../util/dataformat.js';
 import { filter } from '../../util/unsupport.js';
 
 export default {
-  name: 'wf-form',
-  mixins: [Dic],
+  name: 'WfForm',
   components: {
     [Button.name]: Button,
     [Collapse.name]: Collapse,
     [CollapseItem.name]: CollapseItem,
     [Icon.name]: Icon,
   },
+  mixins: [Dic],
   props: {
     option: {
       type: Object,
@@ -152,7 +152,8 @@ export default {
       return list;
     },
     menuBtn() {
-      const { menuBtn, submitBtn, enptyBtn, submitText, emptyText, detail, readonly, disabled } = this.option;
+      const { menuBtn, submitBtn, enptyBtn, submitText, emptyText, detail, readonly, disabled } =
+        this.option;
       return {
         show: menuBtn === false || detail || readonly || disabled ? false : true,
         submitBtn: submitBtn === false ? false : true,
