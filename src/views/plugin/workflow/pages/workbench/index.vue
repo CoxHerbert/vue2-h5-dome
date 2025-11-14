@@ -24,7 +24,7 @@
           @click="handleJump(girdList[0])"
         />
       </div>
-      <!-- <wkf-card v-if="list.length > 0" :list="list" show-btn @refresh="refreshTodo"></wkf-card> -->
+      <wkf-card v-if="list.length > 0" :list="list" show-btn @refresh="refreshTodo" />
     </div>
     <wf-empty v-else text="工作再忙，也要记得喝水" />
 
@@ -107,81 +107,118 @@ page {
   background: #f6f6f6;
 }
 </style>
-<style lang="scss" scoped>
-page {
-  background: #f6f6f6;
-}
-.home-container {
-  .creat {
-    position: fixed;
-    right: 10px;
-    bottom: 20%;
-    width: 100rpx;
-    height: 100rpx;
-  }
-  .head-item {
-    width: 100%;
-    height: 390rpx;
-    padding: 50rpx 30rpx 0;
-    background: url('https://oss.nutflow.vip/rider/home/head_bg.png') no-repeat;
-    background-size: 100% 100%;
-    /* #ifdef MP-WEIXIN */
-    padding-top: 120rpx;
-    /* #endif */
-  }
-  .grid-item {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 0 24rpx;
-    margin-top: -120rpx;
-    .item {
-      width: 50%;
-      padding: 40rpx 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      .icon {
-        width: 120rpx;
-        height: 120rpx;
-        margin-bottom: 20rpx;
-      }
-      .name {
-        font-size: 30rpx;
-        color: #333;
-      }
-    }
-  }
-  .card-item {
-    margin-top: 20rpx;
-    padding: 0 24rpx 40rpx;
-    .title {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20rpx;
-      .line {
-        width: 6rpx;
-        height: 32rpx;
-        background: #5470c4;
-        border-radius: 3rpx;
-        margin-right: 16rpx;
-      }
-      .section-cell {
-        flex: 1;
-        padding: 0;
-        background: transparent;
-        font-size: 34rpx;
-        color: #333;
 
-        .van-cell__value,
-        .van-cell__label {
-          display: none;
-        }
-        .van-cell__title {
-          font-weight: 500;
-        }
-      }
-    }
+<style lang="scss" scoped>
+.home-container {
+  min-height: 100vh;
+  background: #f6f6f6;
+  box-sizing: border-box;
+  padding-bottom: 90px; // 给右下角 + 按钮留空间
+}
+
+/* 顶部渐变头部 */
+.head-item {
+  position: relative;
+  padding: 28px 18px 72px;
+  background: url('https://oss.nutflow.vip/rider/home/head_bg.png') no-repeat;
+  background-size: 100% 100%;
+  color: #ffffff;
+
+  .title {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
   }
+
+  .tips {
+    margin-top: 14px;
+    display: inline-block;
+    padding: 4px 16px;
+    font-size: 12px;
+    line-height: 1.6;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.2); // 接近截图里的蓝色胶囊
+    white-space: nowrap;
+  }
+}
+
+/* 顶部 4 个入口卡片 */
+.grid-item {
+  position: relative;
+  margin: -32px 16px 0; // 往上顶一点，压在头部渐变上
+  padding: 16px 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.grid-item .item {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.grid-item .icon {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 8px;
+}
+
+.grid-item .name {
+  font-size: 14px;
+  color: #333333;
+  font-weight: 600;
+}
+
+/* “我的待办”卡片 */
+.card-item {
+  margin: 16px 16px 0;
+  padding: 12px 16px 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+}
+
+.card-item .title {
+  display: flex;
+  align-items: center;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0; // 顶部那条分割线
+}
+
+/* 去掉之前左侧那条竖线，更贴近截图 */
+.card-item .line {
+  display: none;
+}
+
+.card-item .section-cell {
+  flex: 1;
+  padding: 0;
+  background: transparent;
+  font-size: 14px;
+  color: #333333;
+
+  :deep(.van-cell__title) {
+    font-size: 18px;
+    font-weight: 600; // “我的待办”加粗
+  }
+
+  .van-cell__value,
+  .van-cell__label {
+    display: none;
+  }
+}
+
+/* 右下角发起流程按钮 */
+.creat {
+  position: fixed;
+  right: 20px;
+  bottom: 30px;
+  width: 54px;
+  height: 54px;
+  z-index: 20;
 }
 </style>

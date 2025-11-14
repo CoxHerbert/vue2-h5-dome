@@ -3,10 +3,10 @@
     <van-popup v-model:show="visible" position="bottom" :style="{ height: '90%' }" round>
       <div class="search-item">
         <div
-          class="search-item-input"
           v-for="(item, index) in singleSearch"
           :key="index"
-          :class="{ 'wid100': singleSearch.length === 1 }"
+          class="search-item-input"
+          :class="{ wid100: singleSearch.length === 1 }"
         >
           <van-search
             v-model="searchFormData[item.prop]"
@@ -54,11 +54,11 @@
             </van-checkbox>
           </van-checkbox-group>
         </template>
-        <div class="load-more" v-if="loadStatus !== 'nomore'" @click="getList()">
+        <div v-if="loadStatus !== 'nomore'" class="load-more" @click="getList()">
           <span v-if="loadStatus === 'loadmore'">点击加载更多</span>
-          <van-loading size="20" v-else />
+          <van-loading v-else size="20" />
         </div>
-        <div class="load-more" v-else>没有更多了</div>
+        <div v-else class="load-more">没有更多了</div>
       </div>
       <div class="foot-item" :class="checkType === 'radio' ? 'flex-evenly' : 'flex-between'">
         <van-checkbox
@@ -83,7 +83,7 @@ import { defineComponent } from 'vue';
 import { Toast } from 'vant';
 
 export default defineComponent({
-  name: 'wf-user-select',
+  name: 'WfUserSelect',
   props: {
     defaultChecked: {
       type: String,
@@ -103,6 +103,22 @@ export default defineComponent({
       default: 'radio',
     },
     cColumn: Object,
+  },
+  data() {
+    return {
+      searchFormData: {},
+      radioValue: '',
+      visible: false,
+      allChecked: false,
+      checkedValues: [],
+      page: {
+        size: 10,
+        current: 1,
+      },
+      list: [],
+      init: false,
+      loadStatus: 'loadmore',
+    };
   },
   computed: {
     qparams() {
@@ -125,22 +141,6 @@ export default defineComponent({
         this.allChecked = val.length === this.list.length && this.list.length > 0;
       }
     },
-  },
-  data() {
-    return {
-      searchFormData: {},
-      radioValue: '',
-      visible: false,
-      allChecked: false,
-      checkedValues: [],
-      page: {
-        size: 10,
-        current: 1,
-      },
-      list: [],
-      init: false,
-      loadStatus: 'loadmore',
-    };
   },
   methods: {
     toggleAll(val) {
@@ -237,8 +237,6 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@import '../../static/styles/common';
-
 .search-item {
   padding: 30rpx;
   border-bottom: 20rpx solid #f6f6f6;

@@ -29,7 +29,7 @@
           <van-loading size="24px" />
         </div>
       </div>
-      <div class="wf-map-dialog__list" v-if="list.length">
+      <div v-if="list.length" class="wf-map-dialog__list">
         <div
           v-for="(item, index) in list"
           :key="item.id || index"
@@ -40,7 +40,10 @@
             <p class="wf-map-dialog__item-title">{{ item.title }}</p>
             <p class="wf-map-dialog__item-address">{{ item.address }}</p>
           </div>
-          <van-icon :name="index === current ? 'success' : 'circle'" class="wf-map-dialog__item-icon" />
+          <van-icon
+            :name="index === current ? 'success' : 'circle'"
+            class="wf-map-dialog__item-icon"
+          />
         </div>
       </div>
       <div v-else class="wf-map-dialog__empty">暂无地点数据</div>
@@ -55,7 +58,7 @@
 import { defineComponent } from 'vue';
 import { Search, Button, Loading, Icon, showToast } from 'vant';
 import jsonp from '../../../util/jsonp.js';
-import md5 from '../../../util/md5.js';
+import md5 from 'md5';
 
 let tMapLoader;
 

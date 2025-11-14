@@ -22,19 +22,24 @@
           />
         </van-popup>
         <van-search
-          :placeholder="`请输入${searchLabel}`"
           v-model="searchValue"
+          :placeholder="`请输入${searchLabel}`"
           shape="square"
           clearable
           background="#f6f6f6"
           @search="getList(true)"
           @clear="getList(true)"
-        ></van-search>
+        />
       </div>
       <div class="check-item">
         <template v-if="checkType === 'radio'">
           <van-radio-group v-model="radioValue" direction="vertical">
-            <van-radio v-for="item in list" :key="item.id" :name="item.id" :disabled="item.disabled">
+            <van-radio
+              v-for="item in list"
+              :key="item.id"
+              :name="item.id"
+              :disabled="item.disabled"
+            >
               <div class="item">
                 <div v-for="(itemColumn, idx) in column" :key="idx" class="item-column">
                   <div class="real-name">{{ itemColumn.label }}</div>
@@ -46,7 +51,12 @@
         </template>
         <template v-else>
           <van-checkbox-group v-model="checkedValues" direction="vertical">
-            <van-checkbox v-for="item in list" :key="item.id" :name="item.id" :disabled="item.disabled">
+            <van-checkbox
+              v-for="item in list"
+              :key="item.id"
+              :name="item.id"
+              :disabled="item.disabled"
+            >
               <div class="item">
                 <div v-for="(itemColumn, idx) in column" :key="idx" class="item-column">
                   <div class="real-name">{{ itemColumn.label }}</div>
@@ -56,11 +66,11 @@
             </van-checkbox>
           </van-checkbox-group>
         </template>
-        <div class="load-more" v-if="loadStatus !== 'nomore'" @click="getList()">
+        <div v-if="loadStatus !== 'nomore'" class="load-more" @click="getList()">
           <span v-if="loadStatus === 'loadmore'">点击加载更多</span>
-          <van-loading size="20" v-else />
+          <van-loading v-else size="20" />
         </div>
-        <div class="load-more" v-else>没有更多了</div>
+        <div v-else class="load-more">没有更多了</div>
       </div>
       <div class="foot-item" :class="checkType === 'radio' ? 'flex-evenly' : 'flex-between'">
         <van-checkbox
@@ -85,7 +95,7 @@ import { defineComponent } from 'vue';
 import { Toast } from 'vant';
 
 export default defineComponent({
-  name: 'wf-user-select',
+  name: 'WfUserSelect',
   props: {
     defaultChecked: {
       type: String,
@@ -119,14 +129,6 @@ export default defineComponent({
       }),
     },
   },
-  computed: {
-    qparams() {
-      return this.params;
-    },
-    column() {
-      return this.cColumn.children.column;
-    },
-  },
   data() {
     return {
       searchLabel: '物料编码',
@@ -150,6 +152,14 @@ export default defineComponent({
         { label: '规格型号', value: 'FSPECIFICATION' },
       ],
     };
+  },
+  computed: {
+    qparams() {
+      return this.params;
+    },
+    column() {
+      return this.cColumn.children.column;
+    },
   },
   watch: {
     visible(val) {
@@ -264,8 +274,6 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@import '../../static/styles/common';
-
 .search-item {
   padding: 30rpx;
   border-bottom: 20rpx solid #f6f6f6;

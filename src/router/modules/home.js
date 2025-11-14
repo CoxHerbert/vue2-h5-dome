@@ -10,5 +10,5 @@ export default {
     tabbar: true,
     requiresAuth: true,
   },
-  component: () => import('@/views/home/index.vue'),
-}
+  component: () => import('@/views/plugin/workflow/pages/workbench/index.vue'),
+};

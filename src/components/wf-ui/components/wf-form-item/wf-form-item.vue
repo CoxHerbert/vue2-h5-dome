@@ -6,12 +6,15 @@
     </div>
     <div class="wf-form-item__content">
       <wf-input
-        v-if="[undefined, 'input', 'password', 'textarea', 'number'].includes(column.type) && !column.component"
+        v-if="
+          [undefined, 'input', 'password', 'textarea', 'number'].includes(column.type) &&
+          !column.component
+        "
         v-model="text"
         :column="column"
         :disabled="disabled"
-        @change="handleLabelChange"
         :dynamic-index="dynamicIndex"
+        @change="handleLabelChange"
       />
       <wf-select
         v-else-if="['select'].includes(column.type)"
@@ -19,8 +22,8 @@
         :column="column"
         :dic="dic"
         :disabled="disabled"
-        @label-change="handleLabelChange"
         :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
       />
       <wf-cascader
         v-else-if="['cascader', 'tree'].includes(column.type)"
@@ -28,8 +31,8 @@
         :column="column"
         :dic="dic"
         :disabled="disabled"
-        @label-change="handleLabelChange"
         :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
       />
       <wf-radio
         v-else-if="column.type === 'radio'"
@@ -37,8 +40,8 @@
         :column="column"
         :dic="dic"
         :disabled="disabled"
-        @label-change="handleLabelChange"
         :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
       />
       <wf-checkbox
         v-else-if="column.type === 'checkbox'"
@@ -46,8 +49,8 @@
         :column="column"
         :dic="dic"
         :disabled="disabled"
-        @label-change="handleLabelChange"
         :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
       />
       <wf-rate
         v-else-if="column.type === 'rate'"
@@ -86,40 +89,40 @@
       />
       <wf-dynamic
         v-else-if="column.type === 'dynamic'"
-        v-model="text"
         ref="temp"
+        v-model="text"
         :column="column"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
       <wf-map
         v-else-if="column.type === 'map'"
-        v-model="text"
         ref="temp"
+        v-model="text"
         :column="column"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
       <wf-table-select
         v-else-if="column.type === 'table-select'"
-        v-model="text"
         ref="temp"
+        v-model="text"
         :column="column"
         :disabled="disabled"
-        @label-change="handleLabelChange"
         :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
       />
       <wf-sign
         v-else-if="column.type === 'sign'"
-        v-model="text"
         ref="temp"
+        v-model="text"
         :column="column"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
       <component
-        v-else-if="!column.type && column.component"
         :is="column.component"
+        v-else-if="!column.type && column.component"
         v-model="text"
         v-bind="column"
         :column="Object.assign(column, column.params || {})"
@@ -127,83 +130,29 @@
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
-      <WkfUserSelect
-        v-else-if="column.component === 'wf-user-select'"
-        v-model="text"
-        :column="Object.assign(column, column.params || {})"
-        :check-type="column.params ? column.params.checkType : 'radio'"
-        :dic="dic"
-        :disabled="disabled"
-        :dynamic-index="dynamicIndex"
-        @label-change="handleLabelChange"
-      />
       <Customtable
-        v-else-if="[
-          'wf-vo-select',
-          'wf-prdmo-select',
-          'wf-plan-select',
-          'wf-withdrawn-select'
-        ].includes(column.component)"
+        v-else-if="
+          ['wf-vo-select', 'wf-prdmo-select', 'wf-plan-select', 'wf-withdrawn-select'].includes(
+            column.component
+          )
+        "
         v-model="text"
         :column="column"
         :check-type="column.params ? column.params.checkType : 'radio'"
         :disabled="disabled"
-        @label-change="handleLabelChange"
         :dynamic-index="dynamicIndex"
-      />
-      <MaterialTable
-        v-else-if="['wf-wl-select'].includes(column.component)"
-        v-model="text"
-        :column="column"
         @label-change="handleLabelChange"
-        :check-type="column.params ? column.params.checkType : 'radio'"
-        :disabled="disabled"
-        :dynamic-index="dynamicIndex"
-      />
-      <Vaguecustomtableselect
-        v-else-if="['wf-fuzzymaterial-select'].includes(column.component)"
-        v-model="text"
-        :column="column"
-        :check-type="column.params ? column.params.checkType : 'radio'"
-        :disabled="disabled"
-        @label-change="handleLabelChange"
-        :dynamic-index="dynamicIndex"
-      />
-      <template v-else-if="column.component === 'wf-radio-select'">
-        <WfUserSelect
-          v-if="isUser(column)"
-          v-model="text"
-          :readonly="column.readonly"
-          :disabled="column.disabled"
-        />
-      </template>
-      <WfFeasibility
-        v-if="column.component === 'wf-feasibility'"
-        v-model="text"
       />
     </div>
   </div>
 </template>
 
 <script>
-import WfFeasibility from '@/views/plugin/workflow/components/wf-feasibility/wf-feasibility.vue';
-import WfUserSelect from '@/views/plugin/workflow/components/custom-fileds/wf-user-select/index.vue';
-import Customtable from '@/views/plugin/workflow/components/custom-fileds/wf-customtable-select/index.vue';
-import MaterialTable from '@/views/plugin/workflow/components/custom-fileds/wf-material-select/index.vue';
-import Vaguecustomtableselect from '@/views/plugin/workflow/components/custom-fileds/wf-fuzzymaterial-select/index.vue';
 import { DATE_LIST } from '../../util/variable.js';
 import { mpFormInitVal } from '../../util/dataformat.js';
 
 export default {
-  name: 'wf-form-item',
-  components: {
-    WfFeasibility,
-    WkfUserSelect: WfUserSelect,
-    WfUserSelect,
-    Customtable,
-    MaterialTable,
-    Vaguecustomtableselect,
-  },
+  name: 'WfFormItem',
   props: {
     column: {
       type: Object,
@@ -239,10 +188,7 @@ export default {
     },
     itemClass() {
       const position = this.column.type === 'dynamic' ? 'top' : this.labelPositionValue;
-      return [
-        `wf-form-item--${position}`,
-        { 'wf-form-item--required': this.isRequired },
-      ];
+      return [`wf-form-item--${position}`, { 'wf-form-item--required': this.isRequired }];
     },
     labelPositionValue() {
       return this.labelPosition || this.column.labelPosition || 'left';

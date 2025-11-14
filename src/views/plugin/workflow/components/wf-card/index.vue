@@ -186,18 +186,15 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-// @import '../../static/styles/common';
-
-.wf-card {
-  padding: 0 30rpx 30rpx;
-}
+// .wf-card {
+//   padding: 0 15px 15px;
+// }
 
 .wf-card-item {
   background: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
 }
 
 .wf-card-body {
@@ -208,18 +205,19 @@ export default defineComponent({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24rpx;
+  margin-bottom: 12px;
 }
 
 .head-left {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 6px;
   flex: 1;
+  overflow: hidden;
 }
 
 .title {
-  font-size: 28rpx;
+  font-size: 14px;
   color: #222;
   font-weight: 600;
   overflow: hidden;
@@ -228,14 +226,14 @@ export default defineComponent({
 }
 
 .avatar {
-  width: 66rpx;
-  height: 66rpx;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .status-icon {
-  width: 74rpx;
+  width: 40px;
   color: #fff;
 }
 
@@ -244,8 +242,8 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20rpx;
-  padding-right: 8rpx;
+  font-size: 10px;
+  padding-right: 4px;
   background-size: 100% 100%;
 }
 
@@ -260,8 +258,8 @@ export default defineComponent({
 .cell {
   display: flex;
   align-items: center;
-  font-size: 28rpx;
-  margin-bottom: 18rpx;
+  font-size: 14px;
+  margin-bottom: 10px;
 }
 
 .cell:last-of-type {
@@ -277,16 +275,16 @@ export default defineComponent({
 }
 
 .card-divider {
-  margin-top: 24rpx;
+  margin-top: 12px;
 }
 
 .foot {
-  font-size: 34rpx;
+  font-size: 16px;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   font-weight: 600;
-  padding-top: 20rpx;
+  padding-bottom: 16px;
 }
 
 .line {

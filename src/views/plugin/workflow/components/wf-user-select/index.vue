@@ -3,19 +3,24 @@
     <van-popup v-model:show="visible" position="bottom" :style="{ height: '90%' }" round>
       <div class="search-item">
         <van-search
-          placeholder="请输入姓名"
           v-model="searchValue"
+          placeholder="请输入姓名"
           shape="square"
           clearable
           background="#f6f6f6"
           @search="getList(true)"
           @clear="getList(true)"
-        ></van-search>
+        />
       </div>
       <div class="check-item">
         <template v-if="checkType === 'radio'">
           <van-radio-group v-model="radioValue" direction="vertical">
-            <van-radio v-for="item in list" :key="item.id" :name="item.id" :disabled="item.disabled">
+            <van-radio
+              v-for="item in list"
+              :key="item.id"
+              :name="item.id"
+              :disabled="item.disabled"
+            >
               <div class="item">
                 <div class="real-name">{{ item.realName }}</div>
                 <div class="dept-name">{{ item.deptName }}</div>
@@ -38,11 +43,11 @@
             </van-checkbox>
           </van-checkbox-group>
         </template>
-        <div class="load-more" v-if="loadStatus !== 'nomore'" @click="getList()">
+        <div v-if="loadStatus !== 'nomore'" class="load-more" @click="getList()">
           <span v-if="loadStatus === 'loadmore'">点击加载更多</span>
-          <van-loading size="20" v-else />
+          <van-loading v-else size="20" />
         </div>
-        <div class="load-more" v-else>没有更多了</div>
+        <div v-else class="load-more">没有更多了</div>
       </div>
       <div class="foot-item" :class="checkType === 'radio' ? 'flex-evenly' : 'flex-between'">
         <van-checkbox
@@ -67,7 +72,7 @@ import { defineComponent } from 'vue';
 import { Toast } from 'vant';
 
 export default defineComponent({
-  name: 'wf-user-select',
+  name: 'WfUserSelect',
   props: {
     defaultChecked: String,
     userUrl: {
@@ -198,8 +203,6 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@import '../../static/styles/common';
-
 .search-item {
   padding: 30rpx;
   border-bottom: 20rpx solid #f6f6f6;

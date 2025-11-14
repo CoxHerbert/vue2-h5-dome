@@ -19,6 +19,7 @@ import { registerComponents } from './components/index';
 import { setupDirectives } from './directives';
 import { attachNProgress } from '@/router/nprogress';
 import { setupRouterGuard } from './router/guard';
+import { useDebugStore } from '@/store/debug';
 
 // —— 启动函数（推荐异步引导）——
 async function bootstrap() {
@@ -36,7 +37,6 @@ async function bootstrap() {
   app.use(plugins);
   setupRouterGuard(router);
 
-  const { useDebugStore } = await import('@/store/debug');
   const debugStore = useDebugStore();
   await debugStore.init();
 
