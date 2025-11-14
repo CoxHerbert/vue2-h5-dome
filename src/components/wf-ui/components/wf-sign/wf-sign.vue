@@ -24,7 +24,7 @@
 
 <script>
 import { defineComponent } from 'vue';
-import { Button, Image as VanImage } from 'vant';
+import { Button, Image as VanImage, showToast } from 'vant';
 import Props from '../../mixins/props.js';
 import SignaturePad from './components/signature.vue';
 import { DIC_HTTP_PROPS } from '../../util/variable.js';
@@ -99,11 +99,7 @@ export default defineComponent({
           const message = '未配置上传地址，保存为base64';
           const tag = sessionStorage.getItem(this.signId);
           if (!tag) {
-            uni.showToast({
-              title: message,
-              icon: 'none',
-              position: 'bottom',
-            });
+            showToast({ message, position: 'bottom' });
             sessionStorage.setItem(this.signId, 1);
           }
           reject();

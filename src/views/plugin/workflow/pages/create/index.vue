@@ -42,6 +42,8 @@
 import { defineComponent } from 'vue';
 import { list } from '../../api/process.js';
 import exForm from '../../mixins/ex-form.js';
+import { useUserStore } from '@/store/user.js';
+import { useAuthStore } from '@/store/auth.js';
 
 export default defineComponent({
     name: 'WorkflowCreatePage',
@@ -79,11 +81,18 @@ export default defineComponent({
             this.refreshToken(processDefinition);
         },
         refreshToken(processDefinition) {
-            const userInfo = uni.getStorageSync('loginInfo');
-            if (userInfo) {
-                this.$store.dispatch('refreshTokenFn', userInfo).finally(() => {
-                    this.dynamicRoute(processDefinition, 'start');
-                });
+            const userStore = useUserStore();
+            const authStore = useAuthStore();
+            const userInfo = userStore.userInfo;
+            if (userInfo && authStore.refreshToken) {
+                authStore
+                    .refresh()
+                    .catch((error) => {
+                        console.warn('[workflow] 刷新令牌失败', error);
+                    })
+                    .finally(() => {
+                        this.dynamicRoute(processDefinition, 'start');
+                    });
             } else {
                 this.dynamicRoute(processDefinition, 'start');
             }

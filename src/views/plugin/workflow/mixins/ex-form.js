@@ -10,6 +10,7 @@ import {
     addMultiInstance,
     withdrawTask,
 } from '../api/task.js';
+import { showToast } from 'vant';
 import { Base64 } from '@/utils/base64.js';
 import { useWorkflowStore } from '@/store/workflow.js';
 
@@ -226,10 +227,7 @@ export default {
                 }
 
                 if (!pass && !comment) {
-                    uni.showToast({
-                        title: '请填写批复意见',
-                        icon: 'none',
-                    });
+                    showToast({ message: '请填写批复意见' });
                     this.submitLoading = false;
                     reject();
                     return;
@@ -288,10 +286,7 @@ export default {
         // 人员选择弹窗
         handleUserSelect({ type, checkType }) {
             if (!this.comment && ['transfer', 'delegate'].includes(type)) {
-                uni.showToast({
-                    title: '请填写批复意见',
-                    icon: 'none',
-                });
+                showToast({ message: '请填写批复意见' });
                 return;
             }
             if (type == 'assignee') this.defaultChecked = this.$refs.examineForm.examineForm.assignee;
@@ -338,10 +333,7 @@ export default {
                 // 加签
                 this.submitLoading = true;
                 addMultiInstance(param).then(() => {
-                    uni.showToast({
-                        title: '加签成功',
-                        icon: 'none',
-                    });
+                    showToast({ message: '加签成功', type: 'success' });
                     this.submitLoading = false;
                 });
             } else if (type == 'copy') {
@@ -380,10 +372,7 @@ export default {
                 navigation.call(this.$router, location);
             };
             if (msg) {
-                uni.showToast({
-                    title: msg,
-                    icon: 'none',
-                });
+                showToast({ message: msg });
                 setTimeout(navigate, 1000);
             } else {
                 navigate();
