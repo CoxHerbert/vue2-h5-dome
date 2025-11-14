@@ -95,7 +95,6 @@ router.beforeEach(async (to, from, next) => {
   // 3) 需要鉴权但未登录 ⇒ 静默 or 普通登录
   if (!token) {
     // 避免已经在登录页时再次重定向导致循环
-    console.log(!isLoginPath(to.path));
     if (!isLoginPath(to.path)) {
       const detectedType = resolveTypeByPath(to.path); // 统一“类型匹配”
       const redirectFull = getIntendedFullPathForGuard(to, from); // 统一“回跳计算”（to 是 /login* 时优先用 from）

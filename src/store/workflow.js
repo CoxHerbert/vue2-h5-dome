@@ -16,9 +16,10 @@ export const useWorkflowStore = defineStore('workflow', {
   },
   actions: {
     async fetchTodoList(params = { current: 1, size: 5 }) {
-      const response = await todoList(params);
+      const { append = false, ...query } = params || {};
+      const response = await todoList(query);
       const { records = [], total = 0 } = response.data || {};
-      this.todoItems = records;
+      this.todoItems = append ? [...this.todoItems, ...records] : records;
       this.todoTotal = total;
       return { records, total };
     },
