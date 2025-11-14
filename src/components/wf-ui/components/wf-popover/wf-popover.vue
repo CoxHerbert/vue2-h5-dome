@@ -86,11 +86,11 @@ export default defineComponent({
   props: {
     width: {
       type: String,
-      default: '300rpx',
+      default: '150px',
     },
     radius: {
       type: String,
-      default: '8rpx',
+      default: '4px',
     },
     left: {
       type: String,
@@ -126,7 +126,7 @@ export default defineComponent({
     },
     borderWidth: {
       type: String,
-      default: '12rpx',
+      default: '6px',
     },
     direction: {
       type: String,

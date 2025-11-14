@@ -538,7 +538,7 @@ export default defineComponent({
     position: relative;
 
     .van-field {
-      padding: 20rpx 0;
+      padding: 10px 0;
     }
 
     &::after {
@@ -553,11 +553,11 @@ export default defineComponent({
   }
 
   &__search {
-    padding: 30rpx;
+    padding: 15px;
   }
 
   &__content {
-    height: calc(100% - 232rpx - env(safe-area-inset-bottom));
+    height: calc(100% - 116px - env(safe-area-inset-bottom));
     box-sizing: border-box;
     background-color: #f6f6f6;
     overflow-y: auto;
@@ -566,25 +566,25 @@ export default defineComponent({
   &__children {
     display: flex;
     flex-direction: column;
-    margin-left: 16rpx;
+    margin-left: 8px;
   }
 
   &__children-icon {
     text-align: center;
     color: #969799;
-    margin-bottom: 8rpx;
+    margin-bottom: 4px;
   }
 
   &__loadmore {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16rpx 0 32rpx;
+    padding: 8px 0 16px;
   }
 
   &__nomore {
     color: #969799;
-    font-size: 26rpx;
+    font-size: 13px;
   }
 
   &__action {

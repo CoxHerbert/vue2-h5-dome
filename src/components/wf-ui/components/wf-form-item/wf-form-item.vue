@@ -183,9 +183,17 @@ export default {
     labelStyle() {
       const width = this.column.labelWidth ?? this.labelWidth;
       if (width) {
+        const widthNumber = Number(String(width).replace(/px|rpx/g, ''));
+        if (!Number.isNaN(widthNumber)) {
+          const pxWidth = widthNumber / 2;
+          return {
+            minWidth: `${pxWidth}px`,
+            width: `${pxWidth}px`,
+          };
+        }
         return {
-          minWidth: `${width}rpx`,
-          width: `${width}rpx`,
+          minWidth: width,
+          width: width,
         };
       }
       return {};
@@ -233,22 +241,22 @@ export default {
   width: 100%;
   display: flex;
   align-items: flex-start;
-  padding: 20rpx 0;
+  padding: 10px 0;
 
   &__label {
     flex: 0 0 auto;
-    min-width: 160rpx;
-    padding-right: 20rpx;
+    min-width: 80px;
+    padding-right: 10px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     color: #303133;
-    font-size: 28rpx;
+    font-size: 14px;
   }
 
   &__asterisk {
     color: #ee0a24;
-    margin-right: 6rpx;
+    margin-right: 3px;
   }
 
   &__content {
@@ -261,7 +269,7 @@ export default {
 
     .wf-form-item__label {
       width: 100%;
-      margin-bottom: 10rpx;
+      margin-bottom: 5px;
     }
 
     .wf-form-item__content {

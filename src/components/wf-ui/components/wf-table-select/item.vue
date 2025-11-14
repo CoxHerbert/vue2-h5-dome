@@ -95,9 +95,9 @@ export default defineComponent({
 <style lang="scss" scoped>
 .wf-table-select__content--item {
   background-color: #fff;
-  margin: 16rpx;
-  border-radius: 16rpx;
-  padding: 16rpx;
+  margin: 8px;
+  border-radius: 8px;
+  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -119,7 +119,7 @@ export default defineComponent({
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 20rpx;
+  margin-left: 10px;
 
   &-item {
     display: flex;
@@ -128,14 +128,14 @@ export default defineComponent({
 
   &-label {
     color: #999;
-    font-size: 28rpx;
-    margin-right: 6rpx;
+    font-size: 14px;
+    margin-right: 3px;
   }
 
   &-value {
     flex: 1;
     color: #565656;
-    font-size: 28rpx;
+    font-size: 14px;
     word-break: break-all;
     word-wrap: break-word;
     white-space: pre-wrap;
@@ -143,7 +143,7 @@ export default defineComponent({
 }
 
 .wf-table-select__toggle {
-  min-width: 50rpx;
+  min-width: 25px;
   display: flex;
   align-items: center;
   justify-content: center;
