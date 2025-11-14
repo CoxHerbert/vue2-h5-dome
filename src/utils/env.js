@@ -36,3 +36,12 @@ export function getLoginEnv(ua) {
 
 // 若项目里曾用过 getLoginEnvSync，这里做个别名兼容
 export const getLoginEnvSync = getLoginEnv;
+
+export function isRendererTestEnvironment() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  const search = window.location?.search || '';
+  const hash = window.location?.hash || '';
+  return /rendererCompare=true/i.test(search) || /rendererCompare=true/i.test(hash);
+}

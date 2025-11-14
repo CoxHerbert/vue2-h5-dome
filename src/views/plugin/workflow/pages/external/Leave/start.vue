@@ -25,8 +25,8 @@
 <script>
 import { defineComponent } from 'vue';
 import { Base64 } from '@/utils/base64.js';
-import wkfUserSelect from '../../../components/wf-user-select/index';
-import wkfExamForm from '../../../components/wf-exam-form/index';
+import wkfUserSelect from '../../../components/wf-user-select/index.vue';
+import wkfExamForm from '../../../components/wf-exam-form/index.vue';
 import exForm from '../../../mixins/ex-form';
 
 export default defineComponent({

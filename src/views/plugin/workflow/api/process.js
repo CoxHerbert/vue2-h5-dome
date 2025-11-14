@@ -1,4 +1,4 @@
-import http from '@/http/api.js';
+import http from '@/axios';
 
 const prefix = '/blade-workflow/app/process';
 

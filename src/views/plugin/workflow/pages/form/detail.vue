@@ -106,16 +106,18 @@
 </template>
 <script>
 import { defineComponent } from 'vue';
+import { showToast } from 'vant';
 import { Base64 } from '@/utils/base64.js';
 import RendererComparePanel from '@/components/dc/renderer/RendererComparePanel.vue';
 import { isRendererTestEnvironment } from '@/utils/env';
-import WkfFlow from '../../components/wf-flow/index';
+import WkfFlow from '../../components/wf-flow/index.vue';
 import WfBpmn from '../../components/wf-bpmn/index.vue';
-import WkfUserSelect from '../../components/wf-user-select/index';
-import WkfButton from '../../components/wf-button/index';
-import WkfExamForm from '../../components/wf-exam-form/index';
+import WkfUserSelect from '../../components/wf-user-select/index.vue';
+import WkfButton from '../../components/wf-button/index.vue';
+import WkfExamForm from '../../components/wf-exam-form/index.vue';
 import exForm from '../../mixins/ex-form';
 import draft from '../../mixins/draft';
+import { useAuthStore } from '@/store/auth.js';
 
 export default defineComponent({
     name: 'WorkflowFormDetailPage',
@@ -169,10 +171,11 @@ export default defineComponent({
         },
         // 获取任务详情
         getDetail(taskId, processInsId) {
+            const authStore = useAuthStore();
             this.h5bpmn = {
                 taskId: taskId,
                 processInsId: processInsId,
-                token: uni.getStorageSync('accessToken'),
+                token: authStore.token,
             };
             this.getTaskDetail(taskId, processInsId).then((res) => {
                 const { process, form, flow } = res;
@@ -204,12 +207,20 @@ export default defineComponent({
                     };
                     formList.forEach((f) => {
                         const { content, appContent, taskName, taskKey } = f;
-                        // #ifdef H5 || APP
-                        const { option } = this.handleResolveOption(eval('(' + content + ')'), taskForm, 'done');
-                        // #endif
-                        // #ifdef MP
-                        const { option } = this.handleResolveOption(JSON.parse(appContent), taskForm, 'done');
-                        // #endif
+                        let resolved;
+
+                        try {
+                            resolved = this.handleResolveOption(eval('(' + content + ')'), taskForm, 'done');
+                        } catch (error) {
+                            try {
+                                resolved = this.handleResolveOption(JSON.parse(appContent), taskForm, 'done');
+                            } catch (parseError) {
+                                console.error('[workflow] 无法解析流程表单分组配置', error, parseError);
+                                return;
+                            }
+                        }
+
+                        const { option } = resolved;
                         options.group.push({
                             label: taskName || taskKey,
                             column: option.column,
@@ -219,12 +230,21 @@ export default defineComponent({
                     this.summaryOption = options;
                 }
                 if (allForm) {
-                    // #ifdef H5 || APP
-                    const { option, vars } = this.handleResolveOption(eval('(' + allForm + ')'), taskForm, status);
-                    // #endif
-                    // #ifdef MP
-                    const { option, vars } = this.handleResolveOption(JSON.parse(allAppForm), taskForm, status);
-                    // #endif
+                    let resolved;
+
+                    try {
+                        resolved = this.handleResolveOption(eval('(' + allForm + ')'), taskForm, status);
+                    } catch (error) {
+                        try {
+                            resolved = this.handleResolveOption(JSON.parse(allAppForm), taskForm, status);
+                        } catch (parseError) {
+                            console.error('[workflow] 无法解析流程表单配置', error, parseError);
+                            this.waiting = false;
+                            return;
+                        }
+                    }
+
+                    const { option, vars } = resolved;
                     option.menuBtn = false;
                     for (let key in variables) {
                         if (this.validateNull(variables[key])) delete variables[key];
@@ -335,17 +355,15 @@ export default defineComponent({
 
                         this.handleCompleteTask(pass, variables)
                             .then(() => {
-                                uni.showToast({
-                                    title: '处理成功',
-                                });
-                                  setTimeout(() => {
-                                      this.handleNavigateTo({
-                                          name: 'WorkflowMine',
-                                          query: { current: '0' },
-                                          replace: true,
-                                      });
-                                      done();
-                                  }, 1000);
+                                showToast({ message: '处理成功', type: 'success' });
+                                setTimeout(() => {
+                                    this.handleNavigateTo({
+                                        name: 'WorkflowMine',
+                                        query: { current: '0' },
+                                        replace: true,
+                                    });
+                                    done();
+                                }, 1000);
                             })
                             .catch(() => {
                                 if (typeof done == 'function') done();
@@ -359,21 +377,15 @@ export default defineComponent({
             } else if (summaryForm) {
                 this.handleCompleteTask(pass, {})
                     .then(() => {
-                        uni.showToast({
-                            title: '处理成功',
-                        });
-                          setTimeout(() => {
-                              this.handleNavigateTo({ name: 'WorkflowMine', query: { current: '0' }, replace: true });
-                          }, 1000);
+                        showToast({ message: '处理成功', type: 'success' });
+                        setTimeout(() => {
+                            this.handleNavigateTo({ name: 'WorkflowMine', query: { current: '0' }, replace: true });
+                        }, 1000);
                     })
                     .catch(() => {
                         this.submitLoading = false;
                     });
-            } else
-                uni.showToast({
-                    title: '找不到需要提交的表单',
-                    icon: 'error',
-                });
+            } else showToast({ message: '找不到需要提交的表单', type: 'fail' });
         },
     },
 });

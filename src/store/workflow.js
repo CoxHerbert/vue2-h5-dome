@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { todoList } from '@/pages/plugin/workflow/api/process.js';
+import { todoList } from '@/views/plugin/workflow/api/process.js';
 
 export const useWorkflowStore = defineStore('workflow', {
   state: () => ({

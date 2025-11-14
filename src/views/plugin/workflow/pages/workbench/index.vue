@@ -30,7 +30,7 @@
 
     <img
       class="creat"
-      src="@/static/images/tabbar/creact.png"
+      src="https://oss.nutflow.vip/rider/public/create.png"
       alt="发起流程"
       @click.stop="handleJump(girdList[1])"
     />
@@ -40,7 +40,7 @@
 import { defineComponent } from 'vue';
 import { mapState, mapActions } from 'pinia';
 import { useWorkflowStore } from '@/store/workflow.js';
-import wkfCard from '../../components/wf-card/index';
+import wkfCard from '../../components/wf-card/index.vue';
 
 export default defineComponent({
   name: 'WorkflowWorkbenchPage',

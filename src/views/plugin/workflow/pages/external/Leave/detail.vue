@@ -69,11 +69,12 @@
 </template>
 <script>
 import { defineComponent } from 'vue';
+import { showToast } from 'vant';
 import { Base64 } from '@/utils/base64.js';
-import WkfFlow from '../../../components/wf-flow/index';
-import WkfUserSelect from '../../../components/wf-user-select/index';
-import WkfButton from '../../../components/wf-button/index';
-import WkfExamForm from '../../../components/wf-exam-form/index';
+import WkfFlow from '../../../components/wf-flow/index.vue';
+import WkfUserSelect from '../../../components/wf-user-select/index.vue';
+import WkfButton from '../../../components/wf-button/index.vue';
+import WkfExamForm from '../../../components/wf-exam-form/index.vue';
 import exForm from '../../../mixins/ex-form';
 
 export default defineComponent({
@@ -242,9 +243,7 @@ export default defineComponent({
 
                     this.handleCompleteTask(pass, variables)
                         .then(() => {
-                            uni.showToast({
-                                title: '处理成功',
-                            });
+                            showToast({ message: '处理成功', type: 'success' });
                             setTimeout(() => {
                                 this.handleNavigateTo(
                                     {
