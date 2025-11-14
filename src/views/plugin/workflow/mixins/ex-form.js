@@ -338,12 +338,12 @@ export default {
                 });
             } else if (type == 'copy') {
                 // 抄送
-                this.$set(this.$refs.examineForm.examineForm, 'copyUser', id);
-                this.$set(this.$refs.examineForm.examineForm, '$copyUser', name);
+                this.$refs.examineForm.examineForm.copyUser = id;
+                this.$refs.examineForm.examineForm.$copyUser = name;
             } else if (type == 'assignee') {
                 // 指定下一步审批人
-                this.$set(this.$refs.examineForm.examineForm, 'assignee', id);
-                this.$set(this.$refs.examineForm.examineForm, '$assignee', name);
+                this.$refs.examineForm.examineForm.assignee = id;
+                this.$refs.examineForm.examineForm.$assignee = name;
             }
             this.$refs['user-select'].visible = false;
         },
