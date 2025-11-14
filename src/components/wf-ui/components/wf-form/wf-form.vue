@@ -219,7 +219,7 @@ export default {
       this.column.forEach((col) => {
         this.handleDic(col).then((dic) => {
           if (!this.validateNull(dic)) {
-            this.$set(this.dic, col.prop, dic);
+            this.dic[col.prop] = dic;
           }
         });
       });
@@ -246,7 +246,7 @@ export default {
     // #endif
     setForm(value) {
       Object.keys(value).forEach((ele) => {
-        this.$set(this.form, ele, value[ele]);
+        this.form[ele] = value[ele];
       });
     },
     updateActiveGroups() {
@@ -323,7 +323,7 @@ export default {
     resetFields() {
       const defaultValue = formInitVal(this.column).tableForm;
       Object.keys(defaultValue).forEach((ele) => {
-        this.$set(this.form, ele, defaultValue[ele]);
+        this.form[ele] = defaultValue[ele];
       });
       this.hide();
     },
@@ -334,7 +334,7 @@ export default {
       this.allDisabled = false;
     },
     handleLabelChange({ prop, value, change }) {
-      this.$set(this.form, `${prop}`, value);
+      this.form[`${prop}`] = value;
       if (change) {
         change.call(this, { value });
       }

@@ -43,7 +43,7 @@ export default {
               }
               const res = await this.handleDictHttp(col)
               if (res) {
-								this.$set(this.dic, col.prop, res)
+                this.dic[col.prop] = res
                 if (!this.validateNull(res) && !this.validateNull(col.cascaderIndex)) {
                   try {
                     this.form[col.prop] = res[col.cascaderIndex][props.value]
