@@ -1,39 +1,54 @@
 <template>
   <div class="home-container">
-    <div class="head-item">
-      <div class="title">工作台</div>
-      <div class="tips">
-        {{ total > 0 ? `目前有${total}个待办事宜` : '目前没有待办事宜, 可以放松一下啦' }}
-      </div>
-    </div>
-    <div class="grid-item">
-      <div v-for="(item, index) in girdList" :key="index" class="item" @click="handleJump(item)">
-        <img :src="`${wfImage}/home/icon_${item.type}.png`" class="icon" alt="" />
-        <div class="name">{{ item.name }}</div>
-      </div>
-    </div>
+    <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+      <div class="home-scroll">
+        <div class="head-item">
+          <div class="title">工作台</div>
+          <div class="tips">
+            {{ total > 0 ? `目前有${total}个待办事宜` : '目前没有待办事宜, 可以放松一下啦' }}
+          </div>
+        </div>
+        <div class="grid-item">
+          <div v-for="(item, index) in girdList" :key="index" class="item" @click="handleJump(item)">
+            <img :src="`${wfImage}/home/icon_${item.type}.png`" class="icon" alt="" />
+            <div class="name">{{ item.name }}</div>
+          </div>
+        </div>
 
-    <div v-if="list.length > 0" class="card-item">
-      <div class="title">
-        <div class="line"></div>
-        <van-cell
-          class="section-cell"
-          title="我的待办"
-          is-link
-          :border="false"
-          @click="handleJump(girdList[0])"
-        />
+        <div v-if="list.length > 0" class="card-item">
+          <div class="title">
+            <div class="line"></div>
+            <van-cell
+              class="section-cell"
+              title="我的待办"
+              is-link
+              :border="false"
+              @click="handleJump(girdList[0])"
+            />
+          </div>
+          <van-list
+            v-model:loading="loading"
+            v-model:error="error"
+            :finished="finished"
+            finished-text="没有更多了"
+            error-text="请求失败，点击重新加载"
+            @load="onLoad"
+          >
+            <wkf-card :list="list" show-btn @refresh="refreshTodo" />
+          </van-list>
+        </div>
+        <wf-empty v-else text="工作再忙，也要记得喝水" />
       </div>
-      <wkf-card v-if="list.length > 0" :list="list" show-btn @refresh="refreshTodo" />
-    </div>
-    <wf-empty v-else text="工作再忙，也要记得喝水" />
-
-    <img
-      class="creat"
-      src="https://oss.nutflow.vip/rider/public/create.png"
-      alt="发起流程"
+    </van-pull-refresh>
+    <van-floating-bubble
+      axis="xy"
+      magnetic="x"
+      :offset="{ x: 20, y: 120 }"
+      class="create-bubble"
       @click.stop="handleJump(girdList[1])"
-    />
+    >
+      <img src="https://oss.nutflow.vip/rider/public/create.png" alt="发起流程" class="create-bubble__icon" />
+    </van-floating-bubble>
   </div>
 </template>
 <script>
@@ -70,6 +85,12 @@ export default defineComponent({
           location: { name: 'WorkflowMine', query: { current: '3' } },
         },
       ],
+      page: 1,
+      pageSize: 5,
+      loading: false,
+      finished: false,
+      refreshing: false,
+      error: false,
     };
   },
   computed: {
@@ -79,16 +100,52 @@ export default defineComponent({
     }),
   },
   mounted() {
-    this.refreshTodo();
+    this.onRefresh();
   },
   methods: {
     ...mapActions(useWorkflowStore, ['fetchTodoList']),
-    async refreshTodo() {
+    async onRefresh() {
+      this.refreshing = true;
+      this.loading = false;
+      this.finished = false;
+      this.error = false;
+      this.page = 1;
       try {
-        await this.fetchTodoList({ current: 1, size: 5 });
+        await this.fetchPage(1);
       } catch (error) {
-        console.error('[workflow] 获取待办失败', error);
+        console.error('[workflow] 下拉刷新待办失败', error);
+        this.error = true;
+      } finally {
+        this.refreshing = false;
+        this.loading = false;
       }
+    },
+    async onLoad() {
+      if (this.loading || this.finished) {
+        return;
+      }
+      this.loading = true;
+      this.error = false;
+      try {
+        await this.fetchPage(this.page);
+      } catch (error) {
+        console.error('[workflow] 加载更多待办失败', error);
+        this.error = true;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchPage(page) {
+      const { total = 0 } = await this.fetchTodoList({
+        current: page,
+        size: this.pageSize,
+        append: page > 1,
+      });
+      this.page = page + 1;
+      this.finished = this.list.length >= total;
+    },
+    refreshTodo() {
+      return this.onRefresh();
     },
     handleJump(item) {
       if (!item || !item.location) {
@@ -114,6 +171,10 @@ page {
   background: #f6f6f6;
   box-sizing: border-box;
   padding-bottom: 90px; // 给右下角 + 按钮留空间
+}
+
+.home-scroll {
+  min-height: 100%;
 }
 
 /* 顶部渐变头部 */
@@ -213,12 +274,16 @@ page {
 }
 
 /* 右下角发起流程按钮 */
-.creat {
-  position: fixed;
-  right: 20px;
-  bottom: 30px;
+.create-bubble {
   width: 54px;
   height: 54px;
   z-index: 20;
+}
+
+.create-bubble__icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
 }
 </style>
