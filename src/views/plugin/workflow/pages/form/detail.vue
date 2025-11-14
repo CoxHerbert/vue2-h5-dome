@@ -2,7 +2,7 @@
   <div class="workflow-form-detail">
     <van-skeleton v-if="waiting" :row="6" animate />
     <div v-else class="detail">
-      <div class="detail-head flex-between flex-c">
+      <section class="detail-head card flex-between flex-c">
         <div class="detail-avatar" aria-hidden="true">{{ avatarText }}</div>
         <div class="flex-one c">
           <div class="leave bold txt-cut1">{{ process.processDefinitionName }}</div>
@@ -33,19 +33,21 @@
             >已删除</van-tag
           >
         </template>
-      </div>
-      <van-tabs v-model:active="current" :border="false" class="detail-tabs">
-        <van-tab v-for="(tab, index) in tabList" :key="tab.name" :title="tab.name" :name="index" />
-      </van-tabs>
+      </section>
+      <section class="card detail-tabs" aria-label="流程详情切换">
+        <van-tabs v-model:active="current" :border="false">
+          <van-tab v-for="(tab, index) in tabList" :key="tab.name" :title="tab.name" :name="index" />
+        </van-tabs>
+      </section>
       <div class="content">
-        <div v-show="current === 0" class="detail-card">
-          <div
+        <div v-show="current === 0" class="detail-card card">
+          <section
             v-if="
               summaryOption &&
               ((summaryOption.column && summaryOption.column.length > 0) ||
                 (summaryOption.group && summaryOption.group.length > 0))
             "
-            class="split-line"
+            class="detail-section"
           >
             <renderer-compare-panel
               v-if="enableRendererCompare"
@@ -53,31 +55,33 @@
               :option="summaryOption"
             />
             <wf-form v-else ref="summaryForm" v-model="form" :option="summaryOption" />
-          </div>
-          <div
+          </section>
+          <section
             v-if="
               option &&
               ((option.column && option.column.length > 0) ||
                 (option.group && option.group.length > 0))
             "
-            class="split-line"
+            class="detail-section"
           >
             <renderer-compare-panel v-if="enableRendererCompare" v-model="form" :option="option" />
             <wf-form v-else ref="form" v-model="form" :option="option" />
-          </div>
-          <div v-if="process.status === 'todo'" class="split-line">
+          </section>
+          <section v-if="process.status === 'todo'" class="detail-section">
             <wkf-exam-form
               ref="examineForm"
               v-model:comment="comment"
               :process="process"
               @user-select="handleUserSelect"
             />
-          </div>
+          </section>
         </div>
-        <div v-show="current === 1" class="flow-wrapper">
+        <section v-show="current === 1" class="flow-wrapper card">
           <wkf-flow :flow="flow" />
-        </div>
-        <WfBpmn v-if="current === 2" :bpmn-option="h5bpmn" />
+        </section>
+        <section v-if="current === 2" class="card bpmn-wrapper">
+          <WfBpmn :bpmn-option="h5bpmn" />
+        </section>
       </div>
       <wkf-user-select
         ref="user-select"
@@ -412,30 +416,67 @@ export default defineComponent({
 page {
   background: #f6f6f6;
 }
-.split-line {
-  border-bottom: 20rpx solid #f6f6f6;
-  min-height: 45px;
+
+.workflow-form-detail {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f6f6f6 0%, #f9fafb 100%);
+  padding: 24rpx 24rpx 40rpx;
+  box-sizing: border-box;
 }
+
+.card {
+  background-color: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 12rpx 32rpx rgba(31, 43, 74, 0.08);
+  margin-bottom: 24rpx;
+  padding: 30rpx;
+}
+
 .detail {
+  .content {
+    padding-bottom: 16rpx;
+  }
+
   &-head {
-    background: #fff;
-    padding: 30rpx;
+    gap: 24rpx;
+
     .c {
-      margin: 0 20rpx;
+      flex: 1;
+      min-width: 0;
+
       .leave {
-        color: #333;
+        color: #1f2b4a;
         font-size: 34rpx;
+        line-height: 1.4;
       }
+
       .name {
-        color: #666;
-        font-size: 30rpx;
+        margin-top: 8rpx;
+        color: #7a8499;
+        font-size: 28rpx;
       }
     }
   }
-  .content {
-    padding: 0 0 30rpx;
+
+  &-tabs {
+    padding: 0;
+
+    :deep(.van-tabs__wrap) {
+      border-radius: 24rpx 24rpx 0 0;
+    }
+
+    :deep(.van-tab__text) {
+      font-size: 28rpx;
+    }
+
+    :deep(.van-tabs__line) {
+      width: 60rpx;
+      height: 6rpx;
+      border-radius: 999px;
+    }
   }
 }
+
 .detail-avatar {
   display: flex;
   align-items: center;
@@ -443,24 +484,36 @@ page {
   width: 90rpx;
   height: 90rpx;
   border-radius: 50%;
-  background-color: #fab022;
+  background: linear-gradient(135deg, #fab022 0%, #ffcd4e 100%);
   color: #fff;
   font-size: 34rpx;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 4rpx;
 }
 
 .detail-card {
-  background: #fff;
-  margin: 20rpx 0;
-  padding: 0 0 20rpx;
+  padding: 0;
+  overflow: hidden;
+}
+
+.detail-section {
+  padding: 30rpx 30rpx 10rpx;
+
+  & + .detail-section {
+    border-top: 1px solid #f2f3f5;
+  }
 }
 
 .flow-wrapper {
-  padding: 30rpx;
+  padding: 24rpx;
 }
 
-.workflow-form-detail {
-  min-height: 100vh;
-  background: #f6f6f6;
+.bpmn-wrapper {
+  padding: 0;
+
+  :deep(canvas),
+  :deep(svg) {
+    border-radius: 0 0 24rpx 24rpx;
+  }
 }
 </style>
