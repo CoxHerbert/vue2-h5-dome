@@ -47,13 +47,11 @@ export default {
     },
     handleRevocerDraftSubmit() {
       this.form = JSON.parse(this.recoverDraftData);
-      // #ifdef MP
       const option = this.deepClone(this.option);
       this.option = {};
       setTimeout(() => {
         this.option = option;
       });
-      // #endif
     },
   },
 };

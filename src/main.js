@@ -20,6 +20,7 @@ import { setupDirectives } from './directives';
 import { attachNProgress } from '@/router/nprogress';
 import { setupRouterGuard } from './router/guard';
 import { useDebugStore } from '@/store/debug';
+import request from '@/axios/workflow';
 
 // —— 启动函数（推荐异步引导）——
 async function bootstrap() {
@@ -60,6 +61,9 @@ async function bootstrap() {
       // 忽略启动期拉取失败，交由页面或拦截器兜底
     }
   }
+  app.config.globalProperties.$http = {
+    request,
+  };
 
   // 5) 等路由就绪再挂载，避免首屏空白或闪烁
   await router.isReady();

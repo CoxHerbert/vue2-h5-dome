@@ -130,19 +130,6 @@
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
-      <Customtable
-        v-else-if="
-          ['wf-vo-select', 'wf-prdmo-select', 'wf-plan-select', 'wf-withdrawn-select'].includes(
-            column.component
-          )
-        "
-        v-model="text"
-        :column="column"
-        :check-type="column.params ? column.params.checkType : 'radio'"
-        :disabled="disabled"
-        :dynamic-index="dynamicIndex"
-        @label-change="handleLabelChange"
-      />
     </div>
   </div>
 </template>
