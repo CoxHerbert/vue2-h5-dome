@@ -166,7 +166,7 @@ async function onSubmit() {
     else localStorage.removeItem('LAST_USERNAME');
 
     showToast(t('login.toast.success'));
-    window.location.replace(safeRedirect());
+    // window.location.replace(safeRedirect());
   } catch (err) {
     const msg = err?.message || t('login.toast.fail');
     console.error('[account-login] login error:', err);

@@ -148,9 +148,7 @@ export default {
             const { process } = res.data;
             process.hideComment = true;
             this.process = process;
-            uni.setNavigationBarTitle({
-              title: `发起流程 - ${process.name}`,
-            });
+            console.log(res.data);
             resolve(res.data);
           })
           .catch(() => {
@@ -200,9 +198,6 @@ export default {
             workflowStore.setProcessDetail(process);
             workflowStore.setProcessFlow(this.flow);
             workflowStore.setButtonList(button);
-            // uni.setNavigationBarTitle({
-            // 	title: `流程详情 - ${process.processDefinitionName}`
-            // })
             resolve({ process, form, flow, button });
           })
           .catch(() => {
