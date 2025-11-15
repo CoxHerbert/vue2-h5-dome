@@ -84,7 +84,6 @@
             "
             class="detail-section"
           >
-            <!-- {{ form }} -->
             <wf-form ref="form" v-model="form" :option="option" />
           </section>
           <section v-if="process.status === 'todo'" class="detail-section">
@@ -239,7 +238,6 @@ export default defineComponent({
         }
 
         let { allForm, allAppForm, taskForm, formList } = form;
-        console.log(allAppForm);
         if (formList && formList.length > 0) {
           const options = {
             menuBtn: false,
@@ -451,8 +449,6 @@ page {
 
 /* 页面主体间距 */
 .detail {
-  /* 24rpx 24rpx 40rpx -> 12px 12px 20px */
-  padding: 12px 12px 20px;
   box-sizing: border-box;
 
   .content {

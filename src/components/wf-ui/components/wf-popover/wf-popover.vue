@@ -64,7 +64,7 @@
           bottom: triangleBottom,
         }"
       ></div>
-      <slot />
+      <slot></slot>
     </div>
     <div
       v-if="mask"
@@ -82,15 +82,14 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'WfPopover',
-  emits: ['close'],
   props: {
     width: {
       type: String,
-      default: '300rpx',
+      default: '150px',
     },
     radius: {
       type: String,
-      default: '8rpx',
+      default: '4px',
     },
     left: {
       type: String,
@@ -126,7 +125,7 @@ export default defineComponent({
     },
     borderWidth: {
       type: String,
-      default: '12rpx',
+      default: '6px',
     },
     direction: {
       type: String,
@@ -169,6 +168,7 @@ export default defineComponent({
       default: false,
     },
   },
+  emits: ['close'],
   methods: {
     handleClose() {
       if (!this.show) {

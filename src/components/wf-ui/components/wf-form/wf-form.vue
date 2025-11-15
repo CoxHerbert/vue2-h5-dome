@@ -115,7 +115,7 @@ export default {
       required: true,
       default: () => ({ column: [], menuBtn: false }),
     },
-    value: {},
+    modelValue: {},
   },
   data() {
     return {
@@ -172,7 +172,7 @@ export default {
       },
       deep: true,
     },
-    value: {
+    modelValue: {
       handler(val) {
         if (this.formCreate) {
           this.setForm(val || {});
@@ -346,7 +346,6 @@ export default {
 
 <style lang="scss" scoped>
 .wf-form {
-  padding: 0 30rpx;
   background: #fff;
 
   &-content {
@@ -355,7 +354,7 @@ export default {
 
   &-bottom {
     width: 100%;
-    padding: 10rpx 30rpx calc(env(safe-area-inset-bottom) + 10rpx) 30rpx;
+    padding: 5px 15px calc(env(safe-area-inset-bottom) + 5px) 15px;
     position: fixed;
     background-color: #fff;
     z-index: 3;
@@ -373,6 +372,6 @@ export default {
 }
 
 .wf-form-group__icon {
-  margin-right: 10rpx;
+  margin-right: 5px;
 }
 </style>

@@ -41,4 +41,13 @@ export default {
       params,
     });
   },
+  getUser(id) {
+    return request({
+      url: '/blade-system/user/detail',
+      method: 'GET',
+      params: {
+        id,
+      },
+    });
+  },
 };

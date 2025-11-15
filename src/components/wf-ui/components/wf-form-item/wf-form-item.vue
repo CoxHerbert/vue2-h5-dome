@@ -130,6 +130,16 @@
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
+      <wf-user-select
+        v-else-if="'wf-user-select' == column.component"
+        v-model="text"
+        :column="Object.assign(column, column.params || {})"
+        :check-type="column.params ? column.params.checkType : 'radio'"
+        :dic="dic"
+        :disabled="disabled"
+        :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
+      />
     </div>
   </div>
 </template>
@@ -137,15 +147,19 @@
 <script>
 import { DATE_LIST } from '../../util/variable.js';
 import { mpFormInitVal } from '../../util/dataformat.js';
+import WfUserSelect from '@/views/plugin/workflow/components/custom-fileds/wf-user-select/index.vue';
 
 export default {
   name: 'WfFormItem',
+  components: {
+    WfUserSelect,
+  },
   props: {
     column: {
       type: Object,
       default: () => ({}),
     },
-    value: {
+    modelValue: {
       type: [Object, Array, String, Number],
     },
     disabled: {
@@ -183,9 +197,17 @@ export default {
     labelStyle() {
       const width = this.column.labelWidth ?? this.labelWidth;
       if (width) {
+        const widthNumber = Number(String(width).replace(/px|rpx/g, ''));
+        if (!Number.isNaN(widthNumber)) {
+          const pxWidth = widthNumber / 2;
+          return {
+            minWidth: `${pxWidth}px`,
+            width: `${pxWidth}px`,
+          };
+        }
         return {
-          minWidth: `${width}rpx`,
-          width: `${width}rpx`,
+          minWidth: width,
+          width: width,
         };
       }
       return {};
@@ -203,7 +225,7 @@ export default {
         }
       },
     },
-    value: {
+    modelValue: {
       handler(val) {
         const nextVal = this.validateNull(val) ? mpFormInitVal(this.column) : val;
         this.text = nextVal;
@@ -233,22 +255,22 @@ export default {
   width: 100%;
   display: flex;
   align-items: flex-start;
-  padding: 20rpx 0;
+  padding: 10px 0;
 
   &__label {
     flex: 0 0 auto;
-    min-width: 160rpx;
-    padding-right: 20rpx;
+    min-width: 80px;
+    padding-right: 10px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     color: #303133;
-    font-size: 28rpx;
+    font-size: 14px;
   }
 
   &__asterisk {
     color: #ee0a24;
-    margin-right: 6rpx;
+    margin-right: 3px;
   }
 
   &__content {
@@ -261,7 +283,7 @@ export default {
 
     .wf-form-item__label {
       width: 100%;
-      margin-bottom: 10rpx;
+      margin-bottom: 5px;
     }
 
     .wf-form-item__content {

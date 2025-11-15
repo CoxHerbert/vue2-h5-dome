@@ -16,18 +16,18 @@
       echo
       :check-type="checkType"
       :default-checked="value"
-      @onConfirm="handleUserSelectConfirm"
-    ></wkf-user-select>
+      @on-confirm="handleUserSelectConfirm"
+    />
   </div>
 </template>
 
 <script>
 import { defineComponent } from 'vue';
-import { getUser } from '@/api/user.js';
+import Api from '@/api';
 import WkfUserSelect from '../../wf-user-select/index.vue';
 
 export default defineComponent({
-  name: 'user-select',
+  name: 'UserSelect',
   components: { WkfUserSelect },
   props: {
     value: [String, Number],
@@ -60,7 +60,7 @@ export default defineComponent({
       handler(val) {
         if (val) {
           const checks = String(val).split(',');
-          Promise.all(checks.map((c) => getUser(c))).then((res) => {
+          Promise.all(checks.map((c) => Api.user.getUser(c))).then((res) => {
             const names = res
               .map((r) => r.data && r.data.realName)
               .filter((realName) => !!realName);
