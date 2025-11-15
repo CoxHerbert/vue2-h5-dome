@@ -12,7 +12,6 @@ export default {
       return new Promise((resolve, reject) => {
         getDetail({ processDefId, taskId, platform: 'app' })
           .then((res) => {
-            console.log(res);
             const { data } = res;
             if (data && data.variables && Object.keys(data.variables).length > 0) {
               this.recoverDraftData = data.variables;

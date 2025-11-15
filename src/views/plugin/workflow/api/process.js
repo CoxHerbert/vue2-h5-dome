@@ -2,6 +2,24 @@ import request from '@/utils/http';
 
 const prefix = '/blade-workflow/app/process';
 
+/**
+ * 流程详情
+ */
+export const detail = (params) => {
+  return new Promise((reslove, reject) => {
+    request({
+      url: `/blade-workflow/process/detail`,
+      method: 'GET',
+      params,
+    })
+      .then((res) => {
+        const data = res.data;
+        reslove(data);
+      })
+      .catch((err) => reject(err));
+  });
+};
+
 // 可发起流程列表
 export const list = (params) => {
   return new Promise((reslove, reject) => {

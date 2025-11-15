@@ -117,7 +117,7 @@ export default {
       required: true,
       default: () => ({ column: [], menuBtn: false }),
     },
-    value: {},
+    modelValue: {},
   },
   data() {
     return {
@@ -174,7 +174,7 @@ export default {
       },
       deep: true,
     },
-    value: {
+    modelValue: {
       handler(val) {
         if (this.formCreate) {
           this.setForm(val || {});

@@ -9,13 +9,18 @@
           </div>
         </div>
         <div class="grid-item">
-          <div v-for="(item, index) in girdList" :key="index" class="item" @click="handleJump(item)">
+          <div
+            v-for="(item, index) in girdList"
+            :key="index"
+            class="item"
+            @click="handleJump(item)"
+          >
             <img :src="`${wfImage}/home/icon_${item.type}.png`" class="icon" alt="" />
             <div class="name">{{ item.name }}</div>
           </div>
         </div>
 
-        <div v-if="list.length > 0" class="card-item">
+        <div class="card-item">
           <div class="title">
             <div class="line"></div>
             <van-cell
@@ -26,20 +31,24 @@
               @click="handleJump(girdList[0])"
             />
           </div>
-          <van-list
-            v-model:loading="loading"
-            v-model:error="error"
-            :finished="finished"
-            finished-text="没有更多了"
-            error-text="请求失败，点击重新加载"
-            @load="onLoad"
-          >
-            <wkf-card :list="list" show-btn @refresh="refreshTodo" />
-          </van-list>
         </div>
+
+        <van-list
+          v-if="list.length > 0"
+          v-model:loading="loading"
+          v-model:error="error"
+          class="card-list"
+          :finished="finished"
+          finished-text="没有更多了"
+          error-text="请求失败，点击重新加载"
+          @load="onLoad"
+        >
+          <wkf-card :list="list" show-btn @refresh="refreshTodo" />
+        </van-list>
         <wf-empty v-else text="工作再忙，也要记得喝水" />
       </div>
     </van-pull-refresh>
+
     <van-floating-bubble
       axis="xy"
       magnetic="x"
@@ -47,10 +56,11 @@
       class="create-bubble"
       @click.stop="handleJump(girdList[1])"
     >
-      <img src="https://oss.nutflow.vip/rider/public/create.png" alt="发起流程" class="create-bubble__icon" />
+      <van-icon name="plus" />
     </van-floating-bubble>
   </div>
 </template>
+
 <script>
 import { defineComponent } from 'vue';
 import { mapState, mapActions } from 'pinia';
@@ -121,9 +131,7 @@ export default defineComponent({
       }
     },
     async onLoad() {
-      if (this.loading || this.finished) {
-        return;
-      }
+      if (this.loading || this.finished) return;
       this.loading = true;
       this.error = false;
       try {
@@ -148,9 +156,7 @@ export default defineComponent({
       return this.onRefresh();
     },
     handleJump(item) {
-      if (!item || !item.location) {
-        return;
-      }
+      if (!item || !item.location) return;
       const { location } = item;
       const { replace = false, ...locationConfig } = location;
       const navigation = replace ? this.$router.replace : this.$router.push;
@@ -159,131 +165,133 @@ export default defineComponent({
   },
 });
 </script>
-<style>
+
+<!-- 全局：页面背景（用 SCSS 也可以） -->
+<style lang="scss">
 page {
   background: #f6f6f6;
 }
 </style>
 
+<!-- 局部：使用 SCSS + 嵌套 -->
 <style lang="scss" scoped>
+$bg-page: #f6f6f6;
+$color-text-main: #333;
+$card-radius: 16px;
+
 .home-container {
   min-height: 100vh;
-  background: #f6f6f6;
+  background: $bg-page;
   box-sizing: border-box;
   padding-bottom: 90px; // 给右下角 + 按钮留空间
-}
 
-.home-scroll {
-  min-height: 100%;
-}
-
-/* 顶部渐变头部 */
-.head-item {
-  position: relative;
-  padding: 28px 18px 72px;
-  background: url('https://oss.nutflow.vip/rider/home/head_bg.png') no-repeat;
-  background-size: 100% 100%;
-  color: #ffffff;
-
-  .title {
-    font-size: 22px;
-    font-weight: 600;
-    line-height: 1.2;
+  .home-scroll {
+    min-height: 100%;
   }
 
-  .tips {
-    margin-top: 14px;
-    display: inline-block;
-    padding: 4px 16px;
-    font-size: 12px;
-    line-height: 1.6;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.2); // 接近截图里的蓝色胶囊
-    white-space: nowrap;
-  }
-}
+  /* 顶部渐变头部 */
+  .head-item {
+    position: relative;
+    padding: 28px 18px 72px;
+    background: url('https://oss.nutflow.vip/rider/home/head_bg.png') no-repeat;
+    background-size: 100% 100%;
+    color: #fff;
 
-/* 顶部 4 个入口卡片 */
-.grid-item {
-  position: relative;
-  margin: -32px 16px 0; // 往上顶一点，压在头部渐变上
-  padding: 16px 8px 10px;
-  display: flex;
-  justify-content: space-between;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
+    .title {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
 
-.grid-item .item {
-  flex: 1;
-  text-align: center;
-  padding: 8px 0;
-}
-
-.grid-item .icon {
-  width: 44px;
-  height: 44px;
-  margin-bottom: 8px;
-}
-
-.grid-item .name {
-  font-size: 14px;
-  color: #333333;
-  font-weight: 600;
-}
-
-/* “我的待办”卡片 */
-.card-item {
-  margin: 16px 16px 0;
-  padding: 12px 16px 16px;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
-}
-
-.card-item .title {
-  display: flex;
-  align-items: center;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0; // 顶部那条分割线
-}
-
-/* 去掉之前左侧那条竖线，更贴近截图 */
-.card-item .line {
-  display: none;
-}
-
-.card-item .section-cell {
-  flex: 1;
-  padding: 0;
-  background: transparent;
-  font-size: 14px;
-  color: #333333;
-
-  :deep(.van-cell__title) {
-    font-size: 18px;
-    font-weight: 600; // “我的待办”加粗
+    .tips {
+      margin-top: 14px;
+      display: inline-block;
+      padding: 4px 16px;
+      font-size: 12px;
+      line-height: 1.6;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.2);
+      white-space: nowrap;
+    }
   }
 
-  .van-cell__value,
-  .van-cell__label {
-    display: none;
+  /* 顶部 4 个入口卡片 */
+  .grid-item {
+    position: relative;
+    margin: -32px 16px 0; // 往上顶一点，压在头部渐变上
+    padding: 16px 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    background: #fff;
+    border-radius: $card-radius;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+
+    .item {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .icon {
+      width: 44px;
+      height: 44px;
+      margin-bottom: 8px;
+    }
+
+    .name {
+      font-size: 14px;
+      color: $color-text-main;
+      font-weight: 600;
+    }
   }
-}
 
-/* 右下角发起流程按钮 */
-.create-bubble {
-  width: 54px;
-  height: 54px;
-  z-index: 20;
-}
+  .card-list {
+    margin: 0 16px;
+  }
 
-.create-bubble__icon {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
+  /* “我的待办”卡片 */
+  .card-item {
+    margin: 16px 16px 0;
+    padding: 12px 16px 0;
+    background: #fff;
+    border-radius: $card-radius $card-radius 0 0;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+
+    .title {
+      display: flex;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .line {
+      display: none; // 去掉左边竖线
+    }
+
+    .section-cell {
+      flex: 1;
+      padding: 0;
+      background: transparent;
+      font-size: 14px;
+      color: $color-text-main;
+
+      :deep(.van-cell__title) {
+        font-size: 18px;
+        font-weight: 600; // “我的待办”加粗
+      }
+
+      :deep(.van-cell__value),
+      :deep(.van-cell__label) {
+        display: none;
+      }
+    }
+  }
+
+  /* 右下角发起流程按钮 */
+  .create-bubble {
+    width: 54px;
+    height: 54px;
+    z-index: 20;
+  }
 }
 </style>

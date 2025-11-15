@@ -6,7 +6,10 @@
     </div>
     <div class="wf-form-item__content">
       <wf-input
-        v-if="[undefined, 'input', 'password', 'textarea', 'number'].includes(column.type) && !column.component"
+        v-if="
+          [undefined, 'input', 'password', 'textarea', 'number'].includes(column.type) &&
+          !column.component
+        "
         v-model="text"
         :column="column"
         :disabled="disabled"
@@ -18,8 +21,8 @@
         :column="column"
         :dic="dic"
         :disabled="disabled"
-        @label-change="handleLabelChange"
         :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
       />
       <wf-cascader
         v-else-if="['cascader', 'tree'].includes(column.type)"
@@ -27,8 +30,8 @@
         :column="column"
         :dic="dic"
         :disabled="disabled"
-        @label-change="handleLabelChange"
         :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
       />
       <wf-radio
         v-else-if="column.type === 'radio'"
@@ -36,8 +39,8 @@
         :column="column"
         :dic="dic"
         :disabled="disabled"
-        @label-change="handleLabelChange"
         :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
       />
       <wf-checkbox
         v-else-if="column.type === 'checkbox'"
@@ -45,8 +48,8 @@
         :column="column"
         :dic="dic"
         :disabled="disabled"
-        @label-change="handleLabelChange"
         :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
       />
       <wf-rate
         v-else-if="column.type === 'rate'"
@@ -85,31 +88,31 @@
       />
       <wf-map
         v-else-if="column.type === 'map'"
-        v-model="text"
         ref="temp"
+        v-model="text"
         :column="column"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
       <wf-table-select
         v-else-if="column.type === 'table-select'"
-        v-model="text"
         ref="temp"
+        v-model="text"
         :column="column"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
       <wf-sign
         v-else-if="column.type === 'sign'"
-        v-model="text"
         ref="temp"
+        v-model="text"
         :column="column"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
       <component
-        v-else-if="column.component"
         :is="column.component"
+        v-else-if="column.component"
         v-model="text"
         v-bind="column"
         :column="Object.assign(column, column.params || {})"
@@ -126,13 +129,13 @@ import { DATE_LIST } from '../../util/variable.js';
 import { mpFormInitVal } from '../../util/dataformat.js';
 
 export default {
-  name: 'wkf-form-item',
+  name: 'WkfFormItem',
   props: {
     column: {
       type: Object,
       default: () => ({}),
     },
-    value: {
+    modelValue: {
       type: [Object, Array, String, Number],
     },
     disabled: {
@@ -156,10 +159,7 @@ export default {
     },
     itemClass() {
       const position = this.column.type === 'dynamic' ? 'top' : this.labelPositionValue;
-      return [
-        `wf-form-item--${position}`,
-        { 'wf-form-item--required': this.isRequired },
-      ];
+      return [`wf-form-item--${position}`, { 'wf-form-item--required': this.isRequired }];
     },
     labelPositionValue() {
       return this.labelPosition || this.column.labelPosition || 'left';
@@ -195,7 +195,7 @@ export default {
         }
       },
     },
-    value: {
+    modelValue: {
       handler(val) {
         const nextVal = this.validateNull(val) ? mpFormInitVal(this.column) : val;
         this.text = nextVal;

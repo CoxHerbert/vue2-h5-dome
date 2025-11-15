@@ -1,7 +1,7 @@
 <template>
-  <div class="bpmn-container" v-if="urlSrc">
+  <div v-if="urlSrc" class="bpmn-container">
     <iframe :src="urlSrc" class="bpmn-frame" frameborder="0"></iframe>
-    <div class="loading-overlay" v-if="loading">
+    <div v-if="loading" class="loading-overlay">
       <div class="spinner"></div>
     </div>
   </div>
@@ -26,6 +26,7 @@ export default defineComponent({
   },
   mounted() {
     this.$nextTick(() => {
+      console.log(this.bpmnOption);
       const baseUrl = import.meta.env.DEV ? 'http://localhost:2888' : 'https://www.eastwinbip.com';
       const { processInsId, taskId, token } = this.bpmnOption || {};
       this.urlSrc = `${baseUrl}/process-priview?processInsId=${processInsId || ''}&taskId=${taskId || ''}&token=${token || ''}`;
@@ -41,7 +42,7 @@ export default defineComponent({
 .bpmn-container {
   position: relative;
   width: 100%;
-  height: calc(100vh - 420rpx);
+  height: calc(100vh - 300px);
 }
 
 .bpmn-frame {
@@ -63,11 +64,11 @@ export default defineComponent({
 }
 
 .spinner {
-  border: 4rpx solid rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(0, 0, 0, 0.1);
   border-left-color: #007bff;
   border-radius: 50%;
-  width: 40rpx;
-  height: 40rpx;
+  width: 20px;
+  height: 20px;
   animation: spin 1s linear infinite;
 }
 

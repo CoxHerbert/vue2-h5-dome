@@ -130,6 +130,16 @@
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
+      <wf-user-select
+        v-else-if="'wf-user-select' == column.component"
+        v-model="text"
+        :column="Object.assign(column, column.params || {})"
+        :check-type="column.params ? column.params.checkType : 'radio'"
+        :dic="dic"
+        :disabled="disabled"
+        :dynamic-index="dynamicIndex"
+        @label-change="handleLabelChange"
+      />
     </div>
   </div>
 </template>
@@ -137,15 +147,19 @@
 <script>
 import { DATE_LIST } from '../../util/variable.js';
 import { mpFormInitVal } from '../../util/dataformat.js';
+import WfUserSelect from '@/views/plugin/workflow/components/custom-fileds/wf-user-select/index.vue';
 
 export default {
   name: 'WfFormItem',
+  components: {
+    WfUserSelect,
+  },
   props: {
     column: {
       type: Object,
       default: () => ({}),
     },
-    value: {
+    modelValue: {
       type: [Object, Array, String, Number],
     },
     disabled: {
@@ -211,7 +225,7 @@ export default {
         }
       },
     },
-    value: {
+    modelValue: {
       handler(val) {
         const nextVal = this.validateNull(val) ? mpFormInitVal(this.column) : val;
         this.text = nextVal;

@@ -1,23 +1,36 @@
 <template>
   <div class="workflow-mine-container">
-    <div class="head-item">
-      <div class="search-item">
-        <van-search
-          v-model="searchValue"
-          class="workflow-search"
-          placeholder="请输入流程名称"
-          shape="square"
-          :show-action="false"
-          background="transparent"
-          @search="handleSearch"
-          @clear="handleSearch"
-        />
-      </div>
+    <!-- 顶部导航栏 -->
+    <van-nav-bar
+      title="我的事务"
+      left-arrow
+      safe-area-inset-top
+      :z-index="10"
+      @click-left="handleBack"
+    />
 
+    <!-- 下拉刷新区域 -->
+    <van-pull-refresh v-model="refreshing" class="workflow-mine-refresh" @refresh="onRefresh">
+      <!-- 搜索 + Tabs 吸顶 -->
+      <van-sticky :z-index="9">
+        <div class="head-item">
+          <div class="search-item">
+            <van-search
+              v-model="searchValue"
+              class="workflow-search"
+              placeholder="请输入流程名称"
+              shape="square"
+              :show-action="false"
+              background="transparent"
+              @search="handleSearch"
+              @clear="handleSearch"
+            />
+          </div>
+        </div>
+      </van-sticky>
       <van-tabs
         v-model:active="current"
         :border="false"
-        class="mine-tabs"
         background="transparent"
         @change="handleTabChange"
       >
@@ -27,23 +40,26 @@
           </template>
         </van-tab>
       </van-tabs>
-    </div>
 
-    <div v-if="list.length > 0" class="main">
-      <wkf-card :list="list" :show-btn="showBtn" :type="current" @refresh="getList(true)" />
+      <!-- 列表内容 -->
+      <div v-if="list.length > 0" class="main">
+        <wkf-card :list="list" :show-btn="showBtn" :type="current" @refresh="getList(true)" />
 
-      <div class="loadmore">
-        <van-loading v-if="loadStatus === 'loading'" size="24px">加载中...</van-loading>
-        <div v-else-if="loadStatus === 'nomore'" class="loadmore-text">没有更多了</div>
-        <van-button v-else type="primary" size="small" plain @click="getList()">
-          加载更多
-        </van-button>
+        <div class="loadmore">
+          <van-loading v-if="loadStatus === 'loading'" size="24px">加载中...</van-loading>
+          <div v-else-if="loadStatus === 'nomore'" class="loadmore-text">没有更多了</div>
+          <van-button v-else type="primary" size="small" plain @click="getList()">
+            加载更多
+          </van-button>
+        </div>
       </div>
-    </div>
 
-    <wf-empty v-else text="工作再忙，也要记得喝水" />
+      <!-- 空状态 -->
+      <wf-empty v-else text="工作再忙，也要记得喝水" />
+    </van-pull-refresh>
 
-    <van-back-top v-if="scrollTop > 200" target="body" :right="24" :bottom="120" />
+    <!-- 回到顶部：右下角 -->
+    <van-back-top target="body" :right="24" :bottom="80" />
   </div>
 </template>
 
@@ -75,6 +91,9 @@ export default defineComponent({
       list: [],
       scrollTop: 0,
       loading: false,
+
+      // 下拉刷新
+      refreshing: false,
     };
   },
   watch: {
@@ -102,6 +121,12 @@ export default defineComponent({
     sendList,
     myDoneList,
     doneList,
+
+    // 顶部返回
+    handleBack() {
+      this.$router.back();
+    },
+
     applyRoute(query = {}) {
       if (query.current !== undefined) {
         const index = Number(query.current);
@@ -123,6 +148,16 @@ export default defineComponent({
       const index = Number(name);
       this.handleTabClick(Number.isNaN(index) ? 0 : index);
     },
+
+    // 下拉刷新
+    async onRefresh() {
+      try {
+        await this.getList(true);
+      } finally {
+        this.refreshing = false;
+      }
+    },
+
     async getList(clear = false) {
       if (this.loading) return;
       if (clear) {
@@ -178,8 +213,10 @@ export default defineComponent({
       const scrollTop =
         window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
       this.scrollTop = scrollTop;
+
       const { innerHeight } = window;
       const { scrollHeight } = document.documentElement;
+
       if (this.loadStatus !== 'loadmore' || this.loading) return;
       if (scrollTop + innerHeight >= scrollHeight - 30) {
         this.getList();
@@ -193,6 +230,12 @@ export default defineComponent({
 .workflow-mine-container {
   min-height: 100vh;
   background: #f6f6f6;
+  box-sizing: border-box;
+}
+
+/* 让下拉刷新区域至少铺满屏幕 */
+.workflow-mine-refresh {
+  min-height: calc(100vh - 46px);
 }
 
 /* 头部背景 + 搜索 + 标签 */
@@ -213,28 +256,6 @@ export default defineComponent({
 /* 主体内容 */
 .main {
   padding: 15px 15px 20px;
-}
-
-/* tabs 区域 */
-.mine-tabs {
-  color: #c7d5ff;
-  padding: 0 15px 6px;
-
-  .van-tabs__nav {
-    background: transparent;
-  }
-
-  .van-tab {
-    color: #c7d5ff;
-  }
-
-  .van-tab--active {
-    color: #ffffff;
-  }
-
-  .van-tabs__line {
-    background-color: #ffffff;
-  }
 }
 
 .tab-title {

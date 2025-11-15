@@ -31,7 +31,7 @@
           </van-button>
         </div>
         <div class="wf-dynamic__body">
-          <wkf-form
+          <wf-form
             ref="main"
             v-model="text[index]"
             :option="{ labelPosition: 'top', disabled, dynamicIndex: index, ...option }"
@@ -69,12 +69,13 @@
 import { defineComponent } from 'vue';
 import { Button } from 'vant';
 import Props from '../../mixins/props.js';
+import wfForm from '../wf-form/wf-form.vue';
 
 export default defineComponent({
   name: 'WfDynamic',
   components: {
     [Button.name]: Button,
-    WkfForm: () => import('../wf-form/wf-form.vue'),
+    wfForm,
   },
   mixins: [Props],
   computed: {

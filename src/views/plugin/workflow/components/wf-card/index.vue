@@ -186,18 +186,22 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-// .wf-card {
-//   padding: 0 15px 15px;
-// }
+.wf-card {
+}
 
 .wf-card-item {
+  padding: 0 15px 15px;
   background: #fff;
   border-radius: 8px;
   margin-bottom: 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+  &:first-child {
+    border-radius: 0 0 8px 8px;
+  }
 }
 
 .wf-card-body {
+  padding-top: 10px;
   cursor: pointer;
 }
 
@@ -284,7 +288,6 @@ export default defineComponent({
   justify-content: space-evenly;
   align-items: center;
   font-weight: 600;
-  padding-bottom: 16px;
 }
 
 .line {
