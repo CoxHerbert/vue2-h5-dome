@@ -131,15 +131,29 @@ export default {
   },
   computed: {
     column() {
-      let result = [];
+      const result = [];
       const column = this.option.column;
       const group = this.option.group;
-      if (!this.validateNull(column)) result = column;
+
+      const appendColumn = (item) => {
+        result.push(item);
+        if (item && item.prop) {
+          result[item.prop] = item;
+        }
+      };
+
+      if (!this.validateNull(column)) {
+        column.forEach((item) => appendColumn(item));
+      }
+
       if (!this.validateNull(group)) {
         group.forEach((g) => {
-          if (!this.validateNull(g.column)) result = result.concat(g.column);
+          if (!this.validateNull(g.column)) {
+            g.column.forEach((item) => appendColumn(item));
+          }
         });
       }
+
       return result;
     },
     dynamicOption() {
