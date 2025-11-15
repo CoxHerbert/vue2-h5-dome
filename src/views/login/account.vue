@@ -154,12 +154,26 @@ async function onSubmit() {
     loading.value = true;
     await formRef.value?.validate?.();
 
-    await auth.loginByUsername({ ...formData });
+    const loginPayload = await auth.loginByUsername({ ...formData });
 
     try {
       await user.fetchUserInfo();
     } catch (e) {
       console.warn('[account-login] fetchUserInfo failed:', e);
+    }
+
+    const loginInfoCandidates = [
+      loginPayload?.login_info,
+      loginPayload?.loginInfo,
+      loginPayload?.data?.login_info,
+      loginPayload?.data?.loginInfo,
+    ];
+    const loginInfo = loginInfoCandidates.find((info) => info && typeof info === 'object');
+    if (loginInfo && typeof loginInfo === 'object') {
+      user.setUserInfo({
+        ...(user.userInfo || {}),
+        ...loginInfo,
+      });
     }
 
     if (remember.value) localStorage.setItem('LAST_USERNAME', formData.username);
