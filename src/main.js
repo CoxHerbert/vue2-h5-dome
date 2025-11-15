@@ -64,6 +64,12 @@ async function bootstrap() {
   app.config.globalProperties.$http = {
     request,
   };
+  console.log(user.userInfo);
+  app.config.globalProperties.$store = {
+    getters: {
+      userInfo: user.userInfo,
+    },
+  };
 
   // 5) 等路由就绪再挂载，避免首屏空白或闪烁
   await router.isReady();

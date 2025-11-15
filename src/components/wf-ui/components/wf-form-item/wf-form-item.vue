@@ -189,7 +189,8 @@ export default {
     },
     itemClass() {
       const position = this.column.type === 'dynamic' ? 'top' : this.labelPositionValue;
-      return [`wf-form-item--${position}`, { 'wf-form-item--required': this.isRequired }];
+      // return [`wf-form-item--${position}`, { 'wf-form-item--required': this.isRequired }];
+      return '';
     },
     labelPositionValue() {
       return this.labelPosition || this.column.labelPosition || 'left';
@@ -254,7 +255,6 @@ export default {
 .wf-form-item {
   width: 100%;
   display: flex;
-  align-items: flex-start;
   padding: 10px 0;
 
   &__label {
@@ -275,7 +275,7 @@ export default {
 
   &__content {
     flex: 1;
-    min-width: 0;
+    overflow: hidden;
   }
 
   &--top {

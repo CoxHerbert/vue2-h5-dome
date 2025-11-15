@@ -1,6 +1,7 @@
 <template>
   <div class="wf-form">
     <div class="wf-form-content">
+      <!-- 普通字段 -->
       <template v-if="option.column && option.column.length > 0">
         <template v-for="(item, index) in option.column" :key="index">
           <wf-form-item
@@ -25,12 +26,14 @@
           />
         </template>
       </template>
+
+      <!-- 分组字段 -->
       <template v-if="option.group && option.group.length > 0">
         <van-collapse v-model="activeGroups" :border="false">
-          <template v-for="(group, gIndex) in option.group" :key="gIndex">
+          <template v-for="(group, gIndex) in option.group" :key="group.name || gIndex">
             <van-collapse-item
               v-if="group.display !== false"
-              :name="gIndex"
+              :name="String(group.name || gIndex)"
               :disabled="group.arrow === false"
             >
               <template #title>
@@ -43,6 +46,7 @@
                   {{ group.label }}
                 </span>
               </template>
+
               <template v-for="(item, index) in group.column" :key="index">
                 <wf-form-item
                   v-if="item.display !== false && filter(item)"
@@ -70,6 +74,8 @@
         </van-collapse>
       </template>
     </div>
+
+    <!-- 底部按钮 -->
     <div
       v-if="
         ((option.column && option.column.length > 0) ||
@@ -94,7 +100,7 @@
 </template>
 
 <script>
-import { Button, Collapse, CollapseItem, Icon, Toast } from 'vant';
+import { showToast } from 'vant';
 import Schema from '@/uview-ui/libs/util/async-validator.js';
 import Dic from '../../mixins/dic.js';
 import { formInitVal, initRules } from '../../util/dataformat.js';
@@ -102,12 +108,6 @@ import { filter } from '../../util/unsupport.js';
 
 export default {
   name: 'WfForm',
-  components: {
-    [Button.name]: Button,
-    [Collapse.name]: Collapse,
-    [CollapseItem.name]: CollapseItem,
-    [Icon.name]: Icon,
-  },
   mixins: [Dic],
   props: {
     option: {
@@ -272,7 +272,9 @@ export default {
       const actives = [];
       this.option.group.forEach((group, index) => {
         if (group.collapse !== false) {
-          actives.push(index);
+          // 和模板中的 :name 保持一致，统一用字符串
+          const name = String(group.name || index);
+          actives.push(name);
         }
       });
       this.activeGroups = actives;
@@ -287,7 +289,7 @@ export default {
         .catch((error) => {
           const message = error?.errors?.[0]?.message;
           if (message) {
-            Toast.fail(message);
+            showToast(message);
           }
           return false;
         });
@@ -367,17 +369,16 @@ export default {
   }
 
   &-bottom {
+    box-sizing: border-box;
+    display: flex;
     width: 100%;
-    padding: 5px 15px calc(env(safe-area-inset-bottom) + 5px) 15px;
+    padding: 5px 5px calc(env(safe-area-inset-bottom) + 5px) 5px;
     position: fixed;
     background-color: #fff;
     z-index: 3;
     bottom: 0;
     left: 0;
-
-    ::v-deep(.van-button) {
-      width: 100%;
-    }
+    gap: 5px;
   }
 
   ::v-deep(.van-collapse-item__content) {
