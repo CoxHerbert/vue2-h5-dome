@@ -26,20 +26,20 @@
               @clear="handleSearch"
             />
           </div>
+          <van-tabs
+            v-model:active="current"
+            :border="false"
+            background="transparent"
+            @change="handleTabChange"
+          >
+            <van-tab v-for="(tab, index) in tabList" :key="tab.name" :name="index">
+              <template #title>
+                <span class="tab-title">{{ formatTabTitle(tab, index) }}</span>
+              </template>
+            </van-tab>
+          </van-tabs>
         </div>
       </van-sticky>
-      <van-tabs
-        v-model:active="current"
-        :border="false"
-        background="transparent"
-        @change="handleTabChange"
-      >
-        <van-tab v-for="(tab, index) in tabList" :key="tab.name" :name="index">
-          <template #title>
-            <span class="tab-title">{{ formatTabTitle(tab, index) }}</span>
-          </template>
-        </van-tab>
-      </van-tabs>
 
       <!-- 列表内容 -->
       <div v-if="list.length > 0" class="main">
@@ -242,7 +242,6 @@ export default defineComponent({
 .head-item {
   width: 100%;
   box-sizing: border-box;
-  padding: 24px 0 10px;
   background: url('https://oss.nutflow.vip/rider/mine/head_bg.png') no-repeat center bottom;
   background-size: 100% 100%;
 }
@@ -250,7 +249,6 @@ export default defineComponent({
 /* 搜索区域 */
 .search-item {
   padding: 0 15px;
-  margin-bottom: 13px;
 }
 
 /* 主体内容 */
@@ -278,10 +276,6 @@ export default defineComponent({
 
 /* 搜索框样式（参考图片风格） */
 .workflow-search {
-  --van-search-left-icon-color: #ffffff;
-  --van-search-input-background: rgb(199, 213, 255);
-  --van-field-input-text-color: #ffffff;
-
   .van-search__content {
     background: transparent;
   }

@@ -1,43 +1,60 @@
 <template>
-  <div class="container">
-    <div class="head-item">
-      <div class="search-item">
-        <van-search
-          v-model="searchValue"
-          placeholder="请输入流程名称"
-          shape="square"
-          :clearable="true"
-          class="create-search"
-          @search="getList(true)"
-          @clear="getList(true)"
-        />
-      </div>
-    </div>
-    <van-collapse v-if="list.length > 0" v-model="activeNames" :border="false">
-      <van-collapse-item v-for="(item, index) in list" :key="index" :name="String(index)">
-        <template #title>
-          <span class="collapse-title">{{ item.category }}</span>
-        </template>
-        <div
-          v-for="(processItem, cIndex) in item.processList"
-          :key="cIndex"
-          class="item flex-between flex-c"
-          @click="handleProcessClick(processItem)"
-        >
-          <img
-            class="icon"
-            :src="processItem.icon || `${wfImage}/create/icon_${parseInt(cIndex % 10)}.png`"
-            alt="workflow icon"
+  <div class="workflow-create">
+    <!-- 顶部导航栏：默认返回上一页，不固定定位 -->
+    <van-nav-bar title="新建流程" left-arrow @click-left="handleBack" />
+
+    <div class="workflow-create-body">
+      <!-- 搜索：吸顶 -->
+      <div class="head-item">
+        <div class="search-item">
+          <van-search
+            v-model="searchValue"
+            placeholder="请输入流程名称"
+            shape="square"
+            :clearable="true"
+            class="create-search"
+            @search="getList(true)"
+            @clear="getList(true)"
           />
-          <div class="flex-one r">
-            <div class="name txt-cut1">{{ processItem.processDefinitionName }}</div>
-          </div>
         </div>
-      </van-collapse-item>
-    </van-collapse>
-    <wf-empty v-else text="工作再忙，也要记得喝水" />
+      </div>
+
+      <van-collapse
+        v-if="list.length > 0"
+        v-model="activeNames"
+        :border="false"
+        class="wf-collapse"
+      >
+        <van-collapse-item v-for="(item, index) in list" :key="index" :name="String(index)">
+          <template #title>
+            <span class="collapse-title">{{ item.category }}</span>
+          </template>
+
+          <div
+            v-for="(processItem, cIndex) in item.processList"
+            :key="cIndex"
+            class="item flex-between flex-c"
+            @click="handleProcessClick(processItem)"
+          >
+            <img
+              class="icon"
+              :src="processItem.icon || `${wfImage}/create/icon_${parseInt(cIndex % 10)}.png`"
+              alt="workflow icon"
+            />
+            <div class="flex-one r">
+              <div class="name txt-cut1">
+                {{ processItem.processDefinitionName }}
+              </div>
+            </div>
+          </div>
+        </van-collapse-item>
+      </van-collapse>
+
+      <wf-empty v-else text="工作再忙，也要记得喝水" />
+    </div>
   </div>
 </template>
+
 <script>
 import { defineComponent } from 'vue';
 import { list } from '../../api/process.js';
@@ -61,6 +78,9 @@ export default defineComponent({
     this.getList(true);
   },
   methods: {
+    handleBack() {
+      this.$router.back();
+    },
     async getList(reset = false) {
       if (this.loading) return;
       this.loading = true;
@@ -100,52 +120,76 @@ export default defineComponent({
   },
 });
 </script>
+
 <style lang="scss" scoped>
-.container {
+.workflow-create {
+  min-height: 100vh;
+  background: #f2f3f7;
+  display: flex;
+  flex-direction: column;
+
+  .workflow-create-body {
+    flex: 1;
+    padding-bottom: 16px;
+  }
+
+  /* 搜索吸顶 */
   .head-item {
-    width: 100%;
-    height: 150px;
-    padding: 50px 30px 0;
-    background: url('https://oss.nutflow.vip/rider/mine/head_bg.png') no-repeat;
-    background-size: 100% 100%;
+    position: sticky;
+    top: 0;
+    z-index: 9;
+    padding: 8px 16px 12px;
+    background: #f2f3f7;
   }
 
   .search-item {
+    border-radius: 8px;
+    overflow: hidden;
+
     .create-search {
-      --van-search-background: rgba(142, 170, 255, 1);
-      --van-search-placeholder-color: #5470c4;
-      --van-search-input-text-color: #ffffff;
-      --van-search-left-icon-color: #ffffff;
+      --van-search-background: #e4e9ff;
+      --van-search-placeholder-color: #8b9ad6;
+      --van-search-input-text-color: #333333;
+      --van-search-left-icon-color: #8b9ad6;
     }
   }
 
-  .van-collapse-item__wrapper {
-    padding: 0 30px;
+  .wf-collapse {
+    padding: 0 16px 0;
+    margin-top: 4px;
+  }
+
+  /* 折叠面板内边距调整 */
+  ::v-deep(.van-collapse-item__content) {
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 
   .collapse-title {
     color: #333;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 600;
   }
 
   .item {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
 
     .r {
       word-break: break-all;
     }
 
     .icon {
-      width: 56px;
-      height: 56px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       margin-right: 16px;
     }
 
     .name {
-      font-size: 18px;
+      font-size: 16px;
       color: #333;
     }
   }
