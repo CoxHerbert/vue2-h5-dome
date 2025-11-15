@@ -40,6 +40,31 @@ export default [
         'error',
         { html: { void: 'always', normal: 'never', component: 'always' } },
       ],
+
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'this',
+          property: '$set',
+          message:
+            'Vue 3 移除了 this.$set，请直接给响应式对象赋值（例如：this[key] = value）。',
+        },
+        {
+          object: 'this',
+          property: '$delete',
+          message: 'Vue 3 移除了 this.$delete，请改用 delete 运算符。',
+        },
+        {
+          object: 'Vue',
+          property: 'set',
+          message: 'Vue 3 移除了 Vue.set，请直接修改响应式数据。',
+        },
+        {
+          object: 'Vue',
+          property: 'delete',
+          message: 'Vue 3 移除了 Vue.delete，请使用 delete 运算符。',
+        },
+      ],
     },
   },
 
