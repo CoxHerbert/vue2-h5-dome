@@ -50,7 +50,7 @@ src
 ## 核心模块详解
 
 - **入口与应用生命周期**：`src/main.js` 负责实例化应用，挂载路由、Pinia、国际化、权限守卫以及 `src/plugins` 中的业务插件；`src/App.vue` 管理全局布局骨架。
-- **权限与导航**：`src/permission.js` 借助 Vue Router 守卫、`nprogress` 以及国际化文案更新页面标题，协同 `src/router/auth-helpers.js` 处理 401 回跳、静默登录和 URL token 白名单。
+- **权限与导航**：`src/permission.js` 借助 Vue Router 守卫、`nprogress` 以及国际化文案更新页面标题，并在守卫内部完成登录态检测与 URL token 白名单处理。
 - **网络层**：`src/utils/http.js` 对 Axios 进行了深度封装，覆盖 BaseURL 拼接、Basic/Token 头注入、数据加密、重复请求取消、401 刷新与自动重试、错误提示等能力；`src/axios/index.js` 输出统一实例供 `src/api` 调用。
 - **状态管理**：`src/store` 内含 `auth`、`user`、`permission` 等模块，负责令牌刷新、用户信息缓存和权限粒度控制。
 - **全局插件体系**：`src/plugins/index.js` 将字典、GraphQL 客户端以及工具方法注入全局属性，`dict-plugin`/`dict-client` 组合完成业务字典拉取与缓存。
@@ -63,7 +63,7 @@ src
 ## 配置与运行时
 
 - `.env.*` 文件控制 `VITE_APP_API`、`VITE_APP_BASE_URL` 等环境变量；`vite.config.js` 将别名 `@` 指向 `src` 目录，便于模块引用。
-- `src/permission.js` 与 `src/utils/http.js` 共享登录态恢复逻辑，通过 `sessionStorage` 维护目标路由并避免刷新后丢失上下文。
+- `src/permission.js` 与 `src/utils/http.js` 通过当前路由信息处理登录态恢复逻辑，避免刷新后丢失上下文。
 - `src/plugins/wiki-graphql.js` 暴露 Apollo Client，可在组件中通过 `app.config.globalProperties.apolloClient` 直接访问。
 - `public/` 目录承载静态资源、SVG 与图标，构建时会被原样复制到产物根目录。
 

@@ -13,8 +13,22 @@ import { showToast } from 'vant';
 import { useAuthStore } from '@/store/auth';
 import { translate } from '@/locales';
 
-// 与路由守卫共享：类型匹配 & 回跳地址
-import { isLoginPath, resolveTypeByPath, getIntendedFullPathForAxios } from '@/router/auth-helpers';
+// 与路由守卫共享：登录路径与回跳地址处理
+const isLoginPath = (p = '') => p === '/login' || p.startsWith('/login/');
+const getIntendedFullPath = (routerInstance) => {
+  const cur = routerInstance?.currentRoute?.value;
+  if (cur?.fullPath) return cur.fullPath;
+  if (typeof window !== 'undefined') {
+    const p = window.location.pathname + window.location.search + window.location.hash;
+    return p || '/';
+  }
+  return '/';
+};
+const resolveIntendedForRedirect = (routerInstance) => {
+  const full = getIntendedFullPath(routerInstance);
+  if (!full || full === '/' || isLoginPath(full)) return '/';
+  return full;
+};
 
 // ----------------- axios 实例 -----------------
 const service = axios.create({
@@ -165,18 +179,10 @@ service.interceptors.response.use(
             isRedirecting401 = true;
             try {
               const cur = router.currentRoute.value;
-              const intended = getIntendedFullPathForAxios(router); // 还原真实入口
-              const detectedType = resolveTypeByPath(cur?.path);
+              const intended = resolveIntendedForRedirect(router); // 还原真实入口
 
               if (!isLoginPath(cur?.path)) {
-                if (detectedType) {
-                  await router.replace({
-                    path: '/login/social',
-                    query: { type: detectedType, redirect: intended },
-                  });
-                } else {
-                  await router.replace({ path: '/login', query: { redirect: intended } });
-                }
+                await router.replace({ path: '/login', query: { redirect: intended } });
               }
             } finally {
               setTimeout(() => (isRedirecting401 = false), 200);
@@ -201,18 +207,10 @@ service.interceptors.response.use(
         isRedirecting401 = true;
         try {
           const cur = router.currentRoute.value;
-          const intended = getIntendedFullPathForAxios(router);
-          const detectedType = resolveTypeByPath(cur?.path);
+          const intended = resolveIntendedForRedirect(router);
 
           if (!isLoginPath(cur?.path)) {
-            if (detectedType) {
-              await router.replace({
-                path: '/login/social',
-                query: { type: detectedType, redirect: intended },
-              });
-            } else {
-              await router.replace({ path: '/login', query: { redirect: intended } });
-            }
+            await router.replace({ path: '/login', query: { redirect: intended } });
           }
         } finally {
           setTimeout(() => (isRedirecting401 = false), 200);

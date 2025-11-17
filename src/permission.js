@@ -5,6 +5,21 @@ import NProgress from 'nprogress';
 import { watch } from 'vue';
 import i18n, { translate } from './locales';
 
+const isLoginPath = (p = '') => p === '/login' || p.startsWith('/login/');
+const getFullPath = (loc) => {
+  if (loc?.fullPath) return loc.fullPath;
+  if (typeof window !== 'undefined') {
+    const p = window.location.pathname + window.location.search + window.location.hash;
+    return p || '/';
+  }
+  return '/';
+};
+const resolveRedirect = (loc) => {
+  const full = getFullPath(loc);
+  if (!full || full === '/' || isLoginPath(full)) return '/';
+  return full;
+};
+
 function setTitle(meta) {
   const baseTitle = '联合东创';
   if (!meta) {
@@ -28,14 +43,6 @@ watch(
   }
 );
 
-// ✅ 与 axios 401 拦截器共享的一套工具
-import {
-  INTENDED_URL_KEY,
-  isLoginPath,
-  resolveTypeByPath,
-  getIntendedFullPathForGuard,
-} from '@/router/auth-helpers';
-
 NProgress.configure({ showSpinner: false });
 
 /** 无需登录可访问的路由（不要把 /login 放进来，否则已登录用户会停留在登录页） */
@@ -58,18 +65,6 @@ const syncSetToken = (token) =>
   });
 
 router.beforeEach(async (to, from, next) => {
-  if (!(to.path === '/login' || to.path.startsWith('/login/'))) {
-    const full = to.fullPath || location.pathname + location.search + location.hash;
-    sessionStorage.setItem('INTENDED_URL', full || '/');
-  }
-
-  // ⭐ 记录“期望回跳页”，供 axios 401 拦截器兜底使用
-  if (!isLoginPath(to.path)) {
-    const full =
-      to.fullPath || window.location.pathname + window.location.search + window.location.hash;
-    sessionStorage.setItem(INTENDED_URL_KEY, full || '/');
-  }
-
   NProgress.start();
   setTitle(to.meta);
 
@@ -96,19 +91,9 @@ router.beforeEach(async (to, from, next) => {
   if (!token) {
     // 避免已经在登录页时再次重定向导致循环
     if (!isLoginPath(to.path)) {
-      const detectedType = resolveTypeByPath(to.path); // 统一“类型匹配”
-      const redirectFull = getIntendedFullPathForGuard(to, from); // 统一“回跳计算”（to 是 /login* 时优先用 from）
       NProgress.done();
-
-      if (detectedType) {
-        // 命中类型（如 /recruit/campus/*）→ 静默登录
-        return next({
-          path: '/login/social',
-          query: { type: detectedType, redirect: redirectFull },
-          replace: true,
-        });
-      }
-      // 其它 → 账号密码登录（/login 的函数重定向会把 query 透传到 /login/account）
+      const redirectFromTo = resolveRedirect(to);
+      const redirectFull = redirectFromTo === '/' ? resolveRedirect(from) : redirectFromTo;
       return next({ path: '/login', query: { redirect: redirectFull } });
     }
     NProgress.done();
