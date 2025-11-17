@@ -1,11 +1,12 @@
 import { validateNull, validData, deepClone, findObject } from './util/index.js';
+import { getWorkflowImageBase } from '@/utils/workflowAssets.js';
 
 const prototypes = {
   validateNull,
   validData,
   deepClone,
   findObject,
-  wfImage: 'https://oss.nutflow.vip/rider',
+  wfImage: getWorkflowImageBase(),
 };
 
 const componentModules = import.meta.glob('./components/**/*.vue', { eager: true });

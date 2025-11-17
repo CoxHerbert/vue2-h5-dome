@@ -38,7 +38,7 @@
           >
             <img
               class="icon"
-              :src="processItem.icon || `${wfImage}/create/icon_${parseInt(cIndex % 10)}.png`"
+              :src="`./../../static/images/create/icon_${parseInt(cIndex % 10)}.png`"
               alt="workflow icon"
             />
             <div class="flex-one r">

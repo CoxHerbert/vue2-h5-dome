@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="320" viewBox="0 0 750 320">
+  <defs>
+    <linearGradient id="grad-mine-head" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7F7FD5" />
+      <stop offset="100%" stop-color="#86A8E7" />
+    </linearGradient>
+    <linearGradient id="grad-mine-bubble" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.05" />
+    </linearGradient>
+  </defs>
+  <rect width="750" height="320" rx="32" fill="url(#grad-mine-head)" />
+  <circle cx="120" cy="220" r="110" fill="url(#grad-mine-bubble)" />
+  <circle cx="600" cy="90" r="70" fill="url(#grad-mine-bubble)" />
+  <path d="M0 160c90 40 210 40 360 0s270-40 390 0v160H0V160z" fill="#FFFFFF" fill-opacity="0.16" />
+  <path d="M120 110c40 0 72-24 72-54 0-6-4.5-10-10-10H58c-5.5 0-10 4-10 10 0 30 32 54 72 54z" fill="#FFFFFF" fill-opacity="0.12" />
+</svg>
