@@ -50,7 +50,7 @@
         </van-collapse-item>
       </van-collapse>
 
-      <wf-empty v-else text="工作再忙，也要记得喝水" />
+      <wf-empty v-else text="暂无数据" />
     </div>
   </div>
 </template>
@@ -62,8 +62,9 @@ import exForm from '../../mixins/ex-form.js';
 import { useUserStore } from '@/store/user.js';
 import { useAuthStore } from '@/store/auth.js';
 
-const defaultCreateIcons = Array.from({ length: 10 }, (_, index) =>
-  new URL(`../../static/images/create/icon_${index}.svg`, import.meta.url).href,
+const defaultCreateIcons = Array.from(
+  { length: 10 },
+  (_, index) => new URL(`../../static/images/create/icon_${index}.svg`, import.meta.url).href
 );
 
 export default defineComponent({
@@ -180,6 +181,9 @@ export default defineComponent({
     cursor: pointer;
     display: flex;
     align-items: center;
+    &:last-child {
+      margin-bottom: 0;
+    }
 
     .r {
       word-break: break-all;

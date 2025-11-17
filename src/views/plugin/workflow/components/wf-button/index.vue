@@ -234,12 +234,11 @@ export default defineComponent({
   z-index: 9;
   display: flex;
   align-items: center;
-  justify-content: center; // 默认居中
-  padding: 20px 30px;
+  padding: 10px;
   background: #fff;
   box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
-  gap: 20px;
+  gap: 10px;
 
   &--todo {
     justify-content: space-between;

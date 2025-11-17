@@ -44,7 +44,7 @@
         >
           <wkf-card :list="list" show-btn @refresh="refreshTodo" />
         </van-list>
-        <wf-empty v-else text="工作再忙，也要记得喝水" />
+        <wf-empty v-else text="暂无数据" />
       </div>
     </van-pull-refresh>
     <van-floating-bubble
@@ -191,6 +191,9 @@ page {
   background: #f6f6f6;
   box-sizing: border-box;
   padding-bottom: 90px; // 给右下角 + 按钮留空间
+  :deep(.wf-card-item:first-child) {
+    border-radius: 0 0 8px 8px;
+  }
 }
 
 .home-scroll {
@@ -201,7 +204,7 @@ page {
 .head-item {
   position: relative;
   padding: 28px 18px 72px;
-  background: url('@/views/plugin/workflow/static/images/home/head_bg.svg') no-repeat;
+  background: url('@/views/plugin/workflow/static/images/home/head_bg.png') no-repeat;
   background-size: 100% 100%;
   color: #ffffff;
 

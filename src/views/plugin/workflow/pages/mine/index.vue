@@ -55,7 +55,7 @@
       </div>
 
       <!-- 空状态 -->
-      <wf-empty v-else text="工作再忙，也要记得喝水" />
+      <wf-empty v-else text="暂无数据" />
     </van-pull-refresh>
 
     <!-- 回到顶部：右下角 -->
@@ -242,7 +242,7 @@ export default defineComponent({
 .head-item {
   width: 100%;
   box-sizing: border-box;
-  background: url('@/views/plugin/workflow/static/images/mine/head_bg.svg') no-repeat center bottom;
+  background: url('@/views/plugin/workflow/static/images/mine/head_bg.png') no-repeat center bottom;
   background-size: 100% 100%;
 }
 

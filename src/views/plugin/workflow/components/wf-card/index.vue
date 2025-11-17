@@ -41,7 +41,7 @@
           />
           <img
             v-else
-            src="https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png"
+            src="@/views/plugin/workflow/static/images/avatar.png"
             class="avatar"
             alt="头像"
           />
@@ -195,9 +195,6 @@ export default defineComponent({
   border-radius: 8px;
   margin-bottom: 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
-  &:first-child {
-    border-radius: 0 0 8px 8px;
-  }
 }
 
 .wf-card-body {
