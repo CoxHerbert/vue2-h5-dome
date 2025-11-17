@@ -38,7 +38,7 @@
           >
             <img
               class="icon"
-              :src="processItem.icon || `${wfImage}/create/icon_${parseInt(cIndex % 10)}.png`"
+              :src="processItem.icon || createIcons[cIndex % createIcons.length]"
               alt="workflow icon"
             />
             <div class="flex-one r">
@@ -62,12 +62,16 @@ import exForm from '../../mixins/ex-form.js';
 import { useUserStore } from '@/store/user.js';
 import { useAuthStore } from '@/store/auth.js';
 
+const defaultCreateIcons = Array.from({ length: 10 }, (_, index) =>
+  new URL(`../../static/images/create/icon_${index}.svg`, import.meta.url).href,
+);
+
 export default defineComponent({
   name: 'WorkflowCreatePage',
   mixins: [exForm],
   data() {
     return {
-      wfImage: this.wfImage || 'https://oss.nutflow.vip/rider',
+      createIcons: defaultCreateIcons,
       searchValue: '',
       activeNames: [],
       list: [],

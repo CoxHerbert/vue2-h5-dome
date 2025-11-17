@@ -5,7 +5,6 @@ const prototypes = {
   validData,
   deepClone,
   findObject,
-  wfImage: 'https://oss.nutflow.vip/rider',
 };
 
 const componentModules = import.meta.glob('./components/**/*.vue', { eager: true });
