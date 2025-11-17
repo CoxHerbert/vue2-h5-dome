@@ -56,11 +56,11 @@
       </van-tabs>
     </div>
     <div v-if="activeTab === 'report'" class="work-report__footer">
-      <van-button block type="success" @click="handleSubmit">
+      <van-button type="primary" block @click="handleSubmit">
         <van-icon name="passed" size="18" /> 提交
       </van-button>
     </div>
-    <van-back-top />
+    <van-back-top bottom="80" />
   </div>
 </template>
 
@@ -264,25 +264,25 @@ const handleBack = () => {
 
 <style scoped lang="scss">
 .work-report {
-  --nav-h: 62px; /* 与导航高度对齐 */
+  --nav-h: 62px;
   min-height: 100vh;
   background: #f7f8fa;
-  padding-bottom: calc(16px + var(--van-safe-area-bottom, 0px));
+  padding-bottom: calc(80px + var(--van-safe-area-bottom, 0px));
+  box-sizing: border-box;
 
   &__content {
-    /* 仍然为固定导航预留顶部空间；底部统一留 80px 防止被提交栏挡住 */
-    // padding: calc(var(--nav-h) + var(--van-safe-area-top, 0px)) 16px 80px;
+    padding: 8px 0 0;
     box-sizing: border-box;
   }
 
-  /* 普通白卡：搜索 + 扫码（不吸顶） */
+  /* 顶部搜索区域：方正 + 铺满 */
   .work-report__search-card {
+    margin-bottom: 8px;
+    padding: 10px 12px;
     background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-    padding: 12px;
-    /* 去掉吸顶相关属性 */
-    /* top / z-index / position: sticky 均不需要 */
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 1px solid #ebedf0;
 
     .search-row {
       display: flex;
@@ -291,13 +291,18 @@ const handleBack = () => {
 
       :deep(.van-search) {
         flex: 1;
-        padding: 0; /* 去掉 van-search 外层默认内边距 */
+        padding: 0;
       }
+
       :deep(.van-search__content) {
         background: #f3f5f7;
-        border-radius: 999px;
+        border-radius: 8px;
         height: 36px;
         min-height: 36px;
+      }
+
+      :deep(.van-field__control) {
+        font-size: 14px;
       }
 
       .btns {
@@ -308,14 +313,17 @@ const handleBack = () => {
 
       .search-btn {
         height: 36px;
-        padding: 0 14px;
-        border-radius: 18px;
+        padding: 0 12px;
+        border-radius: 6px;
+
         :deep(.van-button__text) {
           font-size: 14px;
         }
+
         &.van-button--primary {
           background: #3060ed;
           border-color: #3060ed;
+          box-shadow: none;
         }
       }
 
@@ -323,12 +331,14 @@ const handleBack = () => {
         width: 36px;
         height: 36px;
         padding: 0;
-        border-radius: 50%;
+        border-radius: 6px;
+
         &.van-button--plain {
           color: #3060ed;
           border-color: #3060ed;
-          background: transparent;
+          background: #fff;
         }
+
         :deep(.van-icon) {
           font-size: 18px;
         }
@@ -336,43 +346,87 @@ const handleBack = () => {
     }
   }
 
-  /* Tabs 导航样式（视觉保持“连体”风格，但不吸顶） */
-  .work-report__tabs.work-report__tabs--card {
-    :deep(.van-tabs__wrap) {
+  /* Tabs：方正 + 铺满 */
+  .work-report__tabs {
+    &.work-report__tabs--card {
       background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      border-top: 1px solid #f0f2f5;
-      /* 去掉 z-index 叠加需求 */
-    }
 
-    :deep(.van-tab) {
-      font-size: 14px;
-    }
-    :deep(.van-tabs__line) {
-      height: 2px;
-      background: #3060ed;
-    }
-    :deep(.van-tab__pane) {
-      padding: 16px 0 0;
-      background: transparent;
+      :deep(.van-tabs__wrap) {
+        background: #fff;
+        box-shadow: none;
+        margin: 0;
+        border-radius: 0;
+      }
+
+      :deep(.van-tabs__nav) {
+        margin: 0;
+        padding: 0 8px;
+        border-radius: 0;
+        border-bottom: 1px solid #ebedf0;
+      }
+
+      :deep(.van-tab) {
+        font-size: 14px;
+        line-height: 36px;
+        padding: 0 8px;
+      }
+
+      :deep(.van-tabs__line) {
+        height: 2px;
+        background: #3060ed;
+        border-radius: 0;
+      }
+
+      :deep(.van-tabs__content) {
+        background: #fff;
+      }
+
+      :deep(.van-tab__pane) {
+        padding: 12px 12px 16px;
+        background: #fff;
+        border-radius: 0;
+      }
     }
   }
 
   &__list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
   }
 
+  /* 底部提交栏：铺满 + 方正按钮 */
   &__footer {
     position: fixed;
-    bottom: 0;
+    z-index: 10;
     left: 0;
     right: 0;
-    padding: 12px 16px calc(12px + var(--van-safe-area-bottom, 0px));
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+    bottom: 0;
+    padding: 10px 12px calc(10px + var(--van-safe-area-bottom, 0px));
+    background: #fff;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+
+    :deep(.van-button) {
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    :deep(.van-icon) {
+      margin-right: 6px;
+      vertical-align: -2px;
+    }
+  }
+
+  /* 空状态和返回顶部，跟铺满风格对齐 */
+  :deep(.van-empty) {
+    padding: 32px 0 24px;
+  }
+
+  :deep(.van-back-top) {
+    right: 16px;
+    bottom: calc(88px + var(--van-safe-area-bottom, 0px));
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
   }
 }
 </style>

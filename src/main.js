@@ -64,7 +64,6 @@ async function bootstrap() {
   app.config.globalProperties.$http = {
     request,
   };
-  console.log(user.userInfo);
   app.config.globalProperties.$store = {
     getters: {
       userInfo: user.userInfo,

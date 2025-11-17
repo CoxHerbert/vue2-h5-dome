@@ -20,7 +20,7 @@ export default defineComponent({
     text: { type: String, default: '暂无数据' },
     mode: { type: String, default: 'list' },
     src: { type: String, default: '' },
-    iiconSize: { type: [String, Number], default: 145 },
+    iconSize: { type: [String, Number], default: 145 },
     fontSize: { type: [String, Number], default: 30 },
   },
   computed: {

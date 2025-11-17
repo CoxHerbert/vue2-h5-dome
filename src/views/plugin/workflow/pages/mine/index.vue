@@ -82,7 +82,6 @@ export default defineComponent({
         { name: '我的已办', method: 'myDoneList' },
         { name: '办结事宜', method: 'doneList' },
       ],
-      showBtn: false,
       loadStatus: 'loadmore',
       page: {
         current: 1,
@@ -95,6 +94,12 @@ export default defineComponent({
       // 下拉刷新
       refreshing: false,
     };
+  },
+  computed: {
+    showBtn() {
+      // 只有“我的待办”显示操作按钮
+      return this.current === 0;
+    },
   },
   watch: {
     '$route.query.current'(value) {
@@ -135,18 +140,32 @@ export default defineComponent({
         }
       }
     },
+
     formatTabTitle(tab, index) {
       if (index === 0 && tab.count) {
         return `${tab.name}(${tab.count})`;
       }
       return tab.name;
     },
+
     handleSearch() {
       this.getList(true);
     },
-    handleTabChange({ name }) {
-      const index = Number(name);
-      this.handleTabClick(Number.isNaN(index) ? 0 : index);
+
+    // 这里修正：@change 的第一个参数就是 name，不是对象
+    handleTabChange(name) {
+      const index = typeof name === 'number' ? name : Number(name);
+      const safeIndex = Number.isNaN(index) ? 0 : index;
+
+      if (this.current === safeIndex) {
+        // 如果和当前一样，视为刷新当前 Tab
+        this.getList(true);
+        return;
+      }
+
+      this.current = safeIndex;
+      this.updateRoute(safeIndex);
+      this.getList(true);
     },
 
     // 下拉刷新
@@ -180,9 +199,6 @@ export default defineComponent({
         const { records = [], total = 0 } = res.data || {};
         if (this.current === 0) {
           this.tabList[0].count = total;
-          this.showBtn = true;
-        } else {
-          this.showBtn = false;
         }
         this.list = clear ? records : this.list.concat(records);
         this.page.current += 1;
@@ -194,21 +210,12 @@ export default defineComponent({
         this.loading = false;
       }
     },
-    handleTabClick(index, request = true) {
-      if (this.current === index && request) {
-        this.getList(true);
-        return;
-      }
-      this.current = index;
-      this.updateRoute(index);
-      if (request) {
-        this.getList(true);
-      }
-    },
+
     updateRoute(index) {
       const query = { ...this.$route.query, current: String(index) };
       this.$router.replace({ name: 'WorkflowMine', query });
     },
+
     handleScroll() {
       const scrollTop =
         window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
@@ -231,6 +238,11 @@ export default defineComponent({
   min-height: 100vh;
   background: #f6f6f6;
   box-sizing: border-box;
+
+  /* 这里定义 Vant Tabs 的 CSS 变量，只作用于本页 */
+  --van-tab-text-color: #fff;
+  --van-tab-active-text-color: rgb(199, 213, 255);
+  --van-tabs-default-color: rgb(199, 213, 255); // 下划线&激活色
 }
 
 /* 让下拉刷新区域至少铺满屏幕 */
@@ -283,11 +295,5 @@ export default defineComponent({
   .van-field__control::placeholder {
     color: #5470c4;
   }
-}
-</style>
-
-<style>
-page {
-  background: #f6f6f6;
 }
 </style>

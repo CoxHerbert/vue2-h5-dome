@@ -76,7 +76,7 @@
             <span class="value">{{ item.createTime }}</span>
           </div>
         </template>
-        <van-divider class="card-divider" />
+        <van-divider v-if="showBtn" class="card-divider" />
       </div>
       <div v-if="showBtn" class="foot">
         <span class="reject" @click.stop="handleExam(item, false)">拒绝</span>
