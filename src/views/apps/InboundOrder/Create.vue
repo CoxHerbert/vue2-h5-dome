@@ -124,6 +124,7 @@ import { ref, reactive, computed, onMounted, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
 import { showToast, showConfirmDialog } from 'vant';
 import { goBackOrHome } from '@/utils/navigation';
+import { KEYS } from '@/constants/keys';
 
 import Api from '@/api/index';
 // import selectDialog from './com/selectDialog.vue';
@@ -160,7 +161,7 @@ const hasDetail = computed(() => Object.keys(detail).length > 0);
 
 // 登录信息（从 store 或 localStorage 兜底）
 const loginInfo =
-  proxy?.$store?.getters?.loginInfo || JSON.parse(localStorage.getItem('loginInfo') || '{}');
+  proxy?.$store?.getters?.loginInfo || JSON.parse(localStorage.getItem(KEYS.LOGIN_INFO) || '{}');
 
 // 字典取值工具：把编码映射为显示值
 function review(value, list) {

@@ -82,6 +82,7 @@ import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
 import { showToast, showFailToast } from 'vant';
 import { useI18n } from 'vue-i18n';
+import { KEYS } from '@/constants/keys';
 
 const route = useRoute();
 const auth = useAuthStore();
@@ -100,7 +101,7 @@ const formData = reactive({
   tenantId: '000000',
   deptId: '',
   roleId: '',
-  username: localStorage.getItem('LAST_USERNAME') || '',
+  username: localStorage.getItem(KEYS.LAST_USERNAME) || '',
   password: '',
   type: 'account',
   code: '',
@@ -176,8 +177,8 @@ async function onSubmit() {
       });
     }
 
-    if (remember.value) localStorage.setItem('LAST_USERNAME', formData.username);
-    else localStorage.removeItem('LAST_USERNAME');
+    if (remember.value) localStorage.setItem(KEYS.LAST_USERNAME, formData.username);
+    else localStorage.removeItem(KEYS.LAST_USERNAME);
 
     showToast(t('login.toast.success'));
     // window.location.replace(safeRedirect());

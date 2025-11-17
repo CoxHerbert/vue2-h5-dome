@@ -26,6 +26,7 @@
 <script>
 import { defineComponent } from 'vue';
 import { debounce } from 'lodash';
+import { KEYS } from '@/constants/keys';
 import { laborRegisterDetail } from '@/api/user.js';
 import WkfCustomtableSelect from '../../wf-customtable-select/index.vue';
 
@@ -98,7 +99,7 @@ export default defineComponent({
     }, 300),
     readLocalLogin() {
       try {
-        const stored = window.localStorage.getItem('loginInfo');
+        const stored = window.localStorage.getItem(KEYS.LOGIN_INFO);
         return stored ? JSON.parse(stored) : null;
       } catch (error) {
         return null;
