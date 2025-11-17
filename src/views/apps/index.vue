@@ -43,7 +43,7 @@ const handleClick = (app) => {
 };
 import.meta.env.BASE_URL;
 const apps = [
-  { label: '流程中心', icon: '/images/apps/流程中心.svg', routeName: 'appsWorkflowCenter' },
+  { label: '流程中心', icon: '/images/apps/流程中心.svg', routeName: 'home' },
   {
     label: '料况跟进',
     icon: '/images/apps/料况跟进.svg',

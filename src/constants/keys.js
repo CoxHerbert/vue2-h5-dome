@@ -6,4 +6,8 @@ export const KEYS = {
   USER_ID: 'b-user-id',
   USER_INFO: 'app:auth:user_info', // 加密存储的用户信息
   DEBUG_VCONSOLE_ENABLED: 'debug:vconsole-enabled',
+  LAST_USERNAME: 'LAST_USERNAME',
+  LOGIN_INFO: 'loginInfo',
+  LOCALE_PREFERENCE: 'app-locale',
+  SOP_API_TOKEN: 'SOP_API_TOKEN',
 };

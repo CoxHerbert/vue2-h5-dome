@@ -2,6 +2,7 @@ import { createI18n } from 'vue-i18n';
 import { Locale as VantLocale } from 'vant';
 import vantZhCN from 'vant/es/locale/lang/zh-CN';
 import vantEnUS from 'vant/es/locale/lang/en-US';
+import { KEYS } from '@/constants/keys';
 import zhCN from './zh-CN';
 import enUS from './en-US';
 import viVN from './vi-VN';
@@ -19,7 +20,7 @@ const vantMessages = {
   'vi-VN': vantEnUS,
 };
 
-const LOCALE_STORAGE_KEY = 'app-locale';
+const LOCALE_STORAGE_KEY = KEYS.LOCALE_PREFERENCE;
 
 function readStoredLocale() {
   if (typeof window === 'undefined') return null;

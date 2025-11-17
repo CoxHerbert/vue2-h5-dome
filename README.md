@@ -75,7 +75,7 @@ src
 
 ## 常量管理
 
-- `src/constants/keys.js`：存放鉴权相关的本地存储键值。
+- `src/constants/keys.js`：统一维护本地/会话存储键值（令牌、用户信息、语言偏好、SOP Token 等），避免魔法字符串分散各处。
 - `src/constants/user-types.js`：统一维护业务端用户类型枚举，按需扩展。
 
 ## 测试与质量

@@ -328,7 +328,7 @@ export default {
     },
   },
   routes: {
-    home: 'Home',
+    home: 'Workbench',
     apps: 'Applications',
     me: 'Profile',
     meChildren: {
@@ -348,7 +348,7 @@ export default {
       onboardingAudit: 'Review Result',
       onboardingSuccess: 'Registration Success',
     },
-    debugSettings: 'Debug Settings',
+    settings: 'Settings',
   },
   me: {
     navTitle: 'Profile',
@@ -392,6 +392,7 @@ export default {
       email: 'Email',
     },
     actions: {
+      settings: 'Settings',
       changePassword: 'Change Password',
       logout: 'Log Out',
     },

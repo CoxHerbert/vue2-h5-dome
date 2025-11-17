@@ -1,4 +1,5 @@
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core';
+import { KEYS } from '@/constants/keys';
 import request from '@/utils/http';
 
 const getToken = () => {
@@ -16,7 +17,7 @@ export const updateSopToken = async () => {
   const { data, code } = res.data;
   if (code === 200) {
     let token = data.paramValue;
-    localStorage.setItem('SOP_API_TOKEN', token);
+    localStorage.setItem(KEYS.SOP_API_TOKEN, token);
   }
 };
 // 创建 Apollo Client 实例
@@ -26,7 +27,7 @@ const apolloClient = async () => {
     link: new HttpLink({
       uri: '/graphql/wiki',
       headers: {
-        Authorization: localStorage.getItem('SOP_API_TOKEN'),
+        Authorization: localStorage.getItem(KEYS.SOP_API_TOKEN),
       },
     }),
     cache: new InMemoryCache(),

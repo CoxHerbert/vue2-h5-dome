@@ -328,7 +328,7 @@ export default {
     },
   },
   routes: {
-    home: '首页',
+    home: '工作台',
     apps: '应用',
     me: '我的',
     meChildren: {
@@ -348,7 +348,7 @@ export default {
       onboardingAudit: '审核结果',
       onboardingSuccess: '登记成功',
     },
-    debugSettings: '调试设置',
+    settings: '设置',
   },
   me: {
     navTitle: '我的',
@@ -392,6 +392,7 @@ export default {
       email: '邮箱',
     },
     actions: {
+      settings: '设置',
       changePassword: '修改密码',
       logout: '退出登录',
     },
