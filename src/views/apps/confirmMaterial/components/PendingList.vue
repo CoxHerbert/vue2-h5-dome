@@ -3,13 +3,13 @@
     <!-- 吸顶搜索条 -->
     <van-sticky :offset-top="props.stickyTop">
       <div class="pending-list__search-bar">
-        <van-search
+        <DcSearchBar
           v-model="keyword"
           placeholder="搜索出库单据编号"
-          shape="round"
-          :clearable="true"
-          :show-action="false"
+          button-text="查询"
+          :show-scan="false"
           @search="onSearch"
+          @clear="onSearch"
         />
       </div>
     </van-sticky>
@@ -71,7 +71,7 @@
 import { ref, onMounted, nextTick, getCurrentInstance } from 'vue';
 import { showFailToast } from 'vant';
 import Api from '@/api';
-import { useDictStore } from '@/store/dict';
+import DcSearchBar from '@/components/dc-ui/components/SearchBar/index.vue';
 
 const { proxy } = getCurrentInstance();
 
@@ -81,7 +81,6 @@ const props = defineProps({
 
 const emit = defineEmits(['select']);
 
-const dictStore = useDictStore();
 const outTypeDict = ref([]);
 const keyword = ref('');
 
@@ -100,9 +99,15 @@ function handleSelect(item) {
 
 onMounted(async () => {
   try {
-    const { DC_WMS_OUT_TYPE_WMS } = proxy.dicts(['DC_WMS_OUT_TYPE_WMS']);
+    const dicts = proxy?.dicts?.(['DC_WMS_OUT_TYPE_WMS']) || {};
+    const source = dicts?.DC_WMS_OUT_TYPE_WMS?.list || dicts?.DC_WMS_OUT_TYPE_WMS || [];
+    outTypeDict.value = (source || []).map((item) => ({
+      label: item.label ?? item.dictLabel ?? item.text ?? item.name ?? item.value ?? '-',
+      value: item.value ?? item.dictValue ?? item.code ?? item.key ?? item.label,
+    }));
   } catch (error) {
     console.error('获取出库类型字典失败', error);
+    outTypeDict.value = [];
   }
   // 首次加载
   onRefresh();
@@ -233,6 +238,7 @@ async function fetchPage({ pageNo, pageSize, keyword }) {
   &__search-bar {
     background: #fff;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    padding: 12px;
   }
 
   &__empty {

@@ -22,24 +22,15 @@
         :show-tabs="showTabs"
       >
         <div v-if="showSearch" class="dc-search-bar">
-          <van-search
+          <DcSearchBar
             v-model="kw"
             :placeholder="searchPlaceholder"
-            shape="round"
-            clearable
+            :button-text="searchButtonText"
+            :show-scan="searchScanVisible"
             background="#fff"
             @search="doResetAndLoad"
-            @clear="doResetAndLoad"
+            @clear="handleSearchClear"
           />
-          <van-button
-            class="dc-search-btn"
-            type="primary"
-            size="small"
-            round
-            @click="doResetAndLoad"
-          >
-            搜索
-          </van-button>
         </div>
 
         <!-- 可选：多条件过滤区域（完全由父组件插槽自定义） -->
@@ -142,6 +133,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import DcSearchBar from '@/components/dc-ui/components/SearchBar/index.vue';
 
 /**
  * Props
@@ -175,6 +167,8 @@ const props = defineProps({
   activeStatus: { type: [String, Number], default: null },
   query: { type: Object, default: () => ({}) }, // 新增：多条件对象
   searchPlaceholder: { type: String, default: '请输入关键词' },
+  searchButtonText: { type: String, default: '查询' },
+  searchScanVisible: { type: Boolean, default: false },
   offset: { type: Number, default: 200 },
   immediate: { type: Boolean, default: true },
   itemKey: { type: Function, default: (item, idx) => item?.id ?? item?.no ?? idx },
@@ -367,6 +361,10 @@ const doResetAndLoad = async () => {
   }
 };
 
+const handleSearchClear = () => {
+  doResetAndLoad();
+};
+
 /** 输入节流：停止输入 300ms 自动检索（仅对 keyword） */
 let searchTimer = null;
 watch(kw, () => {
@@ -428,13 +426,10 @@ defineExpose({
     padding: 0 12px 0;
 
     .dc-search-bar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 8px;
+      padding: 8px 0 12px;
 
-      .dc-search-btn {
-        /* 这里可按需扩展 */
+      :deep(.dc-search-panel) {
+        width: 100%;
       }
     }
 

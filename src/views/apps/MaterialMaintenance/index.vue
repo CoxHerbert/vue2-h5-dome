@@ -11,25 +11,13 @@
       @scroll="onStickyScroll"
     >
       <div class="search-container" :class="{ 'is-fixed': isSearchSticky }">
-        <van-search
+        <DcSearchBar
           v-model="snCode"
           placeholder="请输入物料编码查询"
-          shape="square"
-          :show-action="false"
-          :input-align="'left'"
-          class="mi-search"
-          @search="doAction('search')"
+          button-text="查询"
+          :show-scan="true"
+          @search="handleSearch"
         />
-        <van-button type="success" @click="doAction('handleSearch')">
-          <van-icon name="search" size="18" /> 查询
-        </van-button>
-        <dc-scan-code v-model="snCode" @confirm="handleScanConfirm" @error="handleScanError">
-          <template #default="{ open, disabled, loading }">
-            <van-button type="primary" :loading="loading" :disabled="disabled" @click="open">
-              <van-icon name="scan" size="18" />
-            </van-button>
-          </template>
-        </dc-scan-code>
       </div>
     </van-sticky>
 
@@ -153,6 +141,7 @@ import { useRouter } from 'vue-router';
 import { closeToast, showToast } from 'vant';
 import Api from '@/api';
 import { goBackOrHome } from '@/utils/navigation';
+import DcSearchBar from '@/components/dc-ui/components/SearchBar/index.vue';
 
 defineOptions({ name: 'MaterialInfo' });
 
@@ -425,20 +414,6 @@ function onNumberInput(item, val) {
   handleFormItemChange(item, num);
 }
 
-/** 扫码/查询/提交 */
-
-function handleScanConfirm(val) {
-  if (!val) return;
-  snCode.value = val;
-  handleSearch();
-}
-
-function handleScanError(error) {
-  const message = error?.message || '';
-  if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
-  showToast({ type: 'fail', message: message || '扫码失败' });
-}
-
 function handleSearch() {
   Api.application.materialMaintenance
     .load({ qrcode: snCode.value })
@@ -553,9 +528,7 @@ function handleFormItemChange(col, val) {
 
   /* ✅ 搜索吸顶：跟随 .page-body（内部滚动容器）吸顶 */
   .search-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    padding: 12px;
     background-color: #fff;
 
     position: sticky;
@@ -563,16 +536,11 @@ function handleFormItemChange(col, val) {
     z-index: 9;
     border-bottom: 1px solid #f2f3f5;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+  }
 
-    .mi-search {
-      flex: 1;
-    }
-
-    :deep(.van-button) {
-      padding: 0 12px;
-      height: 34px;
-      line-height: 32px;
-    }
+  :deep(.dc-search-panel__search-btn),
+  :deep(.dc-search-panel__scan-btn) {
+    height: 38px;
   }
 
   .group-title {

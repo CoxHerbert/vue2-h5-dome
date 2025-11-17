@@ -8,19 +8,13 @@
     <div class="nameplate-binding__content">
       <!-- 搜索框 -->
       <div class="search-bar">
-        <van-search
+        <DcSearchBar
           v-model="snCode"
           placeholder="请输入 SN 码 或 铭牌码"
-          show-action
-          shape="round"
+          button-text="搜索"
           background="#f7f8fa"
           @search="handleSearch"
-          @update:model-value="onSearchInput"
-        >
-          <template #action>
-            <div class="btn-search" @click="handleSearch">搜索</div>
-          </template>
-        </van-search>
+        />
       </div>
 
       <!-- 铭牌信息卡 / 空态 -->
@@ -106,6 +100,7 @@ import QrcodeVue from 'qrcode.vue';
 import { showConfirmDialog, showLoadingToast, showToast } from 'vant';
 import Api from '@/api';
 import { withBase } from '@/utils/util';
+import DcSearchBar from '@/components/dc-ui/components/SearchBar/index.vue';
 
 // 页面状态
 const snCode = ref('');
@@ -168,15 +163,13 @@ const handleBack = () => {
   else window.location.href = '/';
 };
 
-const onSearchInput = (val) => {
-  snCode.value = (val || '').trim();
-};
-
 const handleSearch = () => {
-  if (!snCode.value) {
+  const code = snCode.value?.toString().trim();
+  if (!code) {
     showToast({ type: 'fail', message: '请输入SN码或铭牌码' });
     return;
   }
+  snCode.value = code;
   indeCode();
 };
 
@@ -273,7 +266,9 @@ const handleSubmit = async () => {
       cancelButtonText: '取消',
     });
     await submitSureData();
-  } catch {}
+  } catch (error) {
+    console.debug('submit canceled', error);
+  }
 };
 </script>
 
