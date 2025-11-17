@@ -348,7 +348,7 @@ export default {
       onboardingAudit: 'Kết quả kiểm duyệt',
       onboardingSuccess: 'Đăng ký thành công',
     },
-    debugSettings: 'Cài đặt gỡ lỗi',
+    settings: 'Cài đặt',
   },
   me: {
     navTitle: 'Cá nhân',
@@ -392,6 +392,7 @@ export default {
       email: 'Email',
     },
     actions: {
+      settings: 'Cài đặt',
       changePassword: 'Đổi mật khẩu',
       logout: 'Đăng xuất',
     },

@@ -1,13 +1,13 @@
 <template>
-  <div class="debug-settings">
-    <van-nav-bar title="调试设置" left-arrow @click-left="handleBack" />
+  <div class="settings-page">
+    <van-nav-bar :title="t('routes.settings')" left-arrow @click-left="handleBack" />
 
-    <section class="debug-settings__content">
+    <section class="settings-page__content">
       <van-cell-group inset>
         <van-cell
           title="VConsole 调试面板"
           label="开启后可在页面底部展开调试工具"
-          class="debug-settings__cell"
+          class="settings-page__cell"
         >
           <template #right-icon>
             <van-switch
@@ -25,6 +25,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { showFailToast, showToast } from 'vant';
 import { useRouter } from 'vue-router';
 import { useDebugStore } from '@/store/debug';
@@ -32,6 +33,7 @@ import { useDebugStore } from '@/store/debug';
 const router = useRouter();
 const debugStore = useDebugStore();
 const loading = ref(false);
+const { t } = useI18n();
 
 const handleBack = () => {
   if (window.history.length > 1) {
@@ -64,7 +66,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.debug-settings {
+.settings-page {
   min-height: 100vh;
   background-color: #f7f8fa;
 

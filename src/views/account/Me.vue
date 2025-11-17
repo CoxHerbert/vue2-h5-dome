@@ -111,6 +111,7 @@
     </van-cell-group>
 
     <van-cell-group inset class="mt12">
+      <van-cell :title="t('me.actions.settings')" is-link @click="goToSettings" />
       <van-cell :title="t('me.actions.changePassword')" is-link @click="openPwdPopup" />
       <van-cell :title="t('me.actions.logout')" is-link @click="confirmLogout" />
     </van-cell-group>
@@ -258,6 +259,10 @@ function navigateToRoute(name) {
   if (!name) return;
   if (typeof router.hasRoute === 'function' && !router.hasRoute(name)) return;
   router.push({ name });
+}
+
+function goToSettings() {
+  router.push({ name: 'settings' });
 }
 function handleFunction(item) {
   if (item) navigateToRoute(item.routeName);

@@ -1,10 +1,10 @@
 export default {
-  path: '/settings/debug',
-  name: 'debugSettings',
-  component: () => import('@/views/settings/DebugSettings.vue'),
+  path: '/settings',
+  name: 'settings',
+  component: () => import('@/views/settings/Index.vue'),
   meta: {
-    title: 'routes.debugSettings',
-    titleFallback: '调试设置',
+    title: 'routes.settings',
+    titleFallback: '设置',
     requiresAuth: false,
   },
 };
