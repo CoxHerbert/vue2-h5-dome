@@ -83,6 +83,7 @@ import { useUserStore } from '@/store/user';
 import { showToast, showFailToast } from 'vant';
 import { useI18n } from 'vue-i18n';
 import { KEYS } from '@/constants/keys';
+import { persistLoginInfo } from '@/utils/persist-login-info';
 
 const route = useRoute();
 const auth = useAuthStore();
@@ -163,19 +164,7 @@ async function onSubmit() {
       console.warn('[account-login] fetchUserInfo failed:', e);
     }
 
-    const loginInfoCandidates = [
-      loginPayload?.login_info,
-      loginPayload?.loginInfo,
-      loginPayload?.data?.login_info,
-      loginPayload?.data?.loginInfo,
-    ];
-    const loginInfo = loginInfoCandidates.find((info) => info && typeof info === 'object');
-    if (loginInfo && typeof loginInfo === 'object') {
-      user.setUserInfo({
-        ...(user.userInfo || {}),
-        ...loginInfo,
-      });
-    }
+    persistLoginInfo({ payload: loginPayload, userStore: user });
 
     if (remember.value) localStorage.setItem(KEYS.LAST_USERNAME, formData.username);
     else localStorage.removeItem(KEYS.LAST_USERNAME);

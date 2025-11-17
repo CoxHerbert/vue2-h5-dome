@@ -89,6 +89,7 @@ import { useUserStore } from '@/store/user';
 import Api from '@/api/index';
 import { getLoginEnv } from '@/utils/env.js';
 import { useI18n } from 'vue-i18n';
+import { persistLoginInfo } from '@/utils/persist-login-info';
 
 const auth = useAuthStore();
 const user = useUserStore();
@@ -193,6 +194,7 @@ async function bootstrap() {
       const refreshToken = data?.refresh_token;
       auth.setTokenPair({ accessToken, refreshToken });
       user.setUserInfo(userInfo);
+      persistLoginInfo({ payload: data, userStore: user });
       steps.value[2] = 1;
     } catch (e) {
       steps.value[2] = -1;
