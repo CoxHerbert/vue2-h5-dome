@@ -40,7 +40,7 @@ import { getLoginEnv } from '@/utils/env.js';
 import { getCallbackUrl } from '@/utils/callback-url';
 import Api from '@/api';
 import { useI18n } from 'vue-i18n';
-import { extractLoginInfo, persistLoginInfo } from '@/utils/persist-login-info';
+import { extractLoginInfo } from '@/utils/login-info';
 
 const route = useRoute();
 const router = useRouter();
@@ -161,7 +161,7 @@ async function loginBySocial(data) {
   const oauthId = payload?.oauth_id;
 
   if ((userId === 'null' || userId === '') && env === 'WECHAT_MP' && oauthId) {
-    persistLoginInfo({ loginInfoOverride: loginInfo, userStore: user });
+    user.mergeLoginInfo(loginInfo);
     await createUserThenRedirect(oauthId);
     return;
   }
@@ -173,7 +173,7 @@ async function loginBySocial(data) {
     console.warn('[social] fetchUserInfo failed:', e);
   }
 
-  persistLoginInfo({ loginInfoOverride: loginInfo, userStore: user });
+  user.mergeLoginInfo(loginInfo);
 
   // 4) 回跳逻辑：先外层 redirect，再 callbackUrl 内层 redirect，最后兜底 /home
   const OUTER = new URL(window.location.href);
