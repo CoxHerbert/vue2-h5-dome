@@ -9,6 +9,7 @@
 <script>
 import { defineComponent } from 'vue';
 import { Empty } from 'vant';
+import emptyIllustration from '@/views/plugin/workflow/static/images/public/empty.svg';
 
 export default defineComponent({
   name: 'WfEmpty',
@@ -24,8 +25,7 @@ export default defineComponent({
   },
   computed: {
     resolvedImage() {
-      const base = this.src || `${this.wfImage || ''}/public/empty.png`;
-      return base;
+      return this.src || emptyIllustration;
     },
     imageSizeStyle() {
       const size = typeof this.iconSize === 'number' ? `${this.iconSize}px` : this.iconSize;

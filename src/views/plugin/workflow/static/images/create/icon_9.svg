@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+  <defs>
+    <linearGradient id="createGradient9" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f0932b" />
+      <stop offset="100%" stop-color="#ffd082" />
+    </linearGradient>
+  </defs>
+  <circle cx="40" cy="40" r="38" fill="url(#createGradient9)" />
+  <text x="40" y="52" font-size="32" font-family="'PingFang SC', 'Microsoft YaHei', Arial" fill="#ffffff" text-anchor="middle">9</text>
+</svg>

@@ -15,7 +15,7 @@
             class="item"
             @click="handleJump(item)"
           >
-            <img :src="`${wfImage}/home/icon_${item.type}.png`" class="icon" alt="" />
+            <img :src="homeIcons[item.type] || homeIconFallback" class="icon" alt="" />
             <div class="name">{{ item.name }}</div>
           </div>
         </div>
@@ -64,12 +64,22 @@ import { mapState, mapActions } from 'pinia';
 import { useWorkflowStore } from '@/store/workflow.js';
 import wkfCard from '../../components/wf-card/index.vue';
 
+const homeIconMap = {
+  db: new URL('../../static/images/home/icon_db.svg', import.meta.url).href,
+  qq: new URL('../../static/images/home/icon_qq.svg', import.meta.url).href,
+  yb: new URL('../../static/images/home/icon_yb.svg', import.meta.url).href,
+  bj: new URL('../../static/images/home/icon_bj.svg', import.meta.url).href,
+};
+
+const homeIconFallback = homeIconMap.db;
+
 export default defineComponent({
   name: 'WorkflowWorkbenchPage',
   components: { wkfCard },
   data() {
     return {
-      wfImage: this.wfImage || 'https://oss.nutflow.vip/rider',
+      homeIcons: homeIconMap,
+      homeIconFallback,
       create: {
         location: { name: 'WorkflowCreate' },
       },
@@ -191,7 +201,7 @@ page {
 .head-item {
   position: relative;
   padding: 28px 18px 72px;
-  background: url('https://oss.nutflow.vip/rider/home/head_bg.png') no-repeat;
+  background: url('@/views/plugin/workflow/static/images/home/head_bg.svg') no-repeat;
   background-size: 100% 100%;
   color: #ffffff;
 

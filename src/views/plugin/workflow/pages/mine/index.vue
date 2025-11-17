@@ -242,7 +242,7 @@ export default defineComponent({
 .head-item {
   width: 100%;
   box-sizing: border-box;
-  background: url('https://oss.nutflow.vip/rider/mine/head_bg.png') no-repeat center bottom;
+  background: url('@/views/plugin/workflow/static/images/mine/head_bg.svg') no-repeat center bottom;
   background-size: 100% 100%;
 }
 

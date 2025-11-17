@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="200" viewBox="0 0 240 200">
+  <defs>
+    <linearGradient id="emptyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#dfe7ff" />
+      <stop offset="100%" stop-color="#f7f8ff" />
+    </linearGradient>
+  </defs>
+  <rect x="20" y="40" width="200" height="120" rx="18" fill="url(#emptyGradient)" />
+  <rect x="40" y="60" width="160" height="12" rx="6" fill="#c2cdf5" />
+  <rect x="40" y="84" width="140" height="12" rx="6" fill="#cfd8fb" />
+  <rect x="40" y="108" width="120" height="12" rx="6" fill="#dfe6ff" />
+  <circle cx="60" cy="140" r="10" fill="#c2cdf5" />
+  <circle cx="90" cy="140" r="10" fill="#cfd8fb" />
+  <circle cx="120" cy="140" r="10" fill="#e5ecff" />
+  <text x="120" y="185" text-anchor="middle" font-size="16" fill="#9aa5d6" font-family="'PingFang SC', 'Microsoft YaHei', Arial">暂无数据</text>
+</svg>
