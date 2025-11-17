@@ -35,12 +35,7 @@ export function persistLoginInfo({ payload, userStore, loginInfoOverride } = {})
     localStorage.setItem(KEYS.LOGIN_INFO, String(loginInfo));
   }
 
-  if (userStore?.setUserInfo) {
-    userStore.setUserInfo({
-      ...(userStore.userInfo || {}),
-      ...loginInfo,
-    });
-  }
+  userStore?.mergeLoginInfo?.(loginInfo);
 
   return loginInfo;
 }

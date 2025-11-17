@@ -5,6 +5,8 @@ import { secureStorage } from '@/utils/secure-storage';
 import { KEYS } from '@/constants/keys';
 import { normalizeUser } from '@/utils/normalize-user';
 
+const isObject = (val) => val && typeof val === 'object' && !Array.isArray(val);
+
 export const useUserStore = defineStore('user', {
   state: () => ({
     userInfo: secureStorage.get(KEYS.USER_INFO, null),
@@ -15,6 +17,17 @@ export const useUserStore = defineStore('user', {
       this.userInfo = info;
       if (info) secureStorage.set(KEYS.USER_INFO, info);
       else secureStorage.remove(KEYS.USER_INFO);
+    },
+
+    mergeLoginInfo(loginInfo) {
+      if (!isObject(loginInfo)) return;
+
+      const merged = {
+        ...(this.userInfo || {}),
+        ...loginInfo,
+      };
+
+      this.setUserInfo(merged);
     },
 
     reset() {
