@@ -328,7 +328,7 @@ export default {
     },
   },
   routes: {
-    home: '首页',
+    home: '工作台',
     apps: '应用',
     me: '我的',
     meChildren: {

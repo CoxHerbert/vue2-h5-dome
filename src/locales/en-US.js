@@ -328,7 +328,7 @@ export default {
     },
   },
   routes: {
-    home: 'Home',
+    home: 'Workbench',
     apps: 'Applications',
     me: 'Profile',
     meChildren: {

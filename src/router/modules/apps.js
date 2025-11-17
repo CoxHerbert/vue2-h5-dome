@@ -20,7 +20,7 @@ export default {
       path: 'workflow-center',
       name: 'appsWorkflowCenter',
       meta: { title: '流程中心', requiresAuth: true },
-      component: () => import('@/views/apps/WorkflowCenter.vue'),
+      redirect: { name: 'home' },
     },
     {
       path: 'material-tracking',

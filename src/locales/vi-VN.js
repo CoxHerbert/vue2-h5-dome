@@ -328,7 +328,7 @@ export default {
     },
   },
   routes: {
-    home: 'Trang chủ',
+    home: 'Bàn làm việc',
     apps: 'Ứng dụng',
     me: 'Cá nhân',
     meChildren: {
