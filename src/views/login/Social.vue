@@ -12,11 +12,6 @@
       </div>
     </div>
 
-    <!-- 入口类型提示 -->
-    <van-tag v-if="typeLabel" plain type="success" class="type-tip">
-      {{ t('login.social.currentEntry', { type: typeLabel }) }}
-    </van-tag>
-
     <!-- 内容卡片 -->
     <div class="card">
       <div class="body">
@@ -32,7 +27,7 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue';
+import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
@@ -57,22 +52,6 @@ const env = _env[getLoginEnv()] || null; // WECHAT_MP / WECHAT_ENTERPRISE / 其�
 /** 视觉用：logo 路径（兼容二级目录） */
 const logoUrl = `${import.meta.env.BASE_URL}images/logo.png`;
 
-/** 入口类型标签映射（与 AccountLogin 保持一致） */
-const typeLabelMap = computed(() => ({
-  campus_applicant: t('login.social.typeLabels.campusApplicant'),
-  internal_referral: t('login.social.typeLabels.internalReferral'),
-  vendor_hr: t('login.social.typeLabels.vendorHr'),
-}));
-const DEFAULT_TYPE = 'campus_applicant';
-
-const type = computed(() => {
-  return (
-    (route.query?.type && String(route.query.type)) ||
-    (route.meta?.userType && String(route.meta.userType)) ||
-    DEFAULT_TYPE
-  );
-});
-const typeLabel = computed(() => typeLabelMap.value[type.value] || type.value);
 
 onMounted(async () => {
   try {
@@ -295,12 +274,6 @@ async function createUserThenRedirect(oauthId) {
   margin: 2px 0 0;
   color: #64748b;
   font-size: 13px;
-}
-
-.type-tip {
-  margin-bottom: 12px;
-  border-color: #16a34a;
-  color: #16a34a;
 }
 
 .card {
