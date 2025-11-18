@@ -41,18 +41,14 @@
       <van-button type="primary" block @click="handleSubmit">提交</van-button>
     </div>
 
-    <dc-scan-code
-      v-model="snCode"
-      @confirm="handleScanConfirm"
-      @error="handleScanError"
-    >
+    <dc-scan-code v-model="snCode" @confirm="handleScanConfirm" @error="handleScanError">
       <template #default="{ open, disabled }">
         <van-floating-bubble
           axis="xy"
           icon="scan"
           magnetic
           :class="['self-outbound-list__scan-bubble', { 'is-disabled': disabled }]"
-          @click="open"
+          @click="handleScanBubbleClick(open, disabled)"
         />
       </template>
     </dc-scan-code>
@@ -90,8 +86,6 @@
         </div>
       </div>
     </van-popup>
-
-    <van-number-keyboard safe-area-inset-bottom />
   </div>
 </template>
 
@@ -200,6 +194,21 @@ watch(
   },
   { immediate: true }
 );
+
+// 浮窗点击：未选仓库不允许 open
+const handleScanBubbleClick = (open, disabled) => {
+  // 组件自身或环境禁用，直接不响应
+  if (disabled) return;
+
+  // 没选仓库，给提示
+  if (!form.warehouseId) {
+    showToast({ message: '请先选择仓库', type: 'fail' });
+    return;
+  }
+
+  // 正常打开扫码
+  open();
+};
 
 const handleScanConfirm = async (code) => {
   if (!code) return;
@@ -461,10 +470,12 @@ async function handleSubmit() {
   }
 }
 
+/* 浮窗再往上挪一点，避免和底部提交按钮重叠 */
 :deep(.self-outbound-list__scan-bubble) {
-  bottom: calc(env(safe-area-inset-bottom) + 120px);
+  bottom: calc(env(safe-area-inset-bottom) + 160px);
 }
 
+/* 组件自身 disabled（例如环境不支持）时禁用点击 */
 :deep(.van-floating-bubble.is-disabled) {
   pointer-events: none;
   opacity: 0.6;

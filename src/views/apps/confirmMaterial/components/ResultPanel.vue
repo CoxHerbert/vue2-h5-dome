@@ -70,8 +70,6 @@
         </div>
       </div>
     </van-dialog>
-
-    <van-number-keyboard safe-area-inset-bottom />
   </div>
 </template>
 

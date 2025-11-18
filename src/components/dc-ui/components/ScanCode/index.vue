@@ -566,59 +566,57 @@ export default {
     }
   }
 
-  /* 底部关闭按钮（渐变工具栏风格） */
+  /* 底部关闭按钮：浮动胶囊样式 */
   .btn {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: 16px;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
     z-index: 10000;
 
-    /* 上圆角、下贴边 */
+    /* 自身样式 */
     border: none;
-    border-radius: 16px 16px 0 0;
+    border-radius: 999px;
+    height: 48px;
+    padding: 0 20px;
 
-    /* 高度 & 安全区 */
-    height: 56px;
-    padding: 0 16px;
-    padding-bottom: calc(env(safe-area-inset-bottom));
-
-    /* 质感：渐变 + 玻璃高光 + 阴影 */
-    background: linear-gradient(135deg, #34c759, #14b85a);
-    color: #fff;
+    /* 质感：红橙渐变 + 玻璃模糊 + 阴影 */
+    background: linear-gradient(135deg, #ff5f6c, #ff9966);
+    color: #ffffff;
     box-shadow:
-      0 -8px 24px rgba(0, 0, 0, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      0 12px 32px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    backdrop-filter: saturate(160%) blur(14px);
 
-    /* 顶部分割线 */
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      height: 1px;
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06));
-      pointer-events: none;
-    }
+    /* 让按钮真正撑满整个胶囊区域 */
+    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     /* 按压反馈 */
     transition:
       transform 0.12s ease,
-      filter 0.2s ease;
+      filter 0.18s ease,
+      box-shadow 0.18s ease;
     &:active {
       transform: translateY(1px);
       filter: brightness(0.95);
+      box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
     }
 
-    /* Vant 内部内容微调 */
+    /* 内部内容微调 */
     :deep(.van-button__content) {
       height: 100%;
       justify-content: center;
       gap: 6px;
       font-weight: 600;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.04em;
+      font-size: 15px;
     }
+
     :deep(.van-icon) {
       font-size: 18px;
     }

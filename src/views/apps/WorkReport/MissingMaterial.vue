@@ -34,7 +34,6 @@
   </div>
 
   <van-back-top />
-  <van-number-keyboard safe-area-inset-bottom />
 </template>
 
 <script setup>

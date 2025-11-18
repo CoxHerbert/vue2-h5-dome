@@ -32,7 +32,9 @@
           >
             <div class="pending-card__header">
               <div class="title">{{ item.outStockCode ?? '-' }}</div>
-              <div class="badge">{{ renderOutType(item.outStockType) }}</div>
+              <div class="badge">
+                <dc-dict :options="dicts.DC_WMS_OUT_TYPE_WMS" :value="item.outStockType" />
+              </div>
             </div>
 
             <div class="pending-card__body">
@@ -63,7 +65,6 @@
       </van-list>
     </van-pull-refresh>
     <van-back-top />
-    <van-number-keyboard safe-area-inset-bottom />
   </div>
 </template>
 
@@ -81,7 +82,7 @@ const props = defineProps({
 
 const emit = defineEmits(['select']);
 
-const outTypeDict = ref([]);
+const dicts = ref([]);
 const keyword = ref('');
 
 // 列表状态
@@ -99,24 +100,13 @@ function handleSelect(item) {
 
 onMounted(async () => {
   try {
-    const dicts = proxy?.dicts?.(['DC_WMS_OUT_TYPE_WMS']) || {};
-    const source = dicts?.DC_WMS_OUT_TYPE_WMS?.list || dicts?.DC_WMS_OUT_TYPE_WMS || [];
-    outTypeDict.value = (source || []).map((item) => ({
-      label: item.label ?? item.dictLabel ?? item.text ?? item.name ?? item.value ?? '-',
-      value: item.value ?? item.dictValue ?? item.code ?? item.key ?? item.label,
-    }));
+    dicts.value = proxy?.dicts?.(['DC_WMS_OUT_TYPE_WMS']) || {};
   } catch (error) {
     console.error('获取出库类型字典失败', error);
-    outTypeDict.value = [];
   }
   // 首次加载
   onRefresh();
 });
-
-function renderOutType(value) {
-  const option = outTypeDict.value.find((item) => item.value === value);
-  return option?.label ?? '—';
-}
 
 function onSearch() {
   onRefresh();

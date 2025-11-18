@@ -31,7 +31,6 @@
         @select="handleSelectOrder"
       />
       <ResultPanel v-else ref="resultRef" />
-      <van-number-keyboard safe-area-inset-bottom />
     </div>
   </div>
 </template>

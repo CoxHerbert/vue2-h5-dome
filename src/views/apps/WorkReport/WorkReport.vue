@@ -49,7 +49,7 @@
         <van-icon name="passed" size="18" /> 提交
       </van-button>
     </div>
-    <van-back-top bottom="80" />
+    <van-back-top bottom="60" />
   </div>
 </template>
 
@@ -261,33 +261,6 @@ const handleBack = () => {
     border-radius: 0;
     box-shadow: none;
     border-bottom: 1px solid #ebedf0;
-
-    :deep(.dc-search-panel) {
-      gap: 12px;
-    }
-
-    :deep(.van-search__content) {
-      background: #f3f5f7;
-      border-radius: 8px;
-      height: 36px;
-      min-height: 36px;
-    }
-
-    :deep(.van-field__control) {
-      font-size: 14px;
-    }
-
-    :deep(.dc-search-panel__search-btn) {
-      height: 36px;
-      padding: 0 14px;
-      border-radius: 6px;
-    }
-
-    :deep(.dc-search-panel__scan-btn) {
-      height: 36px;
-      width: 42px;
-      border-radius: 6px;
-    }
   }
 
   /* Tabs：方正 + 铺满 */

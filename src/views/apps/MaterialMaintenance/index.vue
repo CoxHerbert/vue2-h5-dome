@@ -111,10 +111,9 @@
           </div>
         </div>
       </van-form>
-      <van-number-keyboard safe-area-inset-bottom />
     </div>
     <!-- 底部按钮 -->
-    <div v-if="formData.id" class="page-body_footer">
+    <div v-if="formData.id" class="page-body_footer" safe-area-inset-bottom>
       <van-button block type="success" @click="doAction('submit')">
         <van-icon name="passed" size="18" /> 提交
       </van-button>
