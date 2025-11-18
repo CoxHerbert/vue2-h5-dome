@@ -18,6 +18,7 @@ import wfUI from './components/wf-ui/index.js';
 import { registerComponents } from './components/index';
 import { setupDirectives } from './directives';
 import { attachNProgress } from '@/router/nprogress';
+import { setupRouterGuard } from './router/guard';
 import { useDebugStore } from '@/store/debug';
 import request from '@/axios/workflow';
 
@@ -35,6 +36,7 @@ async function bootstrap() {
   app.use(i18n);
   app.use(router);
   app.use(plugins);
+  setupRouterGuard(router);
 
   const debugStore = useDebugStore();
   await debugStore.init();

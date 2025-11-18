@@ -61,13 +61,13 @@ export default {
             {
               path: 'start',
               name: 'WorkflowExternalLeaveStart',
-              meta: { title: '发起流程' },
+              meta: { title: '发起流程', requiresAuth: true },
               component: () => import('@/views/plugin/workflow/pages/external/Leave/start.vue'),
             },
             {
               path: 'detail',
               name: 'WorkflowExternalLeaveDetail',
-              meta: { title: '流程详情' },
+              meta: { title: '流程详情', requiresAuth: true },
               component: () => import('@/views/plugin/workflow/pages/external/Leave/detail.vue'),
             },
           ],
