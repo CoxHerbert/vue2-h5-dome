@@ -46,8 +46,8 @@
         <van-floating-bubble
           axis="xy"
           icon="scan"
-          magnetic
-          :class="['self-outbound-list__scan-bubble', { 'is-disabled': disabled }]"
+          magnetic="x"
+          :class="[{ 'is-disabled': disabled }]"
           @click="handleScanBubbleClick(open, disabled)"
         />
       </template>
@@ -468,11 +468,6 @@ async function handleSubmit() {
     font-size: 12px;
     color: #646566;
   }
-}
-
-/* 浮窗再往上挪一点，避免和底部提交按钮重叠 */
-:deep(.self-outbound-list__scan-bubble) {
-  bottom: calc(env(safe-area-inset-bottom) + 160px);
 }
 
 /* 组件自身 disabled（例如环境不支持）时禁用点击 */
