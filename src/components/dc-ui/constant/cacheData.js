@@ -1580,6 +1580,45 @@ export default {
       },
     ],
   },
+  laborRegister: {
+    url: '/blade-bip/laborRegister/select-data',
+    defaultLabel: 'name',
+    defaultLabelName: '劳务人员',
+    title: '劳务人员',
+    placeholder: '请输入人员姓名查询',
+    submitTitle: '选择',
+    dialogGet: (params) => {
+      return request({
+        url: '/blade-bip/laborRegister/list-select',
+        method: 'get',
+        params,
+      });
+    },
+    column: [
+      { label: '人员姓名', prop: 'name', search: true, searchProps: { is: 'input' } },
+      {
+        label: '劳务公司',
+        prop: 'companyId',
+        component: 'dc-view',
+        objectName: 'company',
+      },
+      {
+        label: '部门',
+        prop: 'deptId',
+        component: 'dc-view',
+        objectName: 'dept',
+      },
+      { label: '岗位等级', prop: 'positionDictCode' },
+      { label: '岗位', prop: 'jobGradeDict' },
+      {
+        label: '直属上级',
+        prop: 'leaderId',
+        component: 'dc-view',
+        objectName: 'user',
+      },
+      { label: '入职时间', prop: 'joinedDate' },
+    ],
+  },
   pdpCustomerArea: {
     url: '/blade-bip/CrmCustomerArea/select-data',
     defaultLabel: 'areaName',
