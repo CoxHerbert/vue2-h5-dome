@@ -26,6 +26,7 @@ export default ({ mode }) => {
 
   const isProd = VITE_APP_ENV === 'production';
   const currentTimeVersion = Date.now();
+  const buildTimestamp = dayjs().format('YYYY-MM-DD HH:mm:ss');
 
   // 生产默认用 /mobile/，也可用 VITE_BASE 覆盖
   const base = env.VITE_BASE;
@@ -44,6 +45,7 @@ export default ({ mode }) => {
     base,
     define: {
       'import.meta.env.VITE_APP_VERSION': currentTimeVersion,
+      'import.meta.env.VITE_APP_BUILD_TIME': JSON.stringify(buildTimestamp),
     },
     css: {
       preprocessorOptions: {

@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/auth';
 import NProgress from 'nprogress';
 import { watch } from 'vue';
 import i18n, { translate } from './locales';
+import { getLoginEnv } from '@/utils/env';
 
 const isLoginPath = (p = '') => p === '/login' || p.startsWith('/login/');
 const getFullPath = (loc) => {
@@ -94,7 +95,14 @@ router.beforeEach(async (to, from, next) => {
       NProgress.done();
       const redirectFromTo = resolveRedirect(to);
       const redirectFull = redirectFromTo === '/' ? resolveRedirect(from) : redirectFromTo;
-      return next({ path: '/login', query: { redirect: redirectFull } });
+
+      const env = getLoginEnv?.();
+      const isWxEnv = env === 'WECHAT_MP' || env === 'WECHAT_ENTERPRISE';
+      const silentLoginPath = '/login/social';
+      const normalLoginPath = '/login';
+      const targetPath = isWxEnv ? silentLoginPath : normalLoginPath;
+
+      return next({ path: targetPath, query: { redirect: redirectFull } });
     }
     NProgress.done();
     return next();
