@@ -4,11 +4,11 @@
 
     <section class="settings-page__content">
       <van-cell-group inset>
-        <van-cell
-          title="VConsole 调试面板"
-          label="开启后可在页面底部展开调试工具"
-          class="settings-page__cell"
-        >
+      <van-cell
+        title="VConsole 调试面板"
+        label="开启后可在页面底部展开调试工具"
+        class="settings-page__cell"
+      >
           <template #right-icon>
             <van-switch
               :model-value="debugStore.vconsoleEnabled"
@@ -18,6 +18,7 @@
             />
           </template>
         </van-cell>
+        <van-cell title="打包时间" :value="buildTime || '暂无'" />
       </van-cell-group>
     </section>
   </div>
@@ -34,6 +35,7 @@ const router = useRouter();
 const debugStore = useDebugStore();
 const loading = ref(false);
 const { t } = useI18n();
+const buildTime = import.meta.env.VITE_APP_BUILD_TIME;
 
 const handleBack = () => {
   if (window.history.length > 1) {
