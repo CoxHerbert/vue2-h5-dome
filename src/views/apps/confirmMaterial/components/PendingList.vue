@@ -3,13 +3,13 @@
     <!-- 吸顶搜索条 -->
     <van-sticky :offset-top="props.stickyTop">
       <div class="pending-list__search-bar">
-        <van-search
+        <DcSearchBar
           v-model="keyword"
           placeholder="搜索出库单据编号"
-          shape="round"
-          :clearable="true"
-          :show-action="false"
+          button-text="查询"
+          :show-scan="false"
           @search="onSearch"
+          @clear="onSearch"
         />
       </div>
     </van-sticky>
@@ -32,7 +32,9 @@
           >
             <div class="pending-card__header">
               <div class="title">{{ item.outStockCode ?? '-' }}</div>
-              <div class="badge">{{ renderOutType(item.outStockType) }}</div>
+              <div class="badge">
+                <dc-dict :options="dicts.DC_WMS_OUT_TYPE_WMS" :value="item.outStockType" />
+              </div>
             </div>
 
             <div class="pending-card__body">
@@ -63,7 +65,6 @@
       </van-list>
     </van-pull-refresh>
     <van-back-top />
-    <van-number-keyboard safe-area-inset-bottom />
   </div>
 </template>
 
@@ -71,7 +72,7 @@
 import { ref, onMounted, nextTick, getCurrentInstance } from 'vue';
 import { showFailToast } from 'vant';
 import Api from '@/api';
-import { useDictStore } from '@/store/dict';
+import DcSearchBar from '@/components/dc-ui/components/SearchBar/index.vue';
 
 const { proxy } = getCurrentInstance();
 
@@ -81,8 +82,7 @@ const props = defineProps({
 
 const emit = defineEmits(['select']);
 
-const dictStore = useDictStore();
-const outTypeDict = ref([]);
+const dicts = ref([]);
 const keyword = ref('');
 
 // 列表状态
@@ -100,18 +100,13 @@ function handleSelect(item) {
 
 onMounted(async () => {
   try {
-    const { DC_WMS_OUT_TYPE_WMS } = proxy.dicts(['DC_WMS_OUT_TYPE_WMS']);
+    dicts.value = proxy?.dicts?.(['DC_WMS_OUT_TYPE_WMS']) || {};
   } catch (error) {
     console.error('获取出库类型字典失败', error);
   }
   // 首次加载
   onRefresh();
 });
-
-function renderOutType(value) {
-  const option = outTypeDict.value.find((item) => item.value === value);
-  return option?.label ?? '—';
-}
 
 function onSearch() {
   onRefresh();
@@ -233,6 +228,7 @@ async function fetchPage({ pageNo, pageSize, keyword }) {
   &__search-bar {
     background: #fff;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    padding: 12px;
   }
 
   &__empty {

@@ -8,19 +8,12 @@
     <div class="nameplate-binding__content">
       <!-- 搜索框 -->
       <div class="search-bar">
-        <van-search
+        <DcSearchBar
           v-model="snCode"
           placeholder="请输入 SN 码 或 铭牌码"
-          show-action
-          shape="round"
-          background="#f7f8fa"
+          button-text="搜索"
           @search="handleSearch"
-          @update:model-value="onSearchInput"
-        >
-          <template #action>
-            <div class="btn-search" @click="handleSearch">搜索</div>
-          </template>
-        </van-search>
+        />
       </div>
 
       <!-- 铭牌信息卡 / 空态 -->
@@ -75,37 +68,22 @@
     </div>
 
     <!-- 底部操作 -->
-    <div ref="footerRef" class="nameplate-binding__footer">
+    <div class="nameplate-binding__footer">
       <van-button v-if="!btnState" type="primary" block :disabled="disable" @click="handleSubmit">
         绑定
       </van-button>
       <van-button v-else type="primary" block @click="handleSubmit"> 解绑 </van-button>
     </div>
-
-    <!-- 悬浮：扫码（只显示 icon；避开底部按钮） -->
-    <dc-scan-code v-model="snCode" @confirm="handleScanSuccess" @error="handleScanError">
-      <template #default="{ open, disabled, loading }">
-        <van-floating-bubble
-          class="float-bubble"
-          :class="{ 'is-disabled': disabled || loading }"
-          :offset="scanBubbleOffset"
-          axis="xy"
-          magnetic="x"
-          @click="open"
-        >
-          <van-icon name="scan" size="22" />
-        </van-floating-bubble>
-      </template>
-    </dc-scan-code>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, computed } from 'vue';
 import QrcodeVue from 'qrcode.vue';
 import { showConfirmDialog, showLoadingToast, showToast } from 'vant';
 import Api from '@/api';
 import { withBase } from '@/utils/util';
+import DcSearchBar from '@/components/dc-ui/components/SearchBar/index.vue';
 
 // 页面状态
 const snCode = ref('');
@@ -125,58 +103,19 @@ const qrFg = '#111111';
 const nameplateText = computed(() => list.value?.bindCustomerNameplate || '当前铭牌不存在');
 const hasNameplate = computed(() => Boolean(list.value?.bindCustomerNameplate));
 
-// 底部高度测量，避免浮窗重叠
-const footerRef = ref(null);
-const footerH = ref(96);
-
-// 仅保留扫码浮窗（不再有回到顶部）
-const scanBubbleOffset = ref({ x: 16, y: 120 });
-
-const measureFooter = () => {
-  footerH.value = footerRef.value?.offsetHeight || 96;
-};
-
-const placeBubbles = () => {
-  const w = document.documentElement.clientWidth || window.innerWidth || 375;
-  const h = document.documentElement.clientHeight || window.innerHeight || 667;
-  const SIZE = 56;
-  const GAP = 16;
-
-  // 扫码按钮：右下角且避开底部容器
-  scanBubbleOffset.value = { x: w - SIZE - GAP, y: h - SIZE - GAP - footerH.value };
-};
-
-const onResize = () => {
-  measureFooter();
-  placeBubbles();
-};
-
-onMounted(async () => {
-  await nextTick();
-  measureFooter();
-  placeBubbles();
-  window.addEventListener('resize', onResize);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', onResize);
-});
-
 // 交互
 const handleBack = () => {
   if (history.length > 1) history.back();
   else window.location.href = '/';
 };
 
-const onSearchInput = (val) => {
-  snCode.value = (val || '').trim();
-};
-
 const handleSearch = () => {
-  if (!snCode.value) {
+  const code = snCode.value?.toString().trim();
+  if (!code) {
     showToast({ type: 'fail', message: '请输入SN码或铭牌码' });
     return;
   }
+  snCode.value = code;
   indeCode();
 };
 
@@ -273,7 +212,9 @@ const handleSubmit = async () => {
       cancelButtonText: '取消',
     });
     await submitSureData();
-  } catch {}
+  } catch (error) {
+    console.debug('submit canceled', error);
+  }
 };
 </script>
 
@@ -301,7 +242,12 @@ const handleSubmit = async () => {
 
 /* 搜索条样式（普通流式） */
 .search-bar {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid #ebedf0;
 
   .btn-search {
     padding: 0 8px;
@@ -405,18 +351,6 @@ const handleSubmit = async () => {
 
   :deep(.van-button) {
     width: 100%;
-  }
-}
-
-/* 悬浮按钮（仅扫码），offset 由 JS 计算避免与 footer 重叠 */
-.float-bubble {
-  z-index: 999;
-  :deep(.van-floating-bubble) {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  }
-  &.is-disabled {
-    opacity: 0.5;
-    pointer-events: none;
   }
 }
 </style>

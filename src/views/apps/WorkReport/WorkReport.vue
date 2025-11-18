@@ -3,26 +3,15 @@
     <van-nav-bar title="工时汇报" left-arrow @click-left="handleBack" />
 
     <div class="work-report__content">
-      <!-- 普通白卡：搜索 + 扫码（不吸顶） -->
+      <!-- 搜索 + 扫码（不吸顶） -->
       <div class="work-report__search-card">
-        <div class="search-row">
-          <van-search
-            v-model="snCode"
-            placeholder="请输入SN码查询"
-            shape="round"
-            background="transparent"
-            :show-action="false"
-            @search="handleSearch"
-          />
-          <div class="btns">
-            <van-button class="search-btn" round type="primary" size="small" @click="handleSearch">
-              搜索
-            </van-button>
-            <dc-scan-code v-model="snCode" @confirm="handleScanSuccess" @error="handleScanError">
-              <van-button class="scan-btn" round size="small" plain type="primary" icon="scan" />
-            </dc-scan-code>
-          </div>
-        </div>
+        <DcSearchBar
+          v-model="snCode"
+          placeholder="请输入SN码查询"
+          button-text="搜索"
+          background="transparent"
+          @search="handleSearch"
+        />
       </div>
 
       <!-- Tabs：不吸顶 -->
@@ -60,7 +49,7 @@
         <van-icon name="passed" size="18" /> 提交
       </van-button>
     </div>
-    <van-back-top bottom="80" />
+    <van-back-top bottom="60" />
   </div>
 </template>
 
@@ -72,6 +61,7 @@ import Api from '@/api';
 import ProjectOverview from './components/ProjectOverview.vue';
 import WorkRouteCard from './components/WorkRouteCard.vue';
 import { goBackOrHome } from '@/utils/navigation';
+import DcSearchBar from '@/components/dc-ui/components/SearchBar/index.vue';
 
 const router = useRouter();
 
@@ -163,18 +153,6 @@ const handleSearch = async () => {
   } finally {
     toast.close();
   }
-};
-
-const handleScanSuccess = (val) => {
-  if (!val) return;
-  snCode.value = val;
-  handleSearch();
-};
-
-const handleScanError = (error) => {
-  const message = error?.message || '';
-  if (message.includes('取消') || message.toLowerCase().includes('cancel')) return;
-  showFailToast(message || '扫码失败');
 };
 
 const updateRouteComplete = ({ routeId, value }) => {
@@ -283,67 +261,6 @@ const handleBack = () => {
     border-radius: 0;
     box-shadow: none;
     border-bottom: 1px solid #ebedf0;
-
-    .search-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      :deep(.van-search) {
-        flex: 1;
-        padding: 0;
-      }
-
-      :deep(.van-search__content) {
-        background: #f3f5f7;
-        border-radius: 8px;
-        height: 36px;
-        min-height: 36px;
-      }
-
-      :deep(.van-field__control) {
-        font-size: 14px;
-      }
-
-      .btns {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .search-btn {
-        height: 36px;
-        padding: 0 12px;
-        border-radius: 6px;
-
-        :deep(.van-button__text) {
-          font-size: 14px;
-        }
-
-        &.van-button--primary {
-          background: #3060ed;
-          border-color: #3060ed;
-          box-shadow: none;
-        }
-      }
-
-      .scan-btn {
-        width: 36px;
-        height: 36px;
-        padding: 0;
-        border-radius: 6px;
-
-        &.van-button--plain {
-          color: #3060ed;
-          border-color: #3060ed;
-          background: #fff;
-        }
-
-        :deep(.van-icon) {
-          font-size: 18px;
-        }
-      }
-    }
   }
 
   /* Tabs：方正 + 铺满 */

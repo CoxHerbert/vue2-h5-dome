@@ -16,7 +16,14 @@
         </div>
       </van-sticky>
 
-      <SearchPanel v-if="activeTab === 'search'" @search="handleSearch" />
+      <div v-if="activeTab === 'search'" class="confirm-material__search-panel">
+        <DcSearchBar
+          v-model="searchKeyword"
+          placeholder="请输入出库单据编号"
+          button-text="查询"
+          @search="handleSearch"
+        />
+      </div>
       <PendingList
         v-else-if="activeTab === 'pending'"
         :get-nav-el="getNavEl"
@@ -24,7 +31,6 @@
         @select="handleSelectOrder"
       />
       <ResultPanel v-else ref="resultRef" />
-      <van-number-keyboard safe-area-inset-bottom />
     </div>
   </div>
 </template>
@@ -32,15 +38,16 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import SearchPanel from './components/SearchPanel.vue';
 import PendingList from './components/PendingList.vue';
 import ResultPanel from './components/ResultPanel.vue';
 import { goBackOrHome } from '@/utils/navigation';
+import DcSearchBar from '@/components/dc-ui/components/SearchBar/index.vue';
 
 const router = useRouter();
 const navRef = ref(null);
 const resultRef = ref(null);
 const activeTab = ref('search');
+const searchKeyword = ref('');
 const tabsOffsetTop = ref(0);
 const tabsRef = ref(null);
 const stickyRef = ref(null);
@@ -154,7 +161,10 @@ function showResultByCode(rawCode) {
 }
 
 function handleSearch(code) {
-  showResultByCode(code);
+  const value = (code ?? searchKeyword.value ?? '').toString().trim();
+  if (!value) return;
+  searchKeyword.value = value;
+  showResultByCode(value);
 }
 
 function handleSelectOrder(order) {
@@ -190,6 +200,11 @@ function handleSelectOrder(order) {
     background: #fff;
     padding: 4px;
     box-shadow: 0 6px 16px rgba(31, 35, 41, 0.08);
+  }
+
+  &__search-panel {
+    padding: 16px 12px 8px;
+    background: #fff;
   }
 }
 
