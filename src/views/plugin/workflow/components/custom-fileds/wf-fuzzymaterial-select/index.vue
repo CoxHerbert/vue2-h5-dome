@@ -35,13 +35,12 @@
     <WkfCustomtableSelect
       v-if="cColumn.children"
       ref="user-select"
-      echo
       :params="{ FUSEORGID: fuseorgid }"
-      :cColumn="cColumn"
+      :c-column="cColumn"
       :check-type="checkType"
       :default-checked="value.id ? value.id : ''"
-      @onConfirm="handleUserSelectConfirm"
-      :fnUrl="cColumn.children.props.url"
+      :fn-url="cColumn.children.props.url"
+      @on-confirm="handleUserSelectConfirm"
     />
   </div>
 </template>
@@ -49,11 +48,11 @@
 <script>
 import { defineComponent } from 'vue';
 import { Toast } from 'vant';
-import { tenantList as fetchTenantList } from '@/api/user.js';
+import Api from '@/api';
 import WkfCustomtableSelect from '../../wf-fuzzymaterial-select/index.vue';
 
 export default defineComponent({
-  name: 'customtable-select',
+  name: 'CustomtableSelect',
   components: { WkfCustomtableSelect },
   props: {
     value: {
@@ -132,9 +131,11 @@ export default defineComponent({
       this.show = false;
     },
     async getTenantListList() {
-      const res = await fetchTenantList({});
-      if (res && res.code === 200) {
-        this.tenantList = (res.data || []).map((item) => {
+      const res = await Api.user.tenantList({});
+      const { code, data } = res.data;
+
+      if (code === 200) {
+        this.tenantList = (data || []).map((item) => {
           if (item.id === '100004') {
             this.tenantName = item.orgName;
             this.fuseorgid = item.orgId;

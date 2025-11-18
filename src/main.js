@@ -21,6 +21,7 @@ import { setupDirectives } from './directives';
 import { attachNProgress } from '@/router/nprogress';
 import { useDebugStore } from '@/store/debug';
 import request from '@/axios/workflow';
+import NfCustomFields from '@/views/plugin/workflow/components/custom-fileds/index';
 
 // —— 启动函数（推荐异步引导）——
 async function bootstrap() {
@@ -40,6 +41,7 @@ async function bootstrap() {
   app.use(i18n);
   app.use(router);
   app.use(plugins);
+  app.use(NfCustomFields);
 
   const debugStore = useDebugStore();
   await debugStore.init();

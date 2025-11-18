@@ -366,6 +366,14 @@ export default {
 
   &-content {
     width: 100%;
+
+    :deep(.van-cell) {
+      padding-left: 0;
+      padding-right: 0;
+    }
+    :deep(.van-cell__title) {
+      font-weight: 600;
+    }
   }
 
   &-bottom {

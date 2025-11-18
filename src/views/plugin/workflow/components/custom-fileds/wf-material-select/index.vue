@@ -34,13 +34,12 @@
     </div>
     <WkfCustomtableSelect
       ref="user-select"
-      echo
       :params="{ fuseorgid }"
-      :cColumn="column"
+      :c-column="column"
       :check-type="checkType"
       :default-checked="value.id ? value.id : ''"
-      @onConfirm="handleUserSelectConfirm"
-      :fnUrl="column.children.props.url"
+      :fn-url="column.children.props.url"
+      @on-confirm="handleUserSelectConfirm"
     />
   </div>
 </template>
@@ -48,11 +47,11 @@
 <script>
 import { defineComponent } from 'vue';
 import { Toast } from 'vant';
-import { tenantList as fetchTenantList } from '@/api/user.js';
+import Api from '@/api';
 import WkfCustomtableSelect from '../../wf-customtable-select/index.vue';
 
 export default defineComponent({
-  name: 'customtable-select',
+  name: 'CustomtableSelect',
   components: { WkfCustomtableSelect },
   props: {
     value: {
@@ -122,7 +121,7 @@ export default defineComponent({
       this.show = false;
     },
     async getTenantListList() {
-      const res = await fetchTenantList({});
+      const res = await Api.org.getOrgList({});
       if (res && res.code === 200) {
         this.tenantList = (res.data || []).map((item) => {
           if (item.id === '100006') {

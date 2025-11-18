@@ -13,7 +13,6 @@
     </div>
     <wkf-user-select
       ref="user-select"
-      echo
       :check-type="checkType"
       :default-checked="value"
       @on-confirm="handleUserSelectConfirm"

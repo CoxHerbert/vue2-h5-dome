@@ -13,13 +13,12 @@
     </div>
     <WkfCustomtableSelect
       ref="user-select"
-      echo
-      :cColumn="column"
+      :c-column="column"
       :check-type="checkType"
       :default-checked="value.id ? value.id : ''"
-      @onConfirm="handleUserSelectConfirm"
-      :fnUrl="column.children.props.url"
-    ></WkfCustomtableSelect>
+      :fn-url="column.children.props.url"
+      @on-confirm="handleUserSelectConfirm"
+    />
   </div>
 </template>
 
@@ -27,11 +26,11 @@
 import { defineComponent } from 'vue';
 import { debounce } from 'lodash';
 import { KEYS } from '@/constants/keys';
-import { laborRegisterDetail } from '@/api/user.js';
+import Api from '@/api';
 import WkfCustomtableSelect from '../../wf-customtable-select/index.vue';
 
 export default defineComponent({
-  name: 'customtable-select',
+  name: 'CustomtableSelect',
   components: { WkfCustomtableSelect },
   props: {
     value: {
@@ -106,11 +105,12 @@ export default defineComponent({
       }
     },
     async getLaborRegisterList(userId) {
-      const res = await laborRegisterDetail({ createUser: userId });
-      if (res && res.code === 200 && res.data) {
-        this.name = res.data.name;
-        this.isDisabled = !!res.data.name;
-        this.$emit('label-change', res.data);
+      const res = await Api.recruit.onboarding.getLaborRegisterDetail({ createUser: userId });
+      const { code, data } = res.data;
+      if (code === 200 && res.data) {
+        this.name = data.name;
+        this.isDisabled = data.name;
+        this.$emit('label-change', data);
       }
     },
     handleSelect() {

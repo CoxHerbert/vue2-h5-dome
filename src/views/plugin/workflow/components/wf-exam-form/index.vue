@@ -4,30 +4,26 @@
       <van-cell-group inset>
         <van-field
           v-if="!hideComment"
+          v-model="examineForm.comment"
           class="wf-form-field"
           label="批复意见："
           label-width="150"
           type="textarea"
           autosize
-          v-model="examineForm.comment"
           placeholder="批复意见"
           @update:model-value="handleCommentInput"
         />
         <van-field v-if="!hideAttchment" class="wf-form-field" label="附件：" label-width="150">
           <template #input>
-            <wf-upload
-              v-model="fileList"
-              :column="uploadOption"
-              :disabled="false"
-            ></wf-upload>
+            <wf-upload v-model="fileList" :column="uploadOption" :disabled="false" />
           </template>
         </van-field>
         <van-field
           v-if="!hideCopy"
+          v-model="examineForm.$copyUser"
           class="wf-form-field"
           label="抄送人："
           label-width="150"
-          v-model="examineForm.$copyUser"
           placeholder="请选择 抄送人"
           readonly
           clickable
@@ -35,10 +31,10 @@
         />
         <van-field
           v-if="!hideExamine"
+          v-model="examineForm.$assignee"
           class="wf-form-field"
           label="指定审批人："
           label-width="150"
-          v-model="examineForm.$assignee"
           placeholder="如不选择则使用默认处理人，驳回时无效。多选时若下一节点为多实例则按选择顺序赋值，若不是择只有第一个生效。"
           readonly
           clickable
@@ -54,7 +50,7 @@
 import { defineComponent } from 'vue';
 
 export default defineComponent({
-  name: 'wf-exam-form',
+  name: 'WfExamForm',
   props: {
     process: {
       type: Object,

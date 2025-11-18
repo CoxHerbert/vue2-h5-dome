@@ -10,12 +10,12 @@
       <div class="ceil">{{ col.feaEvaluationTotalScore }}</div>
       <div class="ceil score-cell">
         <van-field
+          v-model="localValue[i].feaEvaluationScore"
           class="input-item"
           type="number"
           input-align="center"
           :maxlength="6"
           placeholder="请输入"
-          v-model="localValue[i].feaEvaluationScore"
           @blur="(event) => handleInput(event.target.value, i)"
           @update:model-value="(val) => handleInput(val, i)"
         />
