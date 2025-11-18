@@ -557,7 +557,7 @@ page {
 
 .detail-section {
   /* 30rpx 30rpx 10rpx -> 15px 15px 5px */
-  padding: 15px 15px 5px;
+  padding: 0 15px 5px;
 
   & + .detail-section {
     border-top: 1px solid #f2f3f5;

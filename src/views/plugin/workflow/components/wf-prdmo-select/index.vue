@@ -1,43 +1,53 @@
 <template>
-  <el-dialog
-    ref="nf-dialog"
-    class="nf-dialog"
-    v-model="visible"
-    title="专案物料查询"
-    width="60%"
-    :before-close="handleClose"
-    append-to-body
+  <van-popup
+    v-model:show="visible"
+    position="center"
+    round
+    :close-on-click-overlay="false"
+    :style="{ width: '90vw' }"
   >
-    <nf-crud
-      v-if="isInit && visible"
-      :option="option"
-      :table-loading="loading"
-      :data="data"
-      v-model:page="page"
-      v-model="form"
-      ref="crud"
-      @search-change="searchChange"
-      @search-reset="searchReset"
-      @selection-change="selectionList = $event"
-      @current-change="page.current = $event"
-      @size-change="page.pageSize = $event"
-      @row-click="rowClick"
-      @on-load="onLoad"
-    >
-      <template v-if="checkType == 'radio'" #radio="{ row }">
-        <el-radio v-model="form.radio" :label="row.id"><i></i></el-radio>
-      </template>
-    </nf-crud>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="handleClose" size="default">取 消</el-button>
-        <el-button type="primary" @click="handleConfirm" size="default">确 定</el-button>
-      </span>
-    </template>
-  </el-dialog>
+    <div class="nf-dialog">
+      <!-- 标题 -->
+      <div class="nf-dialog__header">专案物料查询</div>
+
+      <!-- 内容：nf-crud 原样保留 -->
+      <div class="nf-dialog__body">
+        <nf-crud
+          v-if="isInit && visible"
+          ref="crud"
+          v-model:page="page"
+          v-model="form"
+          :option="option"
+          :table-loading="loading"
+          :data="data"
+          @search-change="searchChange"
+          @search-reset="searchReset"
+          @selection-change="selectionList = $event"
+          @current-change="page.current = $event"
+          @size-change="page.pageSize = $event"
+          @row-click="rowClick"
+          @on-load="onLoad"
+        >
+          <!-- 单选模式：用 van-radio 替换 el-radio -->
+          <template v-if="checkType === 'radio'" #radio="{ row }">
+            <van-radio-group v-model="form.radio">
+              <van-radio :name="row.id" icon-size="18px" />
+            </van-radio-group>
+          </template>
+        </nf-crud>
+      </div>
+
+      <!-- 底部按钮：用 van-button 替换 el-button -->
+      <div class="nf-dialog__footer dialog-footer">
+        <van-button size="small" type="default" plain @click="handleClose"> 取 消 </van-button>
+        <van-button size="small" type="primary" @click="handleConfirm"> 确 定 </van-button>
+      </div>
+    </div>
+  </van-popup>
 </template>
+
 <script>
-import { getMaterialDetail } from '@/api/system/user';
+import Api from '@/api';
 
 export default {
   props: {
@@ -60,36 +70,6 @@ export default {
       default: () => {
         return '';
       },
-    },
-  },
-  watch: {
-    checkType: {
-      handler(val) {
-        if (val == 'radio') {
-          this.option.selection = false;
-          this.findObject(this.option.column, 'radio').hide = false;
-        } else {
-          this.option.selection = true;
-          this.findObject(this.option.column, 'radio').hide = true;
-        }
-      },
-      immediate: true,
-    },
-  },
-  computed: {
-    ids() {
-      let ids = new Set();
-      this.selectionList.forEach(ele => {
-        ids.add(ele.id);
-      });
-      return Array.from(ids).join(',');
-    },
-    names() {
-      let names = new Set();
-      this.selectionList.forEach(ele => {
-        names.add(ele.realName);
-      });
-      return Array.from(names).join(',');
     },
   },
   data() {
@@ -168,6 +148,36 @@ export default {
       },
     };
   },
+  computed: {
+    ids() {
+      const ids = new Set();
+      this.selectionList.forEach((ele) => {
+        ids.add(ele.id);
+      });
+      return Array.from(ids).join(',');
+    },
+    names() {
+      const names = new Set();
+      this.selectionList.forEach((ele) => {
+        names.add(ele.realName);
+      });
+      return Array.from(names).join(',');
+    },
+  },
+  watch: {
+    checkType: {
+      handler(val) {
+        if (val === 'radio') {
+          this.option.selection = false;
+          this.findObject(this.option.column, 'radio').hide = false;
+        } else {
+          this.option.selection = true;
+          this.findObject(this.option.column, 'radio').hide = true;
+        }
+      },
+      immediate: true,
+    },
+  },
   mounted() {
     this.init();
   },
@@ -184,16 +194,16 @@ export default {
     },
     handleConfirm() {
       if (this.selectionList.length === 0) {
-        this.$message.warning('请选择至少一条数据');
+        this.$toast?.warning?.('请选择至少一条数据') ||
+          this.$message?.warning('请选择至少一条数据');
         return;
       }
       this.$emit('onConfirm', this.selectionList);
       this.handleClose();
     },
-    handleClose(done) {
+    handleClose() {
       // this.selectionClear()
       this.visible = false;
-      if (done && typeof done == 'function') done();
     },
     searchReset() {
       this.query = {};
@@ -210,25 +220,26 @@ export default {
       if (this.$refs.crud) this.$refs.crud.toggleSelection();
     },
     rowClick(row) {
-      if (this.checkType == 'radio') {
+      if (this.checkType === 'radio') {
         this.selectionList = [row];
         this.form.radio = row.id;
-      } else this.$refs.crud.toggleSelection([row]);
+      } else if (this.$refs.crud) {
+        this.$refs.crud.toggleSelection([row]);
+      }
     },
     async changeDefaultChecked() {
       if (!this.defaultChecked) return;
-      let defaultChecked = this.defaultChecked;
-      if (this.checkType == 'checkbox') {
-        // this.selectionClear()
+      const defaultChecked = this.defaultChecked;
+      if (this.checkType === 'checkbox') {
         const checks = defaultChecked.split(',');
         if (checks.length > 0) {
           setTimeout(() => {
-            checks.forEach(async c => {
-              let row = this.data.find(d => d.id == c); // 当前页查找
+            checks.forEach(async (c) => {
+              let row = this.data.find((d) => d.id === c); // 当前页查找
               if (!row) {
-                row = this.selectionList.find(d => d.id == c); // 勾选列表查找
+                row = this.selectionList.find((d) => d.id === c); // 勾选列表查找
                 if (!row) {
-                  let res = await getMaterialDetail(c); // 接口查找
+                  const res = await Api.material.getMaterialDetail(c); // 接口查找
                   if (res.data.data) row = res.data.data;
                 }
               }
@@ -237,10 +248,10 @@ export default {
           }, 500);
         }
       } else {
-        let row = this.data.find(d => d.id == defaultChecked.id);
+        let row = this.data.find((d) => d.id === defaultChecked.id);
 
         if (!row) {
-          let res = await getMaterialDetail({
+          const res = await Api.material.getMaterialDetail({
             materialCode: defaultChecked.id,
           });
           if (res.data.data) row = res.data.data;
@@ -262,31 +273,57 @@ export default {
         size: page.pageSize || 10,
         ...Object.assign(params, this.query),
       };
-      this.$axios.get(this.voUrl, { params: param }).then(res => {
-        this.page.total = res.data.data.total;
-        this.data = res.data.data.records;
-        this.loading = false;
+      this.$http
+        .request({
+          path: this.voUrl,
+          method: 'get',
+          params: param,
+        })
+        .then((res) => {
+          const { data } = res;
+          this.page.total = data.total;
+          this.data = data.records;
+          this.loading = false;
 
-        this.changeDefaultChecked();
-      });
+          this.changeDefaultChecked();
+        });
     },
   },
 };
 </script>
-<style lang="scss">
+
+<style lang="scss" scoped>
 .nf-dialog {
   display: flex;
   flex-direction: column;
-  margin: 0 !important;
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -40%);
-  max-height: calc(100% - 30px);
-  max-width: calc(100% - 30px);
-  .el-dialog__body {
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+
+  &__header {
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 1px solid #f2f3f5;
+  }
+
+  &__body {
     flex: 1;
     overflow: auto;
+    padding: 8px 12px 0;
+  }
+
+  &__footer {
+    padding: 10px 16px 14px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+
+    .van-button {
+      flex: 1;
+    }
   }
 }
 </style>

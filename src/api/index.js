@@ -7,6 +7,7 @@ import urlMatch from './modules/urlMatch';
 import application from './modules/application/index';
 import wms from './modules/wms/index';
 import org from './modules/org/index';
+import material from './modules/material/index';
 
 export default {
   recruit,
@@ -18,4 +19,5 @@ export default {
   application,
   wms,
   org,
+  material,
 };
