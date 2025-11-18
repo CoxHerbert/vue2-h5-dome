@@ -1,101 +1,92 @@
 <template>
   <div class="wl-wrapper">
-    <el-input
+    <van-field
       v-model="name"
-      :size="size"
-      suffix-icon="el-icon-search"
-      :placeholder="placeholder || '专案物料查询'"
+      class="wl-field"
       readonly
+      clickable
+      is-link
+      :size="size"
+      :placeholder="placeholder || '专案物料查询'"
       :disabled="disabled"
+      :right-icon="disabled || readonly ? '' : 'search'"
       @click="handleSelect"
-    ></el-input>
-    <!-- 选择弹窗 -->
-    <nf-Prdmo-select
-      ref="prdmo-select"
+    />
+    <nf-prdmo-select
+      ref="prdmoSelectRef"
       :check-type="checkType"
       :default-checked="modelValue"
-      checkType="radio"
       @onConfirm="handleSelectConfirm"
-    ></nf-Prdmo-select>
+    />
   </div>
 </template>
-<script>
+
+<script setup>
+import { ref, watch } from 'vue';
 import NfPrdmoSelect from '../../nf-prdmo-select/index.vue';
 
-export default {
-  name: 'prdmo-select',
-  components: { NfPrdmoSelect },
-  emits: ['update:modelValue'],
-  props: {
-    modelValue: [String, Number, Object],
-    checkType: {
-      // radio单选 checkbox多选
-      type: String,
-      default: () => {
-        return 'radio';
-      },
-    },
-    size: {
-      type: String,
-      default: () => {
-        return 'default';
-      },
-    },
-    readonly: {
-      type: Boolean,
-      default: false,
-    },
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-    placeholder: String,
-    change: Function,
-  },
+defineOptions({ name: 'prdmo-select' });
 
-  data() {
-    return {
-      name: '',
-    };
+const props = defineProps({
+  modelValue: { type: [String, Number, Object], default: '' },
+  checkType: {
+    type: String,
+    default: () => 'radio',
   },
+  size: {
+    type: String,
+    default: () => 'default',
+  },
+  readonly: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
+  placeholder: { type: String, default: '' },
+  change: Function,
+});
 
-  watch: {
-    modelValue: {
-      handler(val) {
-        if (val) {
-          this.name = this.modelValue.materialName;
-        } else this.name = '';
-      },
-      immediate: true,
-    },
-  },
+const emit = defineEmits(['update:modelValue']);
+const name = ref('');
+const prdmoSelectRef = ref();
 
-  methods: {
-    handleSelect() {
-      if (this.readonly || this.disabled) return;
-      this.$refs['prdmo-select'].visible = true;
-    },
-    handleSelectConfirm(list) {
-      this.name = list[0].materialName;
-      this.$emit('update:modelValue', list[0]);
-      if (this.change && typeof this.change == 'function') this.change({ value: list[0] });
-      //  用于表单数据回显change事件
-      //   Object.getOwnPropertyNames(value).forEach(item => {
-      //     console.log(item, '-----------', value[item]);
-      //     if (this.form.hasOwnProperty(item)) {
-      //       this.form[item] = value[item];
-      //     }
-      //   });
-    },
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (val && typeof val === 'object') {
+      name.value = val.materialName || '';
+    } else {
+      name.value = '';
+    }
   },
-};
+  { immediate: true, deep: true }
+);
+
+function handleSelect() {
+  if (props.readonly || props.disabled) return;
+  if (prdmoSelectRef.value?.open) {
+    prdmoSelectRef.value.open();
+  } else if (prdmoSelectRef.value) {
+    prdmoSelectRef.value.visible = true;
+  }
+}
+
+function handleSelectConfirm(list = []) {
+  const first = list[0];
+  if (!first) return;
+  name.value = first.materialName || '';
+  emit('update:modelValue', first);
+  if (typeof props.change === 'function') {
+    props.change({ value: first });
+  }
+}
 </script>
-<style lang="scss" scoped>
+
+<style scoped lang="scss">
 .wl-wrapper {
   display: flex;
-  align-items: center;
-  .organization {
-    margin-right: 20px;
-  }
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wl-field {
+  --van-field-input-text-color: var(--van-text-color);
 }
 </style>
