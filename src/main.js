@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import App from './App.vue';
 import router from '@/router';
 import i18n from './locales';
+import { setupPermissionGuard } from './permission';
 
 // 样式
 import 'nprogress/nprogress.css';
@@ -29,6 +30,10 @@ async function bootstrap() {
   const pinia = createPinia();
   app.use(pinia);
   setActivePinia(pinia);
+
+  // 2) 权限守卫需在 router 安装之前注册，确保首跳也能被拦截
+  setupPermissionGuard(router);
+
   app.use(dcUI);
   app.use(wfUI);
   app.use(vant);
@@ -39,14 +44,10 @@ async function bootstrap() {
   const debugStore = useDebugStore();
   await debugStore.init();
 
-  // 2) 全局注册（组件/指令/插件）
+  // 3) 全局注册（组件/指令/插件）
   registerComponents(app);
   setupDirectives(app);
   attachNProgress(router);
-  // 3) 权限守卫（放在 router、pinia 注册之后）
-  //    注意：若 permission.js 内部会使用 pinia，请确保它在 app.use(pinia) 之后执行
-  await import('./permission.js');
-
   // 4) 启动前兜底：如果已登录但本地没有用户资料，则拉一次用户信息
   const { useAuthStore } = await import('@/store/auth');
   const { useUserStore } = await import('@/store/user');

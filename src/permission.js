@@ -1,5 +1,4 @@
 // src/permission.js
-import router from './router';
 import { useAuthStore } from '@/store/auth';
 import NProgress from 'nprogress';
 import { watch } from 'vue';
@@ -35,15 +34,6 @@ function setTitle(meta) {
 
   document.title = resolved ? `${resolved}` : baseTitle;
 }
-
-watch(
-  () => i18n.global.locale.value,
-  () => {
-    const { meta } = router.currentRoute.value || {};
-    setTitle(meta);
-  }
-);
-
 NProgress.configure({ showSpinner: false });
 
 /** 无需登录可访问的路由（不要把 /login 放进来，否则已登录用户会停留在登录页） */
@@ -65,59 +55,73 @@ const syncSetToken = (token) =>
     setTimeout(resolve, 150);
   });
 
-router.beforeEach(async (to, from, next) => {
-  NProgress.start();
-  setTitle(to.meta);
+export function setupPermissionGuard(router) {
+  if (!router) return;
 
-  const auth = useAuthStore();
-  const token = auth.token;
-
-  // 1) URL token 白名单：写入后直接放行
-  if (urlTokenWhiteList.has(to.path)) {
-    if (to.query?.token) {
-      await syncSetToken(to.query.token);
+  watch(
+    () => i18n.global.locale.value,
+    () => {
+      const { meta } = router.currentRoute.value || {};
+      setTitle(meta);
     }
-    NProgress.done();
-    return next();
-  }
+  );
 
-  // 2) 显式公开页面
-  const noAuth = to.meta?.requiresAuth === false || isPublic(to.path);
-  if (noAuth) {
-    NProgress.done();
-    return next();
-  }
+  setTitle(router.currentRoute.value?.meta);
 
-  // 3) 需要鉴权但未登录 ⇒ 静默 or 普通登录
-  if (!token) {
-    // 避免已经在登录页时再次重定向导致循环
-    if (!isLoginPath(to.path)) {
+  router.beforeEach(async (to, from, next) => {
+    NProgress.start();
+    setTitle(to.meta);
+
+    const auth = useAuthStore();
+    const token = auth.token;
+
+    // 1) URL token 白名单：写入后直接放行
+    if (urlTokenWhiteList.has(to.path)) {
+      if (to.query?.token) {
+        await syncSetToken(to.query.token);
+      }
       NProgress.done();
-      const redirectFromTo = resolveRedirect(to);
-      const redirectFull = redirectFromTo === '/' ? resolveRedirect(from) : redirectFromTo;
-
-      const env = getLoginEnv?.();
-      const isWxEnv = env === 'WECHAT_MP' || env === 'WECHAT_ENTERPRISE';
-      const silentLoginPath = '/login/social';
-      const normalLoginPath = '/login';
-      const targetPath = isWxEnv ? silentLoginPath : normalLoginPath;
-
-      return next({ path: targetPath, query: { redirect: redirectFull } });
+      return next();
     }
+
+    // 2) 显式公开页面
+    const noAuth = to.meta?.requiresAuth === false || isPublic(to.path);
+    if (noAuth) {
+      NProgress.done();
+      return next();
+    }
+
+    // 3) 需要鉴权但未登录 ⇒ 静默 or 普通登录
+    if (!token) {
+      // 避免已经在登录页时再次重定向导致循环
+      if (!isLoginPath(to.path)) {
+        NProgress.done();
+        const redirectFromTo = resolveRedirect(to);
+        const redirectFull = redirectFromTo === '/' ? resolveRedirect(from) : redirectFromTo;
+
+        const env = getLoginEnv?.();
+        const isWxEnv = env === 'WECHAT_MP' || env === 'WECHAT_ENTERPRISE';
+        const silentLoginPath = '/login/social';
+        const normalLoginPath = '/login';
+        const targetPath = isWxEnv ? silentLoginPath : normalLoginPath;
+
+        return next({ path: targetPath, query: { redirect: redirectFull } });
+      }
+      NProgress.done();
+      return next();
+    }
+
+    // 4) 已登录访问 /login* ⇒ 回首页（避免登录页死循环）
+    if (isLoginPath(to.path)) {
+      NProgress.done();
+      return next('/');
+    }
+
+    // 5) 正常放行
     NProgress.done();
-    return next();
-  }
+    next();
+  });
 
-  // 4) 已登录访问 /login* ⇒ 回首页（避免登录页死循环）
-  if (isLoginPath(to.path)) {
-    NProgress.done();
-    return next('/');
-  }
-
-  // 5) 正常放行
-  NProgress.done();
-  next();
-});
-
-router.afterEach(() => NProgress.done());
-router.onError(() => NProgress.done());
+  router.afterEach(() => NProgress.done());
+  router.onError(() => NProgress.done());
+}
