@@ -1,7 +1,13 @@
 <template>
   <div class="wf-select-single" :style="{ width }">
-    <div v-if="$slots.default" class="wf-select-single__trigger" :class="{ disabled }" @click="openPopup">
-      <slot />
+    +++++
+    <div
+      v-if="$slots.default"
+      class="wf-select-single__trigger"
+      :class="{ disabled }"
+      @click="openPopup"
+    >
+      <slot></slot>
     </div>
 
     <van-field
@@ -49,7 +55,12 @@
       </div>
 
       <div class="wf-select-single__body">
-        <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" @load="onLoad">
+        <van-list
+          v-model:loading="loading"
+          :finished="finished"
+          finished-text="没有更多了"
+          @load="onLoad"
+        >
           <van-cell
             v-for="row in tableData"
             :key="getKey(row)"
@@ -59,7 +70,11 @@
           >
             <template #label>
               <div class="wf-select-single__row-meta">
-                <span v-for="column in modelColumns" :key="column.prop" class="wf-select-single__meta-item">
+                <span
+                  v-for="column in modelColumns"
+                  :key="column.prop"
+                  class="wf-select-single__meta-item"
+                >
                   <strong>{{ column.label }}：</strong>
                   <span>{{ formatColumnValue(row, column) }}</span>
                 </span>
@@ -91,7 +106,6 @@ import cacheData from '@/components/dc-ui/constant/cacheData';
 
 export default {
   name: 'SelectSingle',
-  emits: ['update:modelValue', 'change'],
   props: {
     modelValue: {
       type: [String, Number, Object],
@@ -158,6 +172,7 @@ export default {
       default: null,
     },
   },
+  emits: ['update:modelValue', 'change'],
   data() {
     return {
       rowKey: 'id',
@@ -275,7 +290,9 @@ export default {
           masterKey: this.masterKey || this.rowKey,
         });
         const currentGlobalData = this.globalCacheStore.globalData[this.model.url] || {};
-        const rows = Array.isArray(currentGlobalData) ? currentGlobalData : Object.values(currentGlobalData);
+        const rows = Array.isArray(currentGlobalData)
+          ? currentGlobalData
+          : Object.values(currentGlobalData);
         const key = this.masterKey || this.rowKey || 'id';
         const hit = rows.find((item) => `${item?.[key]}` === `${ids[0]}`);
         if (hit) {

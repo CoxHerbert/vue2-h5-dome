@@ -197,7 +197,6 @@ export default defineComponent({
   background: #f6f6f6;
 }
 
-/* 原来 20rpx => 10px */
 .split-line {
   border-bottom: 10px solid #f6f6f6;
   min-height: 45px;

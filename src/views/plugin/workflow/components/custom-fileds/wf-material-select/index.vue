@@ -51,7 +51,7 @@ import Api from '@/api';
 import WkfCustomtableSelect from '../../wf-customtable-select/index.vue';
 
 export default defineComponent({
-  name: 'CustomtableSelect',
+  name: 'MaterialSelect',
   components: { WkfCustomtableSelect },
   props: {
     value: {

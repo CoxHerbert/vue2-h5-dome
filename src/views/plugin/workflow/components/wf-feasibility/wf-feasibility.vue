@@ -141,9 +141,9 @@ export default defineComponent({
   justify-content: center;
   padding: 10px;
   line-height: 1.4;
-  font-size: 28rpx;
+  font-size: 14px;
   border-left: 1px solid #eaeaeb;
-  min-height: 100rpx;
+  min-height: 50px;
   box-sizing: border-box;
 }
 

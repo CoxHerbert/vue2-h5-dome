@@ -1,7 +1,12 @@
 <template>
   <div class="wf-select-dialog" :style="{ width }">
-    <div v-if="$slots.default" class="wf-select-dialog__trigger" :class="{ disabled }" @click="openPopup">
-      <slot />
+    <div
+      v-if="$slots.default"
+      class="wf-select-dialog__trigger"
+      :class="{ disabled }"
+      @click="openPopup"
+    >
+      <slot></slot>
     </div>
     <van-field
       v-else
@@ -62,10 +67,12 @@
         <van-icon name="cross" class="wf-select-dialog__close" @click="closePopup" />
       </div>
 
-      <div class="wf-select-dialog__selected" v-if="selected.length">
+      <div v-if="selected.length" class="wf-select-dialog__selected">
         <div class="wf-select-dialog__selected-title">
           <span>已选 {{ selected.length }}</span>
-          <van-button v-if="clearable" size="mini" type="danger" text @click="clearSelection">清空</van-button>
+          <van-button v-if="clearable" size="mini" type="danger" text @click="clearSelection"
+            >清空</van-button
+          >
         </div>
         <div class="wf-select-dialog__selected-tags">
           <van-tag
@@ -98,7 +105,11 @@
           >
             <template #label>
               <div class="wf-select-dialog__row-meta">
-                <span v-for="column in modelColumns" :key="column.prop" class="wf-select-dialog__meta-item">
+                <span
+                  v-for="column in modelColumns"
+                  :key="column.prop"
+                  class="wf-select-dialog__meta-item"
+                >
                   <strong>{{ column.label }}：</strong>
                   <span>{{ formatColumnValue(row, column) }}</span>
                 </span>
@@ -130,8 +141,7 @@ import ComponentApi from '@/components/dc-ui/api/index';
 import cacheData from '@/components/dc-ui/constant/cacheData';
 
 export default {
-  name: 'WfSelectDialog',
-  emits: ['update:modelValue', 'change'],
+  name: 'SelectDialog',
   props: {
     modelValue: {
       type: [String, Number, Object, Array],
@@ -202,6 +212,7 @@ export default {
       default: null,
     },
   },
+  emits: ['update:modelValue', 'change'],
   data() {
     return {
       rowKey: 'id',
