@@ -31,6 +31,9 @@ export default {
       if (flag && Array.isArray(value)) {
         result = value.join(this.separator || DIC_SPLIT);
       }
+      if (value !== result && typeof result !== 'undefined') {
+        this.text = result;
+      }
       if (typeof this.change === 'function' && this.column.cell !== true) {
         this.change({ value: result, column: this.column, index: this.dynamicIndex });
       }
