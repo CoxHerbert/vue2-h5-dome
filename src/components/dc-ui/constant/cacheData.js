@@ -84,7 +84,7 @@ export default {
         label: '采购类型',
         prop: 'billtypeDict',
         dictData: 'DC_PURCHASE_REQUEST_DICT',
-        component: 'dc-dict-key',
+        component: 'dc-dict',
       },
       {
         label: '申请日期',
@@ -469,7 +469,7 @@ export default {
         prop: 'bindField',
         dictData: 'DC_PMS_PROJECT_ROLE',
         multiple: true,
-        component: 'dc-dict-key',
+        component: 'dc-dict',
       },
     ],
   },
@@ -580,7 +580,7 @@ export default {
         prop: 'nameplateSizeName',
         type: 'dict',
         dictData: 'DC_NAMEPLATE_SIZE',
-        component: 'dc-dict-key',
+        component: 'dc-dict',
       },
       // {
       //   label: '铭牌模版大小',
@@ -1333,7 +1333,7 @@ export default {
         prop: 'stockType',
         dictData: 'DC_WMS_STOCK_TYPE',
         type: 'dict',
-        component: 'dc-dict-key',
+        component: 'dc-dict',
         width: 90,
       },
       {
@@ -1942,7 +1942,7 @@ export default {
         type: 'dict',
         dictData: 'DC_SCM_EXCHANGE_RATE',
         search: true,
-        component: 'dc-dict-key',
+        component: 'dc-dict',
         searchProps: {
           is: 'select',
         },

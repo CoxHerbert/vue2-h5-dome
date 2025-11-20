@@ -7,10 +7,17 @@
         is-link
         :placeholder="getPlaceholder(column)"
         :disabled="disabled"
-        :clearable="!disabled && !!date"
         @click="openCalendar"
-        @clear="handleClear"
-      />
+      >
+        <template #right-icon>
+          <van-icon
+            v-if="!disabled && !!date"
+            name="clear"
+            class="wf-date__clear-icon"
+            @click.stop="handleClear"
+          />
+        </template>
+      </van-field>
     </template>
     <template v-else>
       <div class="wf-date__time">
@@ -21,10 +28,17 @@
           :placeholder="startPlaceholder"
           :disabled="disabled"
           input-align="center"
-          :clearable="!disabled && !!initStartDate"
           @click="handleTimeFieldClick(startTimeMode)"
-          @clear="handleClear"
-        />
+        >
+          <template #right-icon>
+            <van-icon
+              v-if="!disabled && !!initStartDate"
+              name="clear"
+              class="wf-date__clear-icon"
+              @click.stop="handleClear"
+            />
+          </template>
+        </van-field>
         <template v-if="type === 6">
           <span class="wf-date__separator">至</span>
           <van-field
@@ -34,10 +48,17 @@
             :placeholder="endPlaceholder"
             :disabled="disabled"
             input-align="center"
-            :clearable="!disabled && !!initEndDate"
             @click="handleTimeFieldClick('timerange-end')"
-            @clear="handleClear"
-          />
+          >
+            <template #right-icon>
+              <van-icon
+                v-if="!disabled && !!initEndDate"
+                name="clear"
+                class="wf-date__clear-icon"
+                @click.stop="handleClear"
+              />
+            </template>
+          </van-field>
         </template>
       </div>
     </template>
@@ -56,11 +77,11 @@
       @confirm="handleCalendarConfirm"
       @close="handleCalendarClose"
     >
-      <template #footer>
+      <!-- <template #footer>
         <div class="wf-date__footer">
           <van-button block type="danger" plain @click="handleCalendarClear"> 清空 </van-button>
         </div>
-      </template>
+      </template> -->
     </van-calendar>
 
     <van-popup v-model:show="showTimePicker" position="bottom" teleport="body">
@@ -77,7 +98,7 @@
 
 <script>
 import { defineComponent, nextTick } from 'vue';
-import { Button, Calendar, Field, Picker, Popup } from 'vant';
+import { Button, Calendar, Field, Picker, Popup, Icon } from 'vant';
 import Props from '../../mixins/props.js';
 import timeFormat from '../../util/timeFormat.js';
 
@@ -98,6 +119,7 @@ export default defineComponent({
     [Picker.name]: Picker,
     [Calendar.name]: Calendar,
     [Button.name]: Button,
+    [Icon.name]: Icon,
   },
   mixins: [Props],
   data() {
@@ -537,6 +559,11 @@ export default defineComponent({
 
   &__footer {
     padding: 12px 16px 16px;
+  }
+
+  &__clear-icon {
+    font-size: 16px;
+    color: #c8c9cc;
   }
 }
 </style>
