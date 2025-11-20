@@ -1,254 +1,460 @@
 <template>
-  <el-input
-    v-model="value"
-    v-bind="inputProps"
-    :placeholder="placeholder"
-    :disabled="disabled"
-    :clearable="true"
-    prefix-icon="Search"
-    @click="openDialog"
-    @change="
-      (value) => {
-        handleChange(value);
-      }
-    "
-  />
-  <el-dialog
-    v-model="open"
-    class="select-dialog"
-    :show-close="false"
-    :width="dialogWidth"
-    modal
-    draggable
-    destroy-on-close
-    append-to-body
-    @close="closeDialog"
-  >
-    <template #header>
-      <div class="head-title">{{ title || model?.title || '-' }}</div>
-      <div class="head-close" @click="closeDialog">
-        <el-icon><Close /></el-icon>
-      </div>
-    </template>
-
-    <div v-loading="loading" class="dialog-body w-full h-full">
-      <div class="data-content">
-        <div class="table-container">
-          <el-table
-            ref="tableRef"
-            :data="tableData"
-            :row-class-name="tableRowClassName"
-            :row-key="rowKey || 'id'"
-            height="100%"
-            @row-click="handleRowClick"
-            @row-dblclick="handleRowDblClick"
-          >
-            <el-table-column label="序号" width="80" type="index" align="center">
-              <template #default="scoped">
-                <span>{{ (queryParams.current - 1) * queryParams.size + scoped.$index + 1 }}</span>
-              </template>
-            </el-table-column>
-
-            <el-table-column
-              v-for="(column, index) in model?.column || []"
-              :key="index"
-              :prop="column?.prop"
-              :label="column?.label"
-              :align="column?.align || 'center'"
-              :show-overflow-tooltip="!!column?.tooltip"
-            >
-              <template #default="scoped">
-                <dc-view
-                  v-if="column?.component === 'dc-view'"
-                  v-model="scoped.row[column?.prop]"
-                  color="#666"
-                  :object-name="column?.objectName"
-                />
-                <dc-dict
-                  v-else-if="column?.component === 'dc-dict'"
-                  color="#666"
-                  :value="scoped.row[column?.prop]"
-                  :options="dicts[column?.dictData]"
-                />
-                <span v-else>{{ scoped.row[column?.prop] }}</span>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-
-        <dc-pagination
-          v-show="total > 0"
-          v-model:page="queryParams.current"
-          v-model:limit="queryParams.size"
-          :total="total"
-          @pagination="getData"
-        />
-      </div>
+  <div class="wf-select-single" :style="{ width }">
+    <div v-if="$slots.default" class="wf-select-single__trigger" :class="{ disabled }" @click="openPopup">
+      <slot />
     </div>
 
-    <template #footer>
-      <el-button type="primary" @click="confirm">确定</el-button>
-      <el-button @click="closeDialog">取消</el-button>
-    </template>
-  </el-dialog>
+    <van-field
+      v-else
+      readonly
+      clickable
+      is-link
+      :disabled="disabled"
+      :model-value="displayLabel"
+      :placeholder="displayPlaceholder"
+      class="wf-select-single__field"
+      @click="openPopup"
+    >
+      <template #input>
+        <span :class="{ 'wf-select-single__placeholder': !displayLabel }">
+          {{ displayLabel || displayPlaceholder }}
+        </span>
+      </template>
+      <template #extra>
+        <div class="wf-select-single__icons">
+          <van-icon
+            v-if="clearable && !disabled && displayLabel"
+            name="cross"
+            class="wf-select-single__clear"
+            @click.stop="clearSelection"
+          />
+          <van-icon name="arrow" />
+        </div>
+      </template>
+    </van-field>
+
+    <van-popup
+      v-model:show="open"
+      position="bottom"
+      round
+      closeable
+      teleport="body"
+      class="wf-select-single__popup"
+      :style="{ width: dialogWidth }"
+      @close="closePopup"
+    >
+      <div class="wf-select-single__header">
+        <span class="wf-select-single__title">{{ displayTitle }}</span>
+        <van-icon name="cross" class="wf-select-single__close" @click="closePopup" />
+      </div>
+
+      <div class="wf-select-single__body">
+        <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" @load="onLoad">
+          <van-cell
+            v-for="row in tableData"
+            :key="getKey(row)"
+            :title="getDisplayLabel(row)"
+            clickable
+            @click="selectRow(row)"
+          >
+            <template #label>
+              <div class="wf-select-single__row-meta">
+                <span v-for="column in modelColumns" :key="column.prop" class="wf-select-single__meta-item">
+                  <strong>{{ column.label }}：</strong>
+                  <span>{{ formatColumnValue(row, column) }}</span>
+                </span>
+              </div>
+            </template>
+            <template #right-icon>
+              <van-radio :model-value="isSelected(row)" />
+            </template>
+          </van-cell>
+          <div v-if="!loading && !tableData.length" class="wf-select-single__empty">
+            <van-empty description="暂无数据" />
+          </div>
+        </van-list>
+      </div>
+
+      <div class="wf-select-single__footer">
+        <van-button type="default" block @click="closePopup">取消</van-button>
+        <van-button type="primary" block @click="confirm">确定</van-button>
+      </div>
+    </van-popup>
+  </div>
 </template>
 
 <script>
+import { nextTick } from 'vue';
+import { useGlobalCacheStore } from '@/store/global-cache';
+import ComponentApi from '@/components/dc-ui/api/index';
 import cacheData from '@/components/dc-ui/constant/cacheData';
-import selectProps from '@/views/plugin/workflow/mixins/select-props';
 
 export default {
   name: 'SelectSingle',
-  mixins: [selectProps],
   emits: ['update:modelValue', 'change'],
+  props: {
+    modelValue: {
+      type: [String, Number, Object],
+      default: null,
+    },
+    placeholder: {
+      type: String,
+      default: '',
+    },
+    width: {
+      type: String,
+      default: '100%',
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    clearable: {
+      type: Boolean,
+      default: true,
+    },
+    title: {
+      type: String,
+      default: '',
+    },
+    showKey: {
+      type: String,
+      default: '',
+    },
+    masterKey: {
+      type: String,
+      default: '',
+    },
+    dialogWidth: {
+      type: [String, Number],
+      default: '90%',
+    },
+    returnType: {
+      type: String,
+      default: 'label',
+    },
+    showValue: {
+      type: Boolean,
+      default: true,
+    },
+    query: {
+      type: Object,
+      default: () => ({}),
+    },
+    objectName: {
+      type: String,
+      default: '',
+    },
+    column: {
+      type: Object,
+      default: () => ({}),
+    },
+    dynamicIndex: {
+      type: [Number, String],
+      default: null,
+    },
+    change: {
+      type: Function,
+      default: null,
+    },
+  },
   data() {
     return {
       rowKey: 'id',
-      value: null,
       open: false,
       loading: false,
+      finished: false,
       total: 0,
       queryParams: { current: 1, size: 20 },
       tableData: [],
-      dicts: {},
-      selectedRow: null,
-      callBack: (res) => {
-        return {
-          ...res.data.data,
-        };
-      },
-      initDefaultSearch: true,
+      model: null,
+      callBack: (res) => ({ ...res.data.data }),
+      globalCacheStore: useGlobalCacheStore(),
+      selected: null,
+      manualLabel: '',
     };
+  },
+  computed: {
+    displayPlaceholder() {
+      return this.placeholder || this.model?.placeholder || '请选择';
+    },
+    displayTitle() {
+      return this.title || this.model?.title || '-';
+    },
+    displayLabel() {
+      if (!this.showValue) return '';
+      if (this.selected) return this.getDisplayLabel(this.selected);
+      return this.manualLabel || '';
+    },
+    modelColumns() {
+      return Array.isArray(this.model?.column) ? this.model.column : [];
+    },
   },
   watch: {
     modelValue: {
-      handler(newVal) {
-        this.value = newVal;
-      },
-      deep: true,
       immediate: true,
+      deep: true,
+      handler(newVal) {
+        if (!this.showValue) {
+          if (!newVal) {
+            this.selected = null;
+            this.manualLabel = '';
+          }
+          return;
+        }
+
+        if (newVal === null || newVal === undefined || newVal === '') {
+          this.selected = null;
+          this.manualLabel = '';
+          return;
+        }
+
+        if (typeof newVal === 'object') {
+          this.selected = { ...newVal };
+          this.manualLabel = this.getDisplayLabel(newVal);
+          return;
+        }
+
+        const ids = this.parseIds(newVal);
+        if (!ids.length) {
+          this.selected = null;
+          this.manualLabel = '';
+          return;
+        }
+
+        if (!this.model?.url) {
+          this.selected = null;
+          this.manualLabel = ids[0];
+          return;
+        }
+
+        nextTick(() => this.fetchByIds(ids));
+      },
     },
     objectName: {
       handler(newVal) {
         this.model = cacheData[newVal];
-        this.columns = this.model.column;
-        this.initSearchConfig();
+        if (!this.model) return;
         if (this.model?.rowKey) {
           this.rowKey = this.model.rowKey;
         }
-        if (this.initDefaultSearch) {
-          if (
-            ![undefined, null, ''].includes(this.model.search) &&
-            ![undefined, null, ''].includes(this.model.search.config)
-          ) {
-            this.searchConfig.searchItemConfig.paramType = {
-              ...this.searchConfig.searchItemConfig.paramType,
-              ...this.model.search.config,
-            };
-          }
-          if (
-            ![undefined, null, ''].includes(this.model.search) &&
-            ![undefined, null, ''].includes(this.model.search.params)
-          ) {
-            this.queryParams = {
-              ...this.queryParams,
-              ...this.model.search.params,
-            };
-          }
-          this.initDefaultSearch = false;
-        }
-        this.getDictData();
+        this.resetAndLoad();
       },
       immediate: true,
       deep: true,
     },
   },
   methods: {
-    openDialog() {
-      this.open = true;
-      this.getData();
+    getKey(row) {
+      const k = this.masterKey || this.rowKey || 'id';
+      return row?.[k];
     },
-    getData() {
-      this.loading = true;
-      //添加默认参数...this.model?.defaultParams,
-      this.model
-        .dialogGet({ ...this.model?.defaultParams, ...this.queryParams, ...this.query })
-        .then((res) => {
-          const callBackData = this.model?.callBack
-            ? this.model?.callBack(res)
-            : this.callBack(res);
-          this.tableData = callBackData?.records;
-          this.total = callBackData?.total;
-          this.loading = false;
-        })
-        .catch((err) => {
-          console.error(err);
-          this.loading = false;
+    parseIds(val) {
+      const k = this.masterKey || this.rowKey || 'id';
+      if (Array.isArray(val)) {
+        return val
+          .map((item) => (typeof item === 'object' ? item?.[k] : item))
+          .filter((item) => item !== undefined && item !== null && item !== '');
+      }
+      if (val && typeof val === 'object') {
+        return [val?.[k]].filter((item) => item !== undefined && item !== null && item !== '');
+      }
+      if (typeof val === 'string' || typeof val === 'number') {
+        return String(val)
+          .split(',')
+          .map((item) => item.trim())
+          .filter((item) => item !== '');
+      }
+      return [];
+    },
+    async fetchByIds(ids) {
+      try {
+        await ComponentApi.cache.getView({
+          url: this.model.url,
+          data: ids,
+          masterKey: this.masterKey || this.rowKey,
         });
-    },
-    handleRowClick(row) {
-      // console.log(row);
-      // const isSelected = this.selectedRow?.id === row.id;
-      // this.selectedRow = isSelected ? null : row;
-      // console.log(this.selectedRow);
-
-      // 容错处理：如果 row 为空，直接返回（避免后续报错）以下lihaiyang修改
-      if (!row) return;
-      const currentKey = row[this.rowKey];
-      const selectedKey = this.selectedRow ? this.selectedRow[this.rowKey] : null;
-      const isSelected = currentKey === selectedKey;
-      this.selectedRow = isSelected ? null : row;
-    },
-    handleRowDblClick(row) {
-      this.handleRowClick(row);
-      this.confirm();
-    },
-    confirm() {
-      this.$emit('update:modelValue', this.selectedRow[this.model?.defaultLabel]);
-      this.$emit('change', this.selectedRow);
-      this.handleChange(this.selectedRow);
-      this.closeDialog();
-    },
-    handleChange(value) {
-      const obj = {
-        value: value || {},
-        column: this.column,
-        index: this.dynamicIndex,
-      };
-      if (typeof this.change === 'function') {
-        this.change(obj);
+        const currentGlobalData = this.globalCacheStore.globalData[this.model.url] || {};
+        const rows = Array.isArray(currentGlobalData) ? currentGlobalData : Object.values(currentGlobalData);
+        const key = this.masterKey || this.rowKey || 'id';
+        const hit = rows.find((item) => `${item?.[key]}` === `${ids[0]}`);
+        if (hit) {
+          this.selected = { ...hit };
+          this.manualLabel = this.getDisplayLabel(hit);
+        } else {
+          this.selected = null;
+          this.manualLabel = ids[0];
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        this.selected = null;
+        this.manualLabel = ids[0];
       }
     },
-    closeDialog() {
+    openPopup() {
+      if (this.disabled) return;
+      this.resetAndLoad();
+      this.open = true;
+    },
+    closePopup() {
       this.open = false;
     },
-    tableRowClassName({ row }) {
-      return this.selectedRow?.[this.rowKey] === row?.[this.rowKey] ? 'row-selected' : '';
+    async resetAndLoad() {
+      this.tableData = [];
+      this.total = 0;
+      this.finished = false;
+      this.queryParams = { current: 1, size: this.queryParams.size || 20 };
+      await this.loadData();
     },
-    async getDicts() {
+    async onLoad() {
+      if (this.loading || this.finished) return;
+      this.queryParams.current += this.tableData.length ? 1 : 0;
+      await this.loadData();
+    },
+    async loadData() {
+      if (!this.model?.dialogGet) return;
+      this.loading = true;
+      const newParams = this.query?.currentPage
+        ? { currentPage: this.queryParams.current, pageSize: this.queryParams.size }
+        : {};
       try {
-        const res = await this.useAsyncCache([
-          { key: 'DC_PMS_PLAN_STATUS' },
-          { key: 'DC_PMS_TEMPITEM_TYPE' },
-        ]);
-        this.dicts = res;
-      } catch (error) {
-        console.error('获取枚举失败', error);
+        const res = await this.model.dialogGet({
+          ...(this.model?.defaultParams || {}),
+          ...this.queryParams,
+          ...this.query,
+          ...newParams,
+        });
+        const callBackData = this.model?.callBack ? this.model.callBack(res) : this.callBack(res);
+        const records = callBackData?.records || [];
+        this.tableData = [...this.tableData, ...records];
+        this.total = callBackData?.total || records.length || 0;
+        this.finished = this.tableData.length >= this.total;
+        await nextTick();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.loading = false;
       }
+    },
+    selectRow(row) {
+      if (this.isSelected(row)) {
+        this.selected = null;
+      } else {
+        this.selected = row;
+      }
+      this.manualLabel = this.selected ? this.getDisplayLabel(this.selected) : '';
+    },
+    isSelected(row) {
+      const k = this.getKey(row);
+      return this.selected ? this.getKey(this.selected) === k : false;
+    },
+    clearSelection() {
+      this.selected = null;
+      this.manualLabel = '';
+      this.applySelection();
+    },
+    applySelection() {
+      const k = this.masterKey || this.rowKey || 'id';
+      let payload = null;
+      if (this.selected) {
+        if (this.returnType === 'id') {
+          payload = this.selected?.[k] ?? null;
+        } else if (this.returnType === 'object') {
+          payload = { ...this.selected };
+        } else {
+          payload = this.getDisplayLabel(this.selected);
+        }
+        this.manualLabel = this.getDisplayLabel(this.selected);
+      } else if (this.returnType === 'label') {
+        payload = '';
+      }
+
+      this.$emit('update:modelValue', payload);
+      this.$emit('change', this.selected || null);
+      const obj = { value: this.selected || null, column: this.column, index: this.dynamicIndex };
+      if (typeof this.change === 'function') this.change(obj);
+    },
+    confirm() {
+      this.applySelection();
+      this.closePopup();
+    },
+    getDisplayLabel(row) {
+      const key = this.showKey || this.model?.defaultLabel || this.masterKey || this.rowKey;
+      return row?.[key] ?? '-';
+    },
+    formatColumnValue(row, column) {
+      if (!column?.prop) return '-';
+      const value = row?.[column.prop];
+      if ([undefined, null, '', ' '].includes(value)) return '-';
+      return value;
     },
   },
 };
 </script>
 
-<style lang="scss">
-@use '@/components/dc/styles/select-dialog.scss';
-</style>
-
 <style lang="scss" scoped>
-.dialog-body {
-  height: 70vh !important;
-}
-.table-container {
-  height: calc(70vh - 100px);
+.wf-select-single {
+  width: 100%;
+
+  &__field {
+    width: 100%;
+  }
+
+  &__placeholder {
+    color: var(--van-gray-6);
+  }
+
+  &__icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__clear {
+    color: var(--van-gray-5);
+  }
+
+  &__popup {
+    padding: 12px 12px 0;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 4px 12px;
+    font-weight: 600;
+  }
+
+  &__body {
+    max-height: 55vh;
+    overflow: auto;
+  }
+
+  &__row-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--van-gray-6);
+  }
+
+  &__meta-item strong {
+    margin-right: 2px;
+  }
+
+  &__footer {
+    display: flex;
+    gap: 8px;
+    padding: 12px 4px 16px;
+  }
+
+  &__empty {
+    padding: 16px 0;
+  }
+
+  &__trigger.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }
 </style>
