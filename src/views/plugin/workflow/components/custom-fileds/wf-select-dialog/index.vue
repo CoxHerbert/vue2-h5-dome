@@ -1,205 +1,213 @@
 <template>
-  <!-- 触发区：自定义插槽或标签输入 -->
-  <div v-if="$slots.default" @click="openDialog">
-    <slot name="default"></slot>
-  </div>
-  <div v-else class="input-tag-box" @click="openDialog">
-    <el-input-tag
-      v-model="value"
-      class="ipt-tag-select"
-      :class="{
-        'tag-input__hide': Array.isArray(value) && value.length,
-      }"
-      :placeholder="placeholder"
-      :style="{ width: width }"
-      :disabled="disabled"
-      :clearable="clearable"
-      @remove-tag="(val, $event) => handleInputTagAction('remove-tag', val, $event)"
-      @clear="($event) => handleInputTagAction('clear', null, $event)"
-    >
-      <template #tag="item">
-        <div class="flex items-center">
-          <span>{{ item.value[showKey || model?.defaultLabel] }}</span>
-        </div>
-      </template>
-      <template #prefix>
-        <el-icon><Search /></el-icon>
-      </template>
-      <template #suffix>
-        <el-icon><Edit /></el-icon>
-      </template>
-    </el-input-tag>
-  </div>
-
-  <!-- 选择弹窗 -->
-  <el-dialog
-    v-model="open"
-    class="select-dialog"
-    :show-close="false"
-    :width="dialogWidth"
-    modal
-    draggable
-    destroy-on-close
-    append-to-body
-    size="default"
-    @close="closeDialog"
-  >
-    <template #header>
-      <div class="head-title">{{ title || model?.title || '-' }}</div>
-      <div class="head-close" @click="closeDialog">
-        <el-icon><Close /></el-icon>
-      </div>
-    </template>
-
-    <div v-loading="loading" class="dialog-body w-full h-full">
-      <div class="data-content">
-        <!-- 搜索 -->
-        <!-- 已选标签 -->
-        <div class="tag-wrap">
-          <div class="tag-list">
-            <div v-if="selected.length === 0" class="no-data">暂无选中数据</div>
-            <el-tag
-              v-for="tag in selected"
-              :key="getKey(tag)"
-              :closeable="clearable"
-              size="small"
-              effect="plain"
-              @close="(e) => handleInputTagAction('remove-tag', tag, e)"
-            >
-              <template v-if="showCol?.type === 'dict'">
-                <dc-dict
-                  v-if="showCol?.component === 'dc-dict'"
-                  type="text"
-                  color="#f26c0c"
-                  :value="tag[model?.defaultLabel]"
-                  :options="dictMaps[showCol?.dictData]"
-                />
-                <dc-dict-key
-                  v-else-if="showCol?.component === 'dc-dict-key'"
-                  type="text"
-                  color="#f26c0c"
-                  :value="tag[model?.defaultLabel]"
-                  :options="dictMaps[showCol?.dictData]"
-                />
-              </template>
-              <template v-else-if="showCol?.type === 'dc-view'">
-                <dc-view
-                  v-if="showCol?.component === 'dc-view'"
-                  v-model="tag[model?.defaultLabel]"
-                  color="#f26c0c"
-                  :object-name="showCol?.objectName"
-                />
-              </template>
-              <template v-else>
-                {{ tag[showKey || model?.defaultLabel] }}
-              </template>
-            </el-tag>
-          </div>
-          <div class="statistics-box">
-            <span>
-              已选 {{ Array.isArray(selected) ? selected.length : 0 }}
-              <span class="clear-btn" text @click.stop="handleInputTagAction('clear')"> 清空 </span>
-            </span>
-          </div>
-        </div>
-
-        <!-- 表格 -->
-        <div class="table-container">
-          <el-table
-            ref="tableRef"
-            :data="tableData"
-            :row-class-name="getRowClass"
-            :row-key="rowKey || 'id'"
-            height="100%"
-            border
-            @select="(_, row) => handleTableAction('select', row)"
-            @row-click="(row) => handleTableAction('row-click', row)"
-            @row-dblclick="(row) => handleTableAction('row-dblclick', row)"
-          >
-            <el-table-column
-              type="selection"
-              width="40"
-              :reserve-selection="true"
-              :selectable="() => true"
-            />
-            <el-table-column label="序号" width="60" type="index" align="center">
-              <template #default="scoped">
-                <span>{{ (queryParams.current - 1) * queryParams.size + scoped.$index + 1 }}</span>
-              </template>
-            </el-table-column>
-
-            <el-table-column
-              v-for="(column, index) in model?.column || []"
-              :key="index"
-              :width="column?.width"
-              :min-width="column?.minWidth"
-              :prop="column?.prop"
-              :label="column?.label"
-              :align="column?.align || 'center'"
-              :show-overflow-tooltip="!!column?.tooltip"
-            >
-              <template #default="scoped">
-                <dc-view
-                  v-if="column?.component === 'dc-view'"
-                  v-model="scoped.row[column?.prop]"
-                  color="#666"
-                  :object-name="column?.objectName"
-                />
-                <dc-dict
-                  v-else-if="column?.component === 'dc-dict'"
-                  :value="scoped.row[column?.prop]"
-                  :options="dictMaps[column.dictData]"
-                />
-                <dc-dict-key
-                  v-else-if="column?.component === 'dc-dict-key'"
-                  :value="scoped.row[column?.prop]"
-                  :options="dictMaps[column?.dictData]"
-                />
-                <span v-else>
-                  {{
-                    [undefined, null, '', ' '].includes(scoped.row[column?.prop])
-                      ? '-'
-                      : scoped.row[column.prop]
-                  }}
-                </span>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-
-        <dc-pagination
-          v-show="total > 0"
-          v-model:page="queryParams.current"
-          v-model:limit="queryParams.size"
-          :total="total"
-          @pagination="getData"
-        />
-      </div>
+  <div class="wf-select-dialog" :style="{ width }">
+    <div v-if="$slots.default" class="wf-select-dialog__trigger" :class="{ disabled }" @click="openPopup">
+      <slot />
     </div>
+    <van-field
+      v-else
+      readonly
+      clickable
+      is-link
+      :disabled="disabled"
+      :model-value="displayText"
+      :placeholder="displayPlaceholder"
+      class="wf-select-dialog__field"
+      @click="openPopup"
+    >
+      <template #input>
+        <div class="wf-select-dialog__field-input" :class="{ 'has-value': displayTags.length }">
+          <template v-if="displayTags.length">
+            <div class="wf-select-dialog__tags">
+              <van-tag
+                v-for="tag in displayTags"
+                :key="getKey(tag)"
+                size="medium"
+                type="primary"
+                plain
+                :closeable="clearable"
+                @close.stop="removeTag(getKey(tag))"
+              >
+                {{ getDisplayLabel(tag) }}
+              </van-tag>
+            </div>
+          </template>
+          <span v-else class="wf-select-dialog__placeholder">{{ displayPlaceholder }}</span>
+        </div>
+      </template>
+      <template #extra>
+        <div class="wf-select-dialog__icons">
+          <van-icon
+            v-if="clearable && displayTags.length"
+            name="cross"
+            class="wf-select-dialog__clear"
+            @click.stop="clearSelection"
+          />
+          <van-icon name="arrow" />
+        </div>
+      </template>
+    </van-field>
 
-    <template #footer>
-      <el-button type="primary" @click="confirm">确定</el-button>
-      <el-button @click="closeDialog">取消</el-button>
-    </template>
-  </el-dialog>
+    <van-popup
+      v-model:show="open"
+      position="bottom"
+      round
+      close-icon="close"
+      closeable
+      teleport="body"
+      class="wf-select-dialog__popup"
+      @close="closePopup"
+    >
+      <div class="wf-select-dialog__header">
+        <span class="wf-select-dialog__title">{{ displayTitle }}</span>
+        <van-icon name="cross" class="wf-select-dialog__close" @click="closePopup" />
+      </div>
+
+      <div class="wf-select-dialog__selected" v-if="selected.length">
+        <div class="wf-select-dialog__selected-title">
+          <span>已选 {{ selected.length }}</span>
+          <van-button v-if="clearable" size="mini" type="danger" text @click="clearSelection">清空</van-button>
+        </div>
+        <div class="wf-select-dialog__selected-tags">
+          <van-tag
+            v-for="item in selected"
+            :key="getKey(item)"
+            size="small"
+            type="danger"
+            plain
+            :closeable="clearable"
+            @close.stop="removeTag(getKey(item))"
+          >
+            {{ getDisplayLabel(item) }}
+          </van-tag>
+        </div>
+      </div>
+
+      <div class="wf-select-dialog__body">
+        <van-list
+          v-model:loading="loading"
+          :finished="finished"
+          finished-text="没有更多了"
+          @load="onLoad"
+        >
+          <van-cell
+            v-for="row in tableData"
+            :key="getKey(row)"
+            :title="getDisplayLabel(row)"
+            clickable
+            @click="toggleRow(row)"
+          >
+            <template #label>
+              <div class="wf-select-dialog__row-meta">
+                <span v-for="column in modelColumns" :key="column.prop" class="wf-select-dialog__meta-item">
+                  <strong>{{ column.label }}：</strong>
+                  <span>{{ formatColumnValue(row, column) }}</span>
+                </span>
+              </div>
+            </template>
+            <template #right-icon>
+              <van-checkbox v-if="multiple" :model-value="isSelected(row)" />
+              <van-radio v-else :model-value="isSelected(row)" />
+            </template>
+          </van-cell>
+          <div v-if="!loading && !tableData.length" class="wf-select-dialog__empty">
+            <van-empty description="暂无数据" />
+          </div>
+        </van-list>
+      </div>
+
+      <div class="wf-select-dialog__footer">
+        <van-button type="primary" block @click="confirm">确定</van-button>
+        <van-button type="default" block @click="closePopup">取消</van-button>
+      </div>
+    </van-popup>
+  </div>
 </template>
 
 <script>
 import { nextTick } from 'vue';
+import { useGlobalCacheStore } from '@/store/global-cache';
 import ComponentApi from '@/components/dc-ui/api/index';
-import store from '@/store/';
 import cacheData from '@/components/dc-ui/constant/cacheData';
-import selectProps from '@/views/plugin/workflow/mixins/select-props';
 
 export default {
-  name: 'SelectDialog',
-  mixins: [selectProps],
+  name: 'WfSelectDialog',
   emits: ['update:modelValue', 'change'],
+  props: {
+    modelValue: {
+      type: [String, Number, Object, Array],
+      default: null,
+    },
+    placeholder: {
+      type: String,
+      default: '',
+    },
+    width: {
+      type: String,
+      default: '100%',
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+    clearable: {
+      type: Boolean,
+      default: true,
+    },
+    title: {
+      type: String,
+      default: '',
+    },
+    showKey: {
+      type: String,
+      default: '',
+    },
+    masterKey: {
+      type: String,
+      default: '',
+    },
+    dialogWidth: {
+      type: [String, Number],
+      default: '90%',
+    },
+    multiple: {
+      type: Boolean,
+      default: true,
+    },
+    returnType: {
+      type: String,
+      default: 'array',
+    },
+    showValue: {
+      type: Boolean,
+      default: true,
+    },
+    query: {
+      type: Object,
+      default: () => ({}),
+    },
+    objectName: {
+      type: String,
+      default: '',
+    },
+    column: {
+      type: Object,
+      default: () => ({}),
+    },
+    dynamicIndex: {
+      type: Number,
+      default: null,
+    },
+    change: {
+      type: Function,
+      default: null,
+    },
+  },
   data() {
     return {
       rowKey: 'id',
       open: false,
       loading: false,
+      finished: false,
       total: 0,
       value: [],
       queryParams: { current: 1, size: 20 },
@@ -207,22 +215,36 @@ export default {
       selected: [],
       model: null,
       callBack: (res) => ({ ...res.data.data }),
-      initDefaultSearch: true,
+      globalCacheStore: useGlobalCacheStore(),
     };
   },
   computed: {
-    showCol() {
-      if (!this.model || !Array.isArray(this.model.column)) return null;
-      return this.model.column.find((item) => item.prop === this.model?.defaultLabel);
+    displayPlaceholder() {
+      return this.placeholder || this.model?.placeholder || '请选择';
+    },
+    displayTitle() {
+      return this.title || this.model?.title || '-';
+    },
+    displayText() {
+      if (this.multiple) return '';
+      const first = this.value && this.value.length ? this.value[0] : this.modelValue;
+      if (!first) return '';
+      return typeof first === 'object' ? this.getDisplayLabel(first) : String(first);
+    },
+    displayTags() {
+      if (Array.isArray(this.value)) return this.value;
+      if (this.value) return [this.value];
+      return [];
+    },
+    modelColumns() {
+      return Array.isArray(this.model?.column) ? this.model.column : [];
     },
   },
   watch: {
-    // 外部 v-model 同步到内部选中态
     modelValue: {
       immediate: true,
       deep: true,
       handler(newVal) {
-        // 如果 showValue 为 false，则不回显选中的值李海洋
         if (!this.showValue) {
           if (!newVal || (Array.isArray(newVal) && newVal.length === 0) || newVal === '') {
             this.value = [];
@@ -232,26 +254,21 @@ export default {
         }
         nextTick(async () => {
           const ids = this.parseIds(newVal);
-          if (!ids.length) {
+          if (!ids.length || !this.model?.url) {
             this.value = [];
             this.selected = [];
             return;
           }
-          if (!this.model?.url) return;
-
           try {
             await ComponentApi.cache.getView({
               url: this.model.url,
               data: ids,
               masterKey: this.masterKey || this.rowKey,
             });
-
-            const currentGlobalData = store.getters.globalData[this.model.url] || {};
+            const currentGlobalData = this.globalCacheStore.globalData[this.model.url] || {};
             const rows = Array.isArray(currentGlobalData)
               ? currentGlobalData
               : Object.values(currentGlobalData);
-
-            // 按 masterKey/rowKey 从缓存映射出完整对象
             const k = this.masterKey || this.rowKey || 'id';
             this.selected = ids.map((id) => {
               const hit = rows.find((item) => item?.[k] == id);
@@ -264,283 +281,224 @@ export default {
         });
       },
     },
-
-    // 元对象变化：初始化列、字典、默认查询参数
     objectName: {
       handler(newVal) {
         this.model = cacheData[newVal];
         if (!this.model) return;
-
-        this.columns = this.model.column;
-        this.handleDictKeys();
-        this.getDictData().then(() => {
-          this.initSearchConfig();
-          if (this.initDefaultSearch) {
-            if (this.model?.search?.config && this.searchConfig?.searchItemConfig?.paramType) {
-              console.log(this.model.search.config);
-              this.searchConfig.searchItemConfig.paramType = {
-                ...this.searchConfig.searchItemConfig.paramType,
-                ...this.model.search.config,
-              };
-            }
-            if (this.model?.search?.params) {
-              this.queryParams = {
-                ...this.queryParams,
-                ...this.model.search.params,
-              };
-            }
-            this.initDefaultSearch = false;
-          }
-        });
-
         if (this.model?.rowKey) {
           this.rowKey = this.model.rowKey;
         }
+        this.resetAndLoad();
       },
       immediate: true,
       deep: true,
     },
   },
   methods: {
-    /** 工具：获取行主键 */
     getKey(row) {
       const k = this.masterKey || this.rowKey || 'id';
       return row?.[k];
     },
-
-    /** 工具：从外部 v-model 解析 id 数组 */
     parseIds(val) {
       const k = this.masterKey || this.rowKey || 'id';
       if (Array.isArray(val)) {
         return val.map((item) => (typeof item === 'object' ? item?.[k] : item)).filter(Boolean);
-      } else if (val && typeof val === 'object') {
+      }
+      if (val && typeof val === 'object') {
         return [val?.[k]].filter(Boolean);
-      } else if (typeof val === 'string') {
+      }
+      if (typeof val === 'string') {
         return val.split(',').filter(Boolean);
       }
       return [];
     },
-
-    openDialog() {
-      if (this.disabled) return true;
+    openPopup() {
+      if (this.disabled) return;
+      this.resetAndLoad();
       this.open = true;
-      this.getData();
     },
-
-    closeDialog() {
-      this.total = 0;
-      this.queryParams = { current: 1, size: 20 };
-      this.tableData = [];
+    closePopup() {
       this.open = false;
     },
-
-    /** 拉取数据并同步勾选状态（替代 watch tableData 的逐行 toggle） */
-    getData() {
+    async resetAndLoad() {
+      this.tableData = [];
+      this.total = 0;
+      this.finished = false;
+      this.queryParams = { current: 1, size: this.queryParams.size || 20 };
+      await this.loadData();
+    },
+    async onLoad() {
+      if (this.loading || this.finished) return;
+      this.queryParams.current += this.tableData.length ? 1 : 0;
+      await this.loadData();
+    },
+    async loadData() {
+      if (!this.model?.dialogGet) return;
       this.loading = true;
       const newParams = this.query?.currentPage
         ? { currentPage: this.queryParams.current, pageSize: this.queryParams.size }
         : {};
-
-      this.model
-        .dialogGet({
+      try {
+        const res = await this.model.dialogGet({
           ...this.queryParams,
           ...this.query,
           ...newParams,
-        })
-        .then((res) => {
-          const callBackData = this.model?.callBack ? this.model.callBack(res) : this.callBack(res);
-
-          // 兼容两种返回格式
-          if (res.data?.code === 200) {
-            this.tableData = callBackData?.records || [];
-            this.total = callBackData?.total || 0;
-          } else {
-            this.tableData = (callBackData?.records || []).map((item) => ({ ...item }));
-            this.total = callBackData?.total || 0;
-          }
-
-          nextTick(() => this.syncTableSelection());
-          this.loading = false;
-        })
-        .catch((e) => {
-          console.error(e);
-          this.loading = false;
         });
+        const callBackData = this.model?.callBack ? this.model.callBack(res) : this.callBack(res);
+        const records = callBackData?.records || [];
+        this.tableData = [...this.tableData, ...records];
+        this.total = callBackData?.total || 0;
+        this.finished = this.tableData.length >= this.total;
+        await nextTick();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.loading = false;
+      }
     },
-
-    /** 同步表格勾选 */
-    syncTableSelection() {
-      if (!this.$refs.tableRef) return;
-      this.$refs.tableRef.clearSelection();
-
-      const k = this.masterKey || this.rowKey || 'id';
-      const selectedKeys = new Set(this.selected.map((item) => item?.[k]));
-      this.tableData.forEach((row) => {
-        if (selectedKeys.has(row?.[k])) {
-          this.$refs.tableRef.toggleRowSelection(row, true);
-        }
-      });
+    toggleRow(row) {
+      const k = this.getKey(row);
+      const has = this.selected.some((item) => this.getKey(item) === k);
+      if (this.multiple) {
+        this.selected = has
+          ? this.selected.filter((item) => this.getKey(item) !== k)
+          : [...this.selected, row];
+      } else {
+        this.selected = has ? [] : [row];
+      }
+      this.applySelection();
+      if (!this.multiple && !has) {
+        this.confirm();
+      }
     },
-
-    /** 统一“应用选择结果”逻辑 */
+    isSelected(row) {
+      const k = this.getKey(row);
+      return this.selected.some((item) => this.getKey(item) === k);
+    },
+    removeTag(key) {
+      this.selected = this.selected.filter((item) => this.getKey(item) !== key);
+      this.applySelection();
+    },
+    clearSelection() {
+      this.selected = [];
+      this.applySelection();
+    },
     applySelection() {
       const k = this.masterKey || this.rowKey || 'id';
-
       if (this.multiple) {
-        let data =
+        const data =
           this.returnType === 'string'
             ? this.selected.map((item) => item?.[k]).join(',')
             : this.selected;
-
         this.value = this.selected;
         this.$emit('update:modelValue', data);
         this.$emit('change', this.selected);
-
         const obj = { value: this.selected || null, column: this.column, index: this.dynamicIndex };
         if (typeof this.change === 'function') this.change(obj);
       } else {
         const data = this.selected.length ? this.selected[0] : null;
         this.value = this.selected;
-
         this.$emit('update:modelValue', data ? data?.[k] : null);
         this.$emit('change', data);
-
         const obj = { value: data || null, column: this.column, index: this.dynamicIndex };
         if (typeof this.change === 'function') this.change(obj);
       }
     },
-
-    /** 点击“确定” */
     confirm() {
       this.applySelection();
-      this.closeDialog();
+      this.closePopup();
     },
-
-    /** 输入标签的删除/清空（使用 $event 而非 window.event） */
-    handleInputTagAction(action, tag, e) {
-      if (e?.stopPropagation) e.stopPropagation();
-
-      const k = this.masterKey || this.rowKey || 'id';
-
-      if (action === 'remove-tag') {
-        const idx = this.selected.findIndex((item) => item?.[k] === tag?.[k]);
-        if (idx > -1) this.selected.splice(idx, 1);
-        if (this.$refs.tableRef) {
-          const row = this.tableData.find((r) => r?.[k] === tag?.[k]);
-          if (row) this.$refs.tableRef.toggleRowSelection(row, false);
-        }
-      } else if (action === 'clear') {
-        this.selected = [];
-        if (this.$refs.tableRef) this.$refs.tableRef.clearSelection();
-      }
-
-      this.applySelection();
+    getDisplayLabel(row) {
+      const key = this.showKey || this.model?.defaultLabel;
+      return row?.[key] ?? '-';
     },
-
-    /** 表格点击/双击/选择 */
-    handleTableAction(action, row) {
-      const k = this.masterKey || this.rowKey || 'id';
-      const has = this.selected.some((item) => item?.[k] === row?.[k]);
-
-      if (action === 'row-click' || action === 'select') {
-        if (this.multiple) {
-          if (has) {
-            const idx = this.selected.findIndex((i) => i?.[k] === row?.[k]);
-            if (idx > -1) this.selected.splice(idx, 1);
-            this.$refs.tableRef?.toggleRowSelection(row, false);
-          } else {
-            this.selected.push(row);
-            this.$refs.tableRef?.toggleRowSelection(row, true);
-          }
-        } else {
-          if (has) {
-            this.selected = [];
-            this.$refs.tableRef?.clearSelection();
-          } else {
-            this.selected = [row];
-            this.$refs.tableRef?.clearSelection();
-            this.$refs.tableRef?.toggleRowSelection(row, true);
-          }
-        }
-      } else if (action === 'row-dblclick') {
-        if (this.multiple) {
-          if (has) {
-            const idx = this.selected.findIndex((i) => i?.[k] === row?.[k]);
-            if (idx > -1) this.selected.splice(idx, 1);
-            this.$refs.tableRef?.toggleRowSelection(row, false);
-          } else {
-            this.selected.push(row);
-            this.$refs.tableRef?.toggleRowSelection(row, true);
-          }
-          // 双击多选：立即提交并关闭
-          this.applySelection();
-          this.closeDialog();
-        } else {
-          if (has) {
-            this.selected = [];
-            this.$refs.tableRef?.clearSelection();
-          } else {
-            this.selected = [row];
-            this.$refs.tableRef?.clearSelection();
-            this.$refs.tableRef?.toggleRowSelection(row, true);
-          }
-          // 双击单选：立即提交并关闭
-          this.applySelection();
-          this.closeDialog();
-        }
-      }
-    },
-
-    /** 行样式：基于主键判断是否选中 */
-    getRowClass({ row }) {
-      const k = this.masterKey || this.rowKey || 'id';
-      return this.selected.some((item) => item?.[k] === row?.[k]) ? 'row-selected' : '';
+    formatColumnValue(row, column) {
+      if (!column?.prop) return '-';
+      const value = row?.[column.prop];
+      if ([undefined, null, '', ' '].includes(value)) return '-';
+      return value;
     },
   },
 };
 </script>
 
-<style lang="scss">
-@use '@/components/dc/styles/select-dialog.scss';
-</style>
-
 <style lang="scss" scoped>
-.dialog-body {
-  height: 70vh !important;
-}
-.table-container {
-  height: calc(70vh - 100px);
-}
-.input-tag-box {
+.wf-select-dialog {
   width: 100%;
-  max-width: 100%;
-  :deep(.el-input-tag__inner) {
-    flex-wrap: unset;
-    white-space: nowrap; /* 横向滚动更流畅 */
-    overflow-x: auto;
+  &__field {
+    width: 100%;
   }
-
-  .tag-input__hide {
-    :deep(.el-input-tag__input) {
-      display: none;
-    }
-  }
-}
-.tag-wrap {
-  display: flex;
-  column-gap: 5px;
-  .tag-list {
+  &__field-input {
     display: flex;
-    flex: 1;
-    column-gap: 5px;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    min-height: 28px;
+  }
+  &__placeholder {
+    color: var(--van-gray-6);
+  }
+  &__tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  &__icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  &__clear {
+    color: var(--van-gray-5);
+  }
+  &__popup {
+    padding: 12px 12px 0;
+  }
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 4px 12px;
+    font-weight: 600;
+  }
+  &__selected {
+    padding: 0 4px 12px;
+  }
+  &__selected-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  &__selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  &__body {
+    max-height: 50vh;
     overflow: auto;
   }
-  .statistics-box {
-    margin-left: 5px;
-    .clear-btn {
-      color: #f26c0c;
-      cursor: pointer;
-    }
+  &__row-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--van-gray-6);
+  }
+  &__meta-item strong {
+    margin-right: 2px;
+  }
+  &__footer {
+    display: flex;
+    gap: 8px;
+    padding: 12px 4px 16px;
+  }
+  &__empty {
+    padding: 16px 0;
+  }
+  &__trigger.disabled {
+    opacity: 0.5;
+    pointer-events: none;
   }
 }
 </style>
