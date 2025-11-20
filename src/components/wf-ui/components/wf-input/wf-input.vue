@@ -28,6 +28,16 @@ export default defineComponent({
     [Field.name]: Field,
   },
   mixins: [Props],
+  data() {
+    return {
+      typeDic: {
+        input: 'text',
+        number: 'digit',
+        textarea: 'textarea',
+        password: 'password',
+      },
+    };
+  },
   computed: {
     autosizeConfig() {
       const { column } = this;
@@ -39,16 +49,6 @@ export default defineComponent({
       }
       return undefined;
     },
-  },
-  data() {
-    return {
-      typeDic: {
-        input: 'text',
-        number: 'digit',
-        textarea: 'textarea',
-        password: 'password',
-      },
-    };
   },
 });
 </script>

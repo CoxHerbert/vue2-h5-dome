@@ -72,6 +72,8 @@ export const useUserStore = defineStore('user', {
       const mergedUser = {
         ...(this.userInfo || {}),
         ...loginInfo,
+        dept_name: this.userInfo?.deptNames.toString() || '',
+        post_name: this.userInfo?.postNames.toString() || '',
       };
 
       this.setUserInfo(mergedUser);

@@ -363,10 +363,10 @@ export default {
 <style lang="scss" scoped>
 .wf-form {
   background: #fff;
-
   &-content {
     width: 100%;
-
+    padding: 0 15px 5px;
+    box-sizing: border-box;
     :deep(.van-cell) {
       padding-left: 0;
       padding-right: 0;
@@ -389,7 +389,7 @@ export default {
     gap: 5px;
   }
 
-  ::v-deep(.van-collapse-item__content) {
+  :deep(.van-collapse-item__content) {
     padding: 0;
   }
 }

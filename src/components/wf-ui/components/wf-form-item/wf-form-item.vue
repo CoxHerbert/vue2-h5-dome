@@ -189,7 +189,8 @@ export default {
     },
     itemClass() {
       const position = this.column.type === 'dynamic' ? 'top' : this.labelPositionValue;
-      return [`wf-form-item--${position}`, { 'wf-form-item--required': this.isRequired }];
+      // return [`wf-form-item--${position}`, { 'wf-form-item--required': this.isRequired }];
+      return [{ 'wf-form-item--required': this.isRequired }];
     },
     labelPositionValue() {
       return this.labelPosition || this.column.labelPosition || 'left';
@@ -266,6 +267,7 @@ export default {
     align-items: center;
     color: #303133;
     font-size: 14px;
+    line-height: var(--van-cell-line-height);
   }
 
   &__asterisk {
@@ -276,6 +278,9 @@ export default {
   &__content {
     flex: 1;
     min-width: 0;
+    :deep(.van-cell) {
+      padding: 0;
+    }
   }
 
   &--top {

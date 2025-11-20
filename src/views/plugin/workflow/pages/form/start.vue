@@ -130,7 +130,6 @@ export default defineComponent({
     },
     getForm(processDefId) {
       this.getStartForm(processDefId).then((res) => {
-        console.log(res);
         let { form, appForm, startForm } = res;
         if (form) {
           let option;

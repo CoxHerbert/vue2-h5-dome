@@ -124,13 +124,15 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .wf-exam-form {
-  padding: 0 30rpx;
   background: #fff;
 }
 
 .wf-exam-form__spacer {
-  height: 150rpx;
+  height: 75px;
   background-color: #f6f6f6;
-  margin: 0 -30rpx;
+  margin: 0 -15px;
+}
+:deep(.van-cell-group--inset) {
+  margin: 0;
 }
 </style>

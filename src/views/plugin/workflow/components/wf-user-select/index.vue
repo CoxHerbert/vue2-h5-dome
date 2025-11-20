@@ -1,6 +1,7 @@
 <template>
-  <div>
+  <div class="wf-user-select">
     <van-popup v-model:show="visible" position="bottom" :style="{ height: '90%' }" round>
+      <!-- 搜索区域 -->
       <div class="search-item">
         <van-search
           v-model="searchValue"
@@ -12,6 +13,8 @@
           @clear="getList(true)"
         />
       </div>
+
+      <!-- 列表区域 -->
       <div class="check-item">
         <template v-if="checkType === 'radio'">
           <van-radio-group v-model="radioValue" direction="vertical">
@@ -21,13 +24,23 @@
               :name="item.id"
               :disabled="item.disabled"
             >
-              <div class="item">
-                <div class="real-name">{{ item.realName }}</div>
-                <div class="dept-name">{{ item.deptName }}</div>
+              <div class="user-item">
+                <div class="user-item__main">
+                  <div class="avatar-placeholder">
+                    <span class="avatar-text">
+                      {{ (item.realName && item.realName[0]) || '用' }}
+                    </span>
+                  </div>
+                  <div class="user-item__info">
+                    <div class="real-name">{{ item.realName }}</div>
+                    <div v-if="item.deptName" class="dept-name">{{ item.deptName }}</div>
+                  </div>
+                </div>
               </div>
             </van-radio>
           </van-radio-group>
         </template>
+
         <template v-else>
           <van-checkbox-group v-model="checkedValues" direction="vertical">
             <van-checkbox
@@ -36,19 +49,40 @@
               :name="item.id"
               :disabled="item.disabled"
             >
-              <div class="item">
-                <div class="real-name">{{ item.realName }}</div>
-                <div class="dept-name">{{ item.deptName }}</div>
+              <div class="user-item">
+                <div class="user-item__main">
+                  <div class="avatar-placeholder">
+                    <span class="avatar-text">
+                      {{ (item.realName && item.realName[0]) || '用' }}
+                    </span>
+                  </div>
+                  <div class="user-item__info">
+                    <div class="real-name">{{ item.realName }}</div>
+                    <div v-if="item.deptName" class="dept-name">{{ item.deptName }}</div>
+                  </div>
+                </div>
               </div>
             </van-checkbox>
           </van-checkbox-group>
         </template>
-        <div v-if="loadStatus !== 'nomore'" class="load-more" @click="getList()">
-          <span v-if="loadStatus === 'loadmore'">点击加载更多</span>
-          <van-loading v-else size="20" />
+
+        <!-- 空态 -->
+        <div v-if="!list.length && loadStatus === 'nomore'" class="empty-wrap">
+          <div class="empty-icon"></div>
+          <div class="empty-text">暂无数据</div>
         </div>
-        <div v-else class="load-more">没有更多了</div>
+
+        <!-- 加载更多 -->
+        <div v-if="list.length" class="load-more-wrap">
+          <div v-if="loadStatus !== 'nomore'" class="load-more" @click="getList()">
+            <span v-if="loadStatus === 'loadmore'">点击加载更多</span>
+            <van-loading v-else size="20" />
+          </div>
+          <div v-else class="load-more load-more--nomore">没有更多了</div>
+        </div>
       </div>
+
+      <!-- 底部操作栏 -->
       <div class="foot-item" :class="checkType === 'radio' ? 'flex-evenly' : 'flex-between'">
         <van-checkbox
           v-if="checkType !== 'radio'"
@@ -58,9 +92,9 @@
           全选
         </van-checkbox>
         <div class="foot-actions">
-          <van-button size="small" type="primary" @click="handleClose">关闭</van-button>
-          <van-button size="small" type="danger" plain @click="handleClear">清空</van-button>
-          <van-button size="small" type="primary" @click="handleConfirm">确定</van-button>
+          <van-button size="small" class="btn-ghost" @click="handleClose"> 关闭 </van-button>
+          <van-button size="small" type="danger" plain @click="handleClear"> 清空 </van-button>
+          <van-button size="small" type="primary" @click="handleConfirm"> 确定 </van-button>
         </div>
       </div>
     </van-popup>
@@ -98,7 +132,7 @@ export default defineComponent({
       },
       list: [],
       init: false,
-      loadStatus: 'loadmore',
+      loadStatus: 'loadmore', // loadmore | loading | nomore
     };
   },
   watch: {
@@ -178,10 +212,8 @@ export default defineComponent({
           params: {
             current,
             size,
-            currentPage: current,
-            pageSize: size,
             ...this.customOption,
-            searchValue: this.searchValue,
+            name: this.searchValue,
           },
         })
         .then((res) => {
@@ -203,60 +235,179 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.search-item {
-  padding: 30rpx;
-  border-bottom: 20rpx solid #f6f6f6;
+.wf-user-select {
+  height: 100%;
 }
 
+/* 顶部搜索区域 */
+.search-item {
+  padding: 12px 15px 8px;
+  background: #ffffff;
+  border-bottom: 1px solid #f3f3f3;
+  box-sizing: border-box;
+
+  :deep(.van-search) {
+    border-radius: 8px;
+  }
+}
+
+/* 列表区域 */
 .check-item {
-  padding: 0 16rpx 120rpx;
-  background-color: #f6f6f6;
-  height: calc(100% - 244rpx);
+  padding: 8px 12px 70px;
+  background-color: #f5f6fa;
+  height: calc(100% - 110px);
   box-sizing: border-box;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  :deep(.van-radio),
+  :deep(.van-checkbox) {
+    padding: 0;
+    margin-bottom: 8px;
+  }
+
+  :deep(.van-radio__icon),
+  :deep(.van-checkbox__icon) {
+    margin-right: 8px;
+  }
+
+  :deep(.van-radio__label),
+  :deep(.van-checkbox__label) {
+    width: 100%;
+  }
 }
 
-.item {
-  background-color: #fff;
-  padding: 24rpx 30rpx;
-  border-radius: 10rpx;
-  margin-bottom: 20rpx;
+/* 用户卡片 */
+.user-item {
+  width: 100%;
+  background-color: #ffffff;
+  padding: 12px 15px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 10px rgba(15, 35, 95, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+.user-item__main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4c8dff, #66b1ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-text {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.user-item__info {
+  flex: 1;
+  min-width: 0;
 }
 
 .real-name {
-  color: #333;
-  font-size: 30rpx;
-  margin-bottom: 10rpx;
+  color: #222222;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 3px;
 }
 
 .dept-name {
-  color: #a09fa5;
-  font-size: 26rpx;
+  color: #a0a3b5;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* 空态 */
+.empty-wrap {
+  padding-top: 40px;
+  text-align: center;
+  color: #a0a3b5;
+  font-size: 13px;
+}
+
+.empty-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  border: 1px dashed #d5d8e6;
+  box-sizing: border-box;
+}
+
+.empty-text {
+  color: #a0a3b5;
+}
+
+/* 加载更多 */
+.load-more-wrap {
+  padding-bottom: 10px;
 }
 
 .load-more {
   text-align: center;
-  padding: 20rpx 0;
+  padding: 10px 0;
   color: #999;
+  font-size: 12px;
 }
 
+.load-more--nomore {
+  color: #c0c4d6;
+}
+
+/* 底部操作栏 */
 .foot-item {
   width: 100%;
-  padding: 20rpx 30rpx;
-  border-top: 2rpx solid #f6f6f6;
+  padding: 10px 15px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid #f1f1f1;
   position: absolute;
   bottom: 0;
   left: 0;
   box-sizing: border-box;
-  background: #fff;
+  background: #ffffff;
   display: flex;
   align-items: center;
+  z-index: 10;
+  box-shadow: 0 -3px 9px rgba(37, 45, 72, 0.08);
+
+  :deep(.van-checkbox) {
+    font-size: 13px;
+    color: #555;
+  }
+}
+
+.flex-between {
   justify-content: space-between;
+}
+
+.flex-evenly {
+  justify-content: space-evenly;
 }
 
 .foot-actions {
   display: flex;
-  gap: 20rpx;
+  gap: 10px;
   align-items: center;
+}
+
+/* 轻一点的关闭按钮 */
+.btn-ghost {
+  border-color: #dcdfe6;
+  color: #606266;
 }
 </style>
