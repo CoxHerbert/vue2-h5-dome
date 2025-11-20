@@ -22,7 +22,10 @@ export default {
       bindEvent(this, 'click', event);
     },
     handleChange(value) {
-      let result = value;
+      let result =
+        value && typeof value === 'object' && 'target' in value
+          ? value?.target?.value
+          : value;
       let flag =
         this.isString || this.isNumber || this.stringMode || this.listType === 'picture-img';
       if (flag && Array.isArray(value)) {
