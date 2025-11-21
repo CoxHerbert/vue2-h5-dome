@@ -189,7 +189,9 @@ export default {
     },
     itemClass() {
       const position = this.column.type === 'dynamic' ? 'top' : this.labelPositionValue;
-      // return [`wf-form-item--${position}`, { 'wf-form-item--required': this.isRequired }];
+      if (this.column.type === 'dynamic') {
+        return [`wf-form-item--${position}`, { 'wf-form-item--required': this.isRequired }];
+      }
       return [{ 'wf-form-item--required': this.isRequired }];
     },
     labelPositionValue() {
@@ -278,7 +280,8 @@ export default {
   &__content {
     flex: 1;
     min-width: 0;
-    :deep(.van-cell) {
+    :deep(.van-cell),
+    :deep(.wf-table-select__field .van-field) {
       padding: 0;
     }
   }

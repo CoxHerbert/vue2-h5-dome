@@ -279,72 +279,72 @@ async function add() {
 <style lang="scss" scoped>
 .name {
   font-weight: 600;
-  font-size: 30rpx;
+  font-size: 15px;
 }
 
 /* Vant 的确认按钮颜色用组件默认，这里只保留你原来样式里与业务相关的部分 */
 .cnt {
   background: linear-gradient(180deg, #f7e9df 0%, rgba(255, 255, 255, 0) 12%) !important;
-  padding-bottom: 200rpx;
+  padding-bottom: 100px;
   box-sizing: border-box;
 
   .title {
     font-weight: 600;
-    font-size: 30rpx;
-    line-height: 30rpx;
-    margin-bottom: 32rpx;
+    font-size: 15px;
+    line-height: 15px;
+    margin-bottom: 16px;
   }
 
   .detail-title {
-    padding: 40rpx 30rpx 0rpx;
+    padding: 20px 15px 0;
   }
 
   .mtop20 {
-    margin-top: 20rpx;
+    margin-top: 10px;
   }
 
   .base-wrapper {
-    padding: 0 26rpx;
+    padding: 0 13px;
     box-sizing: border-box;
 
     .baseinfo {
-      padding: 32rpx 24rpx;
+      padding: 16px 12px;
       box-sizing: border-box;
-      border-radius: 20rpx;
+      border-radius: 10px;
       background-color: #fff;
       position: relative;
 
       .edite-btn {
         position: absolute;
-        bottom: 22rpx;
-        right: 18rpx;
-        height: 48rpx;
-        line-height: 48rpx;
-        padding: 0 26rpx;
-        border-radius: 24rpx;
-        font-size: 28rpx;
+        bottom: 11px;
+        right: 9px;
+        height: 24px;
+        line-height: 24px;
+        padding: 0 13px;
+        border-radius: 12px;
+        font-size: 14px;
         font-weight: 500;
       }
     }
   }
 
   .cell + .cell {
-    margin-top: 24rpx;
+    margin-top: 12px;
   }
 
   .cell {
     display: flex;
     align-items: center;
-    font-size: 28rpx;
+    font-size: 14px;
 
     .label {
       color: #999;
-      width: 150rpx;
-      flex: 0 0 150rpx;
+      width: 75px;
+      flex: 0 0 75px;
     }
     .value {
       color: #565656;
-      margin-left: 10rpx;
+      margin-left: 5px;
       flex: 1;
       word-break: break-all;
     }
@@ -355,7 +355,7 @@ async function add() {
     left: 0;
     right: 0;
     bottom: 0;
-    padding: 24rpx 24rpx calc(env(safe-area-inset-bottom) + 24rpx);
+    padding: 12px 12px calc(env(safe-area-inset-bottom) + 12px);
     background-color: #fff;
     z-index: 999;
   }

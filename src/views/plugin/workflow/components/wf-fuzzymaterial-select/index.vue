@@ -275,40 +275,40 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .search-item {
-  padding: 30rpx;
-  border-bottom: 20rpx solid #f6f6f6;
+  padding: 15px;
+  border-bottom: 10px solid #f6f6f6;
   display: flex;
   align-items: center;
-  gap: 20rpx;
+  gap: 10px;
 }
 
 .search-input {
   background-color: #f6f6f6;
-  padding: 0 20rpx;
-  height: 64rpx;
-  border-radius: 10rpx;
-  flex: 0 0 160rpx;
+  padding: 0 10px;
+  height: 32px;
+  border-radius: 5px;
+  flex: 0 0 80px;
 }
 
 .check-item {
-  padding: 0 16rpx 120rpx;
+  padding: 0 8px 60px;
   background-color: #f6f6f6;
-  height: calc(100% - 244rpx);
+  height: calc(100% - 122px);
   box-sizing: border-box;
   overflow-y: auto;
 }
 
 .item {
   background-color: #fff;
-  border-radius: 10rpx;
-  padding: 24rpx 30rpx;
-  margin-bottom: 20rpx;
+  border-radius: 5px;
+  padding: 12px 15px;
+  margin-bottom: 10px;
 }
 
 .item-column {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10rpx;
+  margin-bottom: 5px;
 }
 
 .item-column:last-child {
@@ -317,25 +317,25 @@ export default defineComponent({
 
 .real-name {
   color: #333;
-  font-size: 30rpx;
+  font-size: 15px;
 }
 
 .dept-name {
   color: #a09fa5;
-  font-size: 26rpx;
+  font-size: 13px;
   text-align: right;
 }
 
 .load-more {
   text-align: center;
-  padding: 20rpx 0;
+  padding: 10px 0;
   color: #999;
 }
 
 .foot-item {
   width: 100%;
-  padding: 20rpx 30rpx;
-  border-top: 2rpx solid #f6f6f6;
+  padding: 10px 15px;
+  border-top: 1px solid #f6f6f6;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -348,7 +348,7 @@ export default defineComponent({
 
 .foot-actions {
   display: flex;
-  gap: 20rpx;
+  gap: 10px;
   align-items: center;
 }
 </style>

@@ -178,17 +178,17 @@ page {
 
 .time {
   color: #222;
-  padding: 0 0 10rpx;
+  padding: 0 0 5px;
   border-bottom: 1px dashed #ebeef5;
   font-size: 12px;
 }
 
 .desc {
-  padding: 20rpx 0;
+  padding: 10px 0;
 
   &-item {
-    margin-bottom: 10rpx;
-    line-height: 50rpx;
+    margin-bottom: 5px;
+    line-height: 25px;
     font-size: 14px;
   }
 }
@@ -211,7 +211,7 @@ page {
 }
 
 .attachment-label {
-  margin-right: 10rpx;
+  margin-right: 5px;
 }
 
 .attachment-list {
@@ -222,7 +222,7 @@ page {
 }
 
 .attachment-item {
-  margin-bottom: 15rpx;
+  margin-bottom: 8px;
 }
 
 .attachment-link {

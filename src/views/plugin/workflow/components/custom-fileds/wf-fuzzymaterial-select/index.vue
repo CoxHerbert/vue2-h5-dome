@@ -52,7 +52,7 @@ import Api from '@/api';
 import WkfCustomtableSelect from '../../wf-fuzzymaterial-select/index.vue';
 
 export default defineComponent({
-  name: 'CustomtableSelect',
+  name: 'FuzzymaterialSelect',
   components: { WkfCustomtableSelect },
   props: {
     value: {
