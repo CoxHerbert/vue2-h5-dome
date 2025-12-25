@@ -7,7 +7,7 @@
         class="self-outbound-product-list__card"
       >
         <div class="self-outbound-product-list__header">
-          <span class="self-outbound-product-list__title">{{ item.productName || '-' }}</span>
+          <span class="self-outbound-product-list__title">{{ item.itemMaterialName || '-' }}</span>
           <van-icon
             name="cross"
             class="self-outbound-product-list__remove"
@@ -17,14 +17,16 @@
         <div class="self-outbound-product-list__content">
           <div class="self-outbound-product-list__row">
             <span class="self-outbound-product-list__label">料品编码</span>
-            <span class="self-outbound-product-list__value">{{ item.productCode || '-' }}</span>
+            <span class="self-outbound-product-list__value">{{
+              item.itemMaterialNumber || '-'
+            }}</span>
           </div>
           <div class="self-outbound-product-list__row">
-            <span class="self-outbound-product-list__label">产品数量</span>
+            <span class="self-outbound-product-list__label">入库数量</span>
             <van-stepper
-              :model-value="formatQty(item.productQty)"
-              min="0"
-              :max="resolveMax(item)"
+              v-model="item.drawQty"
+              :min="0"
+              :max="parseInt(item.maxDrawQty) || 999"
               integer
               @change="(value) => emitQuantityChange(index, value)"
             />
@@ -35,18 +37,12 @@
           </div>
           <div class="self-outbound-product-list__row">
             <span class="self-outbound-product-list__label">单位</span>
-            <span class="self-outbound-product-list__value">{{ item.productUnit || '-' }}</span>
+            <span class="self-outbound-product-list__value">{{ item.unit || '-' }}</span>
           </div>
           <div class="self-outbound-product-list__row">
-            <span class="self-outbound-product-list__label">库位ID</span>
-            <span class="self-outbound-product-list__value">{{ item.locationId || '-' }}</span>
+            <span class="self-outbound-product-list__label">规格</span>
+            <span class="self-outbound-product-list__value">{{ item.specification || '-' }}</span>
           </div>
-          <!-- <div class="self-outbound-product-list__row">
-            <span class="self-outbound-product-list__label">执行单明细id</span>
-            <span class="self-outbound-product-list__value">{{
-              item.outStockDetailId || '-'
-            }}</span>
-          </div> -->
         </div>
       </div>
     </van-cell-group>

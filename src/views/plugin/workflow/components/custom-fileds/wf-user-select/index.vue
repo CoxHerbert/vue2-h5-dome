@@ -48,7 +48,7 @@ export default defineComponent({
       default: '',
     },
   },
-  emits: ['update:modelValue', 'input'],
+  emits: ['update:modelValue'],
   data() {
     return {
       name: '',
@@ -78,8 +78,8 @@ export default defineComponent({
       this.$refs['user-select'].visible = true;
     },
     handleUserSelectConfirm(id) {
+      console.log(id);
       this.$emit('update:modelValue', id);
-      this.$emit('input', id);
     },
   },
 });

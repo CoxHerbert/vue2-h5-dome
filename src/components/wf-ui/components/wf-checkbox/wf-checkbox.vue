@@ -1,11 +1,7 @@
 <template>
   <div class="wf-checkbox" @click="handleClick">
     <van-checkbox-group v-model="checkedValues" :disabled="disabled">
-      <van-checkbox
-        v-for="(item, index) in normalizedOptions"
-        :key="index"
-        :name="item[valueKey]"
-      >
+      <van-checkbox v-for="(item, index) in normalizedOptions" :key="index" :name="item[valueKey]">
         {{ item[labelKey] }}
       </van-checkbox>
     </van-checkbox-group>
@@ -37,6 +33,7 @@ export default defineComponent({
   watch: {
     dic: {
       handler(val) {
+        console.log('wf-checkbox dic changed:', val);
         if (!this.validateNull(val)) {
           this.syncFromText();
         }
@@ -45,7 +42,8 @@ export default defineComponent({
     },
     text: {
       immediate: true,
-      handler() {
+      handler(val) {
+        console.log('wf-checkbox text changed:', val);
         this.syncFromText();
       },
     },

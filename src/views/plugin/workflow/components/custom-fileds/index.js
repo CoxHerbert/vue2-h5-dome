@@ -8,7 +8,6 @@ export default {
       const component = config.default || config;
       const componentName = component?.name;
       if (componentName) {
-        console.log('wf-' + componentName);
         app.component('wf-' + componentName, component);
       } else if (import.meta.env.DEV) {
         console.warn(`Component ${componentName} is missing name property`);

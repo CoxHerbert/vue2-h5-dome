@@ -181,7 +181,7 @@ export default {
     form: {
       handler(val) {
         if (this.formCreate) {
-          this.$emit('input', val);
+          this.$emit('update:modelValue', val);
         }
       },
       deep: true,

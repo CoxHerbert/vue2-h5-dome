@@ -30,11 +30,14 @@ export const filter = (column) => {
     'map',
     'sign',
     'table-select',
+    'wf-select-dialog',
+    'wf-upload-v2',
+    'wf-date-vant',
   ];
   if (typeList.includes(type)) result = true;
 
   // 多选字段全部过滤
-  if (multiple && !['upload', 'table-select'].includes(type)) result = false;
+  // if (multiple && !['upload', 'table-select'].includes(type)) result = false;
 
   // 远程搜索全部过滤
   if (remote) result = false;

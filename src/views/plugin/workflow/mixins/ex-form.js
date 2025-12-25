@@ -91,17 +91,20 @@ export default {
           // 	if ((this.process.isOwner && this.process.status == 'todo') || !this.process.hasOwnProperty('isOwner')) c = { readable: true, writable: true }
           // 	else c = { readable: true, writable: false }
           // }
+
           // #ifdef H5 || APP
           let event = ['change', 'blur', 'click', 'focus'];
           // 处理事件
           event.forEach((e) => {
-            if (col[e]) col[e] = eval((col[e] + '').replace(/this/g, '_this'));
+            if (col[e]) col[e] = eval((col[e] + '').replace(/this|proxy/g, '_this'));
           });
           if (col.event)
             Object.keys(col.event).forEach(
-              (key) => (col.event[key] = eval((col.event[key] + '').replace(/this/g, '_this')))
+              (key) =>
+                (col.event[key] = eval((col.event[key] + '').replace(/this|proxy/g, '_this')))
             );
           // #endif
+
           if (c.writable) {
             // 可写，记录需要提交的字段、处理字段默认值
             vars.push(col[props.prop]);
@@ -148,7 +151,6 @@ export default {
             const { process } = res.data;
             process.hideComment = true;
             this.process = process;
-            console.log(res.data);
             resolve(res.data);
           })
           .catch(() => {

@@ -199,6 +199,7 @@ const handleSubmit = async () => {
     showFailToast('无可提交数据');
     return;
   }
+
   const payload = workRoutes.value.flatMap((route) =>
     (route.children || []).map((child) => ({
       ...child,
@@ -206,24 +207,34 @@ const handleSubmit = async () => {
       reportHour: hourToSecond(child.reportHour, 3),
     }))
   );
+
   if (!payload.length) {
     showFailToast('无可提交数据');
     return;
   }
-  const toast = showLoadingToast({ message: '提交中…', duration: 0, forbidClick: true });
+
+  const loadingToast = showLoadingToast({ message: '提交中…', duration: 0, forbidClick: true });
+
   try {
     const res = await Api.application.workReport.wksr.reportSave(payload);
+
+    // 先关闭 loading
+    loadingToast?.close?.();
+
     if (res.code === 200) {
       snCode.value = '';
       resetData();
       showSuccessToast('保存成功');
     } else {
-      showFailToast(res.message || '提交失败');
+      showFailToast({ message: res?.message || '提交失败', duration: 3000 });
     }
   } catch (error) {
-    showFailToast(error?.message || '提交失败');
-  } finally {
-    toast.close();
+    console.log(error);
+
+    // 先关闭 loading
+    loadingToast?.close?.();
+
+    showFailToast({ message: error?.message || '提交失败', duration: 6000 });
   }
 };
 

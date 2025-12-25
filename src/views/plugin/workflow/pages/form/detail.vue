@@ -2,7 +2,6 @@
   <div class="workflow-form-detail">
     <!-- 顶部导航栏 -->
     <van-nav-bar title="流程详情" left-arrow @click-left="handleBack" />
-
     <!-- 加一点左右间距，骨架屏和内容共用同一容器 -->
     <div v-if="waiting" class="detail">
       <van-skeleton :row="6" animate />
@@ -245,6 +244,7 @@ export default defineComponent({
             labelPosition: 'top',
             group: [],
           };
+
           formList.forEach((f) => {
             const { content, appContent, taskName, taskKey } = f;
             let resolved;
@@ -362,11 +362,11 @@ export default defineComponent({
       delete col.value;
       const event = ['change', 'blur', 'click', 'focus'];
       event.forEach((e) => {
-        if (col[e]) col[e] = eval((col[e] + '').replace(/this/g, '_this'));
+        if (col[e]) col[e] = eval((col[e] + '').replace(/this|proxy/g, '_this'));
       });
       if (col.event) {
         Object.keys(col.event).forEach((key) => {
-          col.event[key] = eval((col.event[key] + '').replace(/this/g, '_this'));
+          col.event[key] = eval((col.event[key] + '').replace(/this|proxy/g, '_this'));
         });
       }
       if (col.type === 'dynamic') {
@@ -387,7 +387,6 @@ export default defineComponent({
                 if (this.form[`$${v}`]) variables[`$${v}`] = this.form[`$${v}`];
               }
             });
-
             // 可行性评估提交处理
             if (this.process.processDefinitionKey === 'feasibilityAsessment') {
               variables.feaEvaluationConclusion = JSON.stringify(this.form.feaEvaluationConclusion);
@@ -539,8 +538,6 @@ page {
 }
 
 .detail-section {
-  padding: 0 15px 5px;
-
   & + .detail-section {
     border-top: 1px solid #f2f3f5;
   }

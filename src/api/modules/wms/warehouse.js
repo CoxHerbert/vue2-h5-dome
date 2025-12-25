@@ -13,11 +13,11 @@ export default {
     }).then(normalize);
   },
 
-  analyzeBarcode(data) {
+  analyzeBarcode(params) {
     return request({
-      url: `${prefix}/analyze-barcode`,
-      method: 'post',
-      data,
+      url: `/blade-bip/wms-out-stock-opt/analyze-barcode`,
+      method: 'get',
+      params,
     }).then(normalize);
   },
 

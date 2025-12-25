@@ -147,7 +147,9 @@ const popupOpen = ref(false);
 const singleDraft = ref(null);
 const multipleDraft = ref([]);
 
-const fieldProps = computed(() => (props.field && typeof props.field === 'object' ? props.field : {}));
+const fieldProps = computed(() =>
+  props.field && typeof props.field === 'object' ? props.field : {}
+);
 const fieldLabel = computed(() => props.label || fieldProps.value?.label || '');
 
 const effectiveFieldNames = computed(() => {
@@ -191,7 +193,10 @@ const isMultiple = computed(() => {
   if (fieldProps.value && Object.prototype.hasOwnProperty.call(fieldProps.value, 'multiple')) {
     return !!fieldProps.value.multiple;
   }
-  if (fieldProps.value?.props && Object.prototype.hasOwnProperty.call(fieldProps.value.props, 'multiple')) {
+  if (
+    fieldProps.value?.props &&
+    Object.prototype.hasOwnProperty.call(fieldProps.value.props, 'multiple')
+  ) {
     return !!fieldProps.value.props.multiple;
   }
   return false;
@@ -212,7 +217,8 @@ const loading = computed(() => {
   if (props.loading !== undefined && props.loading !== null) return !!props.loading;
   const fp = fieldProps.value;
   if (fp && Object.prototype.hasOwnProperty.call(fp, 'loading')) return !!fp.loading;
-  if (fp?.props && Object.prototype.hasOwnProperty.call(fp.props, 'loading')) return !!fp.props.loading;
+  if (fp?.props && Object.prototype.hasOwnProperty.call(fp.props, 'loading'))
+    return !!fp.props.loading;
   return false;
 });
 const multipleValueMode = computed(() => {
@@ -269,8 +275,10 @@ const filteredOptions = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase();
   if (!keyword) return options.value;
   return options.value.filter((option) => {
-    const labelText = option.label === null || option.label === undefined ? '' : String(option.label);
-    const valueText = option.value === null || option.value === undefined ? '' : String(option.value);
+    const labelText =
+      option.label === null || option.label === undefined ? '' : String(option.label);
+    const valueText =
+      option.value === null || option.value === undefined ? '' : String(option.value);
     return labelText.toLowerCase().includes(keyword) || valueText.toLowerCase().includes(keyword);
   });
 });
@@ -385,8 +393,7 @@ function emitChange(value) {
     const arr = Array.isArray(value)
       ? value.filter((item) => item !== undefined && item !== null)
       : [];
-    const formatted =
-      multipleValueMode.value === 'string' ? arr.join(MULTI_VALUE_SEPARATOR) : arr;
+    const formatted = multipleValueMode.value === 'string' ? arr.join(MULTI_VALUE_SEPARATOR) : arr;
     emit('update:modelValue', formatted);
     emit('change', formatted);
     return;

@@ -1,6 +1,5 @@
 <template>
   <div class="wf-select-single" :style="{ width }">
-    +++++
     <div
       v-if="$slots.default"
       class="wf-select-single__trigger"

@@ -122,6 +122,7 @@ export default defineComponent({
     [Icon.name]: Icon,
   },
   mixins: [Props],
+  emits: ['update:modelValue', 'change', 'label-change'],
   data() {
     const today = new Date();
     return {
@@ -188,7 +189,8 @@ export default defineComponent({
       return [1, 3].includes(this.type) ? 'single' : 'range';
     },
     calendarConfirmText() {
-      return [3, 4].includes(this.type) ? '下一步' : '确定';
+      // datetime类型直接显示"确定"，因为不再需要第二步时间选择
+      return '确定';
     },
     calendarBindProps() {
       if (this.calendarMode === 'single') {
@@ -213,7 +215,31 @@ export default defineComponent({
       return this.type === 6 ? TIME_MODES.RANGE_START : TIME_MODES.SINGLE;
     },
   },
+  watch: {
+    text: {
+      handler(newVal) {
+        // 当text变化时，确保modelValue也同步更新
+        if (newVal !== undefined && newVal !== this.modelValue) {
+          this.$emit('update:modelValue', newVal);
+        }
+      },
+      immediate: false,
+    },
+    modelValue: {
+      handler(newVal) {
+        // 确保modelValue变化时同步更新text
+        if (newVal !== undefined && newVal !== this.text) {
+          this.text = newVal;
+        }
+      },
+      immediate: true,
+    },
+  },
   methods: {
+    validate() {
+      // 触发表单验证
+      this.handleChange(this.text);
+    },
     initValue() {
       const initVal = this.parseValueList(this.text);
       if (!this.validateNull(initVal)) {
@@ -318,11 +344,9 @@ export default defineComponent({
           this.applyDateRange(startDate, endDate);
           this.showCalendar = false;
         } else {
-          this.pendingRange = [startDate, endDate];
+          // datetime范围类型：直接应用默认时间，无需二次选择
+          this.applyDateTimeRange(startDate, endDate, '12:00:00', '12:00:00');
           this.showCalendar = false;
-          nextTick(() => {
-            this.openTimePicker(TIME_MODES.DATETIME_RANGE_START);
-          });
         }
       } else {
         const dateStr = this.formatDate(value);
@@ -330,11 +354,9 @@ export default defineComponent({
           this.applySingleDate(dateStr);
           this.showCalendar = false;
         } else if (this.type === 3) {
-          this.pendingDate = dateStr;
+          // datetime类型：直接应用默认时间，无需二次选择
+          this.applyDateTime(dateStr, '12:00:00');
           this.showCalendar = false;
-          nextTick(() => {
-            this.openTimePicker(TIME_MODES.DATETIME);
-          });
         }
       }
     },
@@ -352,6 +374,36 @@ export default defineComponent({
       this.initEndDate = endFormatted;
       this.date = `${startFormatted} 至 ${endFormatted}`;
       this.text = [startDate, endDate];
+      // 确保触发modelValue更新
+      this.$emit('update:modelValue', [startDate, endDate]);
+    },
+    // 新增：一键应用日期时间（单选）
+    applyDateTime(dateStr, timeStr) {
+      const combined = `${dateStr} ${timeStr}`;
+      const formatted = timeFormat(this.formatTime(combined), this.valueFormat);
+      this.initStartDate = formatted;
+      this.initEndDate = '';
+      this.date = formatted;
+      this.text = combined;
+      // 确保触发modelValue更新
+      this.$emit('update:modelValue', combined);
+      // 触发验证
+      this.$nextTick(() => {
+        this.handleChange(combined);
+      });
+    },
+    // 新增：一键应用日期时间（范围）
+    applyDateTimeRange(startDate, endDate, startTime, endTime) {
+      const startCombined = `${startDate} ${startTime}`;
+      const endCombined = `${endDate} ${endTime}`;
+      const startFormatted = timeFormat(this.formatTime(startCombined), this.valueFormat);
+      const endFormatted = timeFormat(this.formatTime(endCombined), this.valueFormat);
+      this.initStartDate = startFormatted;
+      this.initEndDate = endFormatted;
+      this.date = `${startFormatted} 至 ${endFormatted}`;
+      this.text = [startCombined, endCombined];
+      // 确保触发modelValue更新
+      this.$emit('update:modelValue', [startCombined, endCombined]);
     },
     handleCalendarClear() {
       this.handleClear();
@@ -362,6 +414,13 @@ export default defineComponent({
     },
     handleTimeFieldClick(mode) {
       if (this.disabled) return;
+
+      // datetime类型不再打开时间选择器，而是直接打开日历
+      if (this.type === 3 || this.type === 4) {
+        this.openCalendar();
+        return;
+      }
+
       if (mode === TIME_MODES.RANGE_END && this.validateNull(this.initStartDate)) {
         this.openTimePicker(TIME_MODES.RANGE_START);
         return;
@@ -481,6 +540,7 @@ export default defineComponent({
         this.initEndDate = '';
         this.date = result;
         this.text = result;
+        this.$emit('update:modelValue', result);
       } else if (mode === TIME_MODES.RANGE_START) {
         this.initStartDate = result;
         this.startTime = result;
@@ -490,12 +550,14 @@ export default defineComponent({
         this.endTime = result;
         this.text = [this.initStartDate, this.initEndDate];
         this.date = `${this.initStartDate} 至 ${this.initEndDate}`;
+        this.$emit('update:modelValue', [this.initStartDate, this.initEndDate]);
       } else if (mode === TIME_MODES.DATETIME) {
         const combined = `${this.pendingDate} ${result}`;
         this.initStartDate = combined;
         this.initEndDate = '';
         this.date = timeFormat(this.formatTime(combined), this.valueFormat);
         this.text = combined;
+        this.$emit('update:modelValue', combined);
       } else if (mode === TIME_MODES.DATETIME_RANGE_START) {
         this.startTime = result;
         this.initStartDate = `${this.pendingRange[0]} ${result}`;
@@ -507,6 +569,11 @@ export default defineComponent({
         const endLabel = timeFormat(this.formatTime(this.initEndDate), this.valueFormat);
         this.date = `${startLabel} 至 ${endLabel}`;
         this.text = [this.initStartDate, this.initEndDate];
+        this.$emit('update:modelValue', [this.initStartDate, this.initEndDate]);
+        // 触发验证
+        this.$nextTick(() => {
+          this.handleChange([this.initStartDate, this.initEndDate]);
+        });
       }
 
       if (reopenMode) {
@@ -533,10 +600,55 @@ export default defineComponent({
     handleClear() {
       if (this.stringMode) {
         this.text = '';
+        this.$emit('update:modelValue', '');
       } else {
         this.text = [];
+        this.$emit('update:modelValue', []);
       }
       this.resetLocalState();
+      // 触发验证
+      this.$nextTick(() => {
+        this.handleChange(this.text);
+      });
+    },
+    // 新增：选择当前日期时间
+    handleSelectCurrentDateTime() {
+      const now = new Date();
+      const dateStr = this.formatDate(now);
+      const timeStr = `${this.formatNumber(now.getHours())}:${this.formatNumber(now.getMinutes())}:${this.formatNumber(now.getSeconds())}`;
+
+      if (this.type === 3) {
+        // datetime单选
+        this.applyDateTime(dateStr, timeStr);
+      } else if (this.type === 4) {
+        // datetime范围，开始和结束都用当前时间
+        this.applyDateTimeRange(dateStr, dateStr, timeStr, timeStr);
+      }
+      this.showCalendar = false;
+    },
+    // 新增：选择中午12点
+    handleSelectNoonTime() {
+      const now = new Date();
+      const dateStr = this.formatDate(now);
+
+      if (this.type === 3) {
+        this.applyDateTime(dateStr, '12:00:00');
+      } else if (this.type === 4) {
+        this.applyDateTimeRange(dateStr, dateStr, '12:00:00', '12:00:00');
+      }
+      this.showCalendar = false;
+    },
+    // 新增：选择晚上8点
+    handleSelectNightTime() {
+      const now = new Date();
+      const dateStr = this.formatDate(now);
+
+      if (this.type === 3) {
+        this.applyDateTime(dateStr, '20:00:00');
+      } else if (this.type === 4) {
+        this.applyDateTimeRange(dateStr, dateStr, '20:00:00', '20:00:00');
+      }
+      this.showCalendar = false;
     },
   },
 });
@@ -564,6 +676,21 @@ export default defineComponent({
   &__clear-icon {
     font-size: 16px;
     color: #c8c9cc;
+  }
+
+  // 新增：datetime类型的快速选择按钮样式
+  &__datetime-footer {
+    padding: 12px 16px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    .van-button {
+      margin: 0;
+      flex: 1;
+      min-width: 80px;
+    }
   }
 }
 </style>

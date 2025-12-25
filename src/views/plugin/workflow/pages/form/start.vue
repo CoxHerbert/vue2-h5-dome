@@ -65,6 +65,7 @@
       message="是否恢复之前保存的草稿？"
       @confirm="handleRevocerDraftSubmit"
     />
+    <van-date-time v-model:show="show" v-model:current="time" type="time" />
   </div>
 </template>
 
@@ -87,6 +88,7 @@ export default defineComponent({
       option: {},
       submitLoading: false,
       zcoldValue: {},
+      _initFunctionExecuted: false,
     };
   },
   computed: {
@@ -107,7 +109,6 @@ export default defineComponent({
   },
   watch: {
     '$route.query.p'(value) {
-      console.log(this.$route.query);
       this.resolveRouteParams({ p: value });
     },
   },
@@ -128,6 +129,45 @@ export default defineComponent({
         console.error('[workflow] 无法解析流程参数', error);
       }
     },
+    runInitFunctionOnce(initFunction) {
+      if (this._initFunctionExecuted) return;
+      this._initFunctionExecuted = true;
+
+      if (!initFunction) return;
+      if (!this.form) this.form = {};
+
+      try {
+        let code =
+          typeof initFunction === 'function' ? initFunction.toString() : String(initFunction);
+
+        // 兼容 proxy → this
+        code = code.replace(/\bproxy\b/g, 'this');
+
+        // ① 如果是函数 / 箭头函数
+        if (/^\s*(function\s*\(|\(\s*.*\)\s*=>|.*=>)/.test(code)) {
+          const fn = eval(code);
+          if (typeof fn === 'function') {
+            fn.call(this, this);
+            return;
+          }
+        }
+
+        // ② 当作普通函数体执行
+        const runner = new Function(`
+          "use strict";
+          return (function () {
+            with (this) {
+              ${code}
+            }
+          });
+        `)();
+
+        runner.call(this);
+      } catch (e) {
+        console.error('[workflow] initFunction 执行失败:', e);
+        console.error('[workflow] initFunction 原始内容:', initFunction);
+      }
+    },
     getForm(processDefId) {
       this.getStartForm(processDefId).then((res) => {
         let { form, appForm, startForm } = res;
@@ -146,7 +186,74 @@ export default defineComponent({
             }
           }
 
-          const { column, group } = option;
+          const { column, group, initFunction } = option;
+          console.log('initFunction======>', initFunction);
+          this.runInitFunctionOnce(initFunction);
+          // 执行initFunction（如果存在 表单设计器初始化代码执行 目前只针对当前用户全局获取
+          // if (initFunction) {
+          //   try {
+          //     console.log('开始执行initFunction...');
+          //     // 确保form对象存在
+          //     if (!this.form) {
+          //       this.form = {};
+          //     }
+          //     // 第一步：预处理 - 替换proxy为this
+          //     let processedCode;
+          //     if (typeof initFunction === 'string') {
+          //       processedCode = initFunction.replace(/\bproxy\b/g, 'this');
+          //     } else if (typeof initFunction === 'function') {
+          //       processedCode = initFunction.toString().replace(/\bproxy\b/g, 'this');
+          //     }
+
+          //     console.log('预处理后的代码:', processedCode);
+          //     console.log('this.$store======>', this.$store.state.user.userInfoAll);
+
+          //     // 第二步：执行预处理后的代码
+          //     if (typeof initFunction === 'string' || typeof initFunction === 'function') {
+          //       try {
+          //         // 方法2：尝试在函数外部执行逻辑
+          //         if (this.$store.state.user.userInfoAll) {
+          //           const userInfo = this.$store.state.user.userInfoAll;
+          //           if (userInfo && userInfo.id) {
+          //             this.form.userId = userInfo.id;
+          //             this.form.userNumber = userInfo.account;
+          //             this.form.deptId = userInfo.deptId;
+          //             this.form.userType = '在职';
+          //           }
+          //         }
+          //       } catch (executeError) {
+          //         try {
+          //           const store = this.$store;
+          //           if (store && store.state && store.state.user && store.state.user.userInfoAll) {
+          //             const userInfo = store.state.user.userInfoAll;
+          //             if (userInfo && !this.form.userId) {
+          //               this.form.userId = userInfo.id;
+          //               this.form.userNumber = userInfo.account;
+          //               this.form.deptId = userInfo.deptId;
+          //               this.form.userType = '在职';
+          //               console.log('手动执行initFunction逻辑完成:', {
+          //                 userId: this.form.userId,
+          //                 userNumber: this.form.userNumber,
+          //                 deptId: this.form.deptId,
+          //                 userType: this.form.userType,
+          //               });
+          //             }
+          //           } else {
+          //             console.log('store状态不完整，无法获取用户信息');
+          //           }
+          //         } catch (manualError) {
+          //           console.error('手动执行也失败:', manualError);
+          //         }
+          //       }
+          //     }
+          //   } catch (error) {
+          //     console.error('initFunction处理失败:', error);
+          //     console.error('错误详情:', error.message);
+          //     console.error('initFunction内容:', initFunction);
+          //   }
+          // } else {
+          //   console.log('没有initFunction需要执行');
+          // }
 
           const groupArr = [];
           const columnArr = this.filterAvueColumn(column, startForm).column;
@@ -162,7 +269,6 @@ export default defineComponent({
           option.group = groupArr;
           this.option = option;
           this.waiting = false;
-          console.log('this.option.column===========>', JSON.parse(JSON.stringify(this.option)));
 
           // 查询是否有草稿箱
           this.initDraft({ processDefId }).then(() => {
@@ -175,6 +281,8 @@ export default defineComponent({
       this.submitLoading = true;
       form.processId = this.process.id;
       form['wf_platform'] = 'app';
+      console.log('form=======>', form);
+      debugger;
       this.handleStartProcess(form)
         .then(() => {
           this.handleNavigateTo(

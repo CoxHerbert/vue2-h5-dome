@@ -23,7 +23,7 @@ export default {
             value = value.replaceAll('Y', 'y').replaceAll('H', 'h').replace('DD', 'dd');
           }
 
-          defaultValue = eval('`' + value + '`');
+          defaultValue = eval('`' + value.replace(/this|proxy/g, 'this') + '`');
         } catch (err) {
           console.log(err);
           defaultValue = value;

@@ -72,7 +72,7 @@ export const useUserStore = defineStore('user', {
       const mergedUser = {
         ...(this.userInfo || {}),
         ...loginInfo,
-        dept_name: this.userInfo?.deptNames.toString() || '',
+        dept_name: this.userInfo?.deptName.toString() || '',
         post_name: this.userInfo?.postNames.toString() || '',
       };
 

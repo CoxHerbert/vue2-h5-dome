@@ -34,9 +34,15 @@
           <wf-form
             ref="main"
             v-model="text[index]"
-            :option="{ labelPosition: 'top', disabled, dynamicIndex: index, ...option }"
+            :option="{ labelPosition: 'top', disabled: disabled, dynamicIndex: index, ...option }"
             @label-change="handleLabelChange"
           />
+          <!-- <wkf-form
+            ref="main"
+            v-model="text[index]"
+            :option="{ labelPosition: 'top', disabled: disabled, dynamicIndex: index, ...option }"
+            @label-change="handleLabelChange"
+          ></wkf-form> -->
         </div>
         <div v-if="!disabled" class="wf-dynamic__footer">
           <van-button
@@ -69,7 +75,7 @@
 import { defineComponent } from 'vue';
 import { Button } from 'vant';
 import Props from '../../mixins/props.js';
-import wfForm from '../wf-form/wf-form.vue';
+import wfForm from '../wkf-form/wkf-form.vue';
 
 export default defineComponent({
   name: 'WfDynamic',

@@ -23,8 +23,10 @@
         :dic="dic"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
+        @change="handleLabelChange"
         @label-change="handleLabelChange"
       />
+
       <wf-cascader
         v-else-if="['cascader', 'tree'].includes(column.type)"
         v-model="text"
@@ -79,6 +81,7 @@
         :column="column"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
+        @change="handleLabelChange"
       />
       <wf-upload
         v-else-if="column.type === 'upload'"
@@ -120,16 +123,18 @@
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
-      <component
-        :is="column.component"
-        v-else-if="!column.type && column.component"
+      <!-- <component
+        :is="'wf-select-dialog'"
+        v-else-if="
+          !column.type && column.component && ['wf-prdmo-select'].includes(column.component)
+        "
         v-model="text"
-        v-bind="column"
+        v-bind="{ ...column }"
         :column="Object.assign(column, column.params || {})"
         :dic="dic"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
-      />
+      /> -->
       <wf-user-select
         v-else-if="'wf-user-select' == column.component"
         v-model="text"
@@ -140,6 +145,50 @@
         :dynamic-index="dynamicIndex"
         @label-change="handleLabelChange"
       />
+      <!-- 
+      <wf-select-dialog
+        v-else-if="'wf-select-dialog' == column.component"
+        v-model="text"
+        :column="column"
+        :disabled="disabled"
+        :objectName="column.params.objectName"
+        :dynamic-index="dynamicIndex"
+        @change="handleLabelChange"
+      ></wf-select-dialog> -->
+
+      <span v-else-if="'wf-select-dialog' == column.component || 'wf-select-dialog' == column.type">
+        <!-- {{ column.params.objectName }} -->
+        <wf-select-dialog
+          v-model="text"
+          :column="column"
+          :disabled="disabled"
+          :object-name="column.params.objectName"
+          :dynamic-index="dynamicIndex"
+          @change="handleLabelChange"
+        />
+      </span>
+      <wf-upload-v2
+        v-else-if="column.component === 'wf-upload-v2'"
+        v-model="text"
+        :column="column"
+        :disabled="disabled"
+        :dynamic-index="dynamicIndex"
+        @change="handleLabelChange"
+      />
+      <wf-form-single
+        v-else-if="'wf-select-single' == column.component"
+        v-model="text"
+        :column="column"
+        :disabled="disabled"
+        :object-name="column.params.objectName"
+        :dynamic-index="dynamicIndex"
+        @change="handleLabelChange"
+      >
+        <!-- {{ column.component }} -->
+      </wf-form-single>
+      <!-- {{ column.component }}---
+      {{ column }} -->
+      <!-- {{ column.component }} -->
     </div>
   </div>
 </template>
@@ -221,7 +270,7 @@ export default {
       handler(val) {
         if (this.init || !this.validateNull(val)) {
           this.init = true;
-          this.$emit('input', val);
+          this.$emit('update:modelValue', val);
           this.$emit('change', val);
         } else {
           this.init = true;
