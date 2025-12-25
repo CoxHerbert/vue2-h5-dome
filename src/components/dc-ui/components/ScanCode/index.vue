@@ -370,7 +370,6 @@ export default {
           .then(
             (res) =>
               new Promise((resolve, reject) => {
-                console.log(res, '--------');
                 const { data } = res.data;
                 initWwSDK(
                   data || {},

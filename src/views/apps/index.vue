@@ -59,7 +59,16 @@ const apps = [
     icon: '/images/apps/物料信息维护.svg',
     routeName: 'appsMaterialMaintenance',
   },
-  { label: '线材质检', icon: '/images/apps/线材质检.svg', routeName: 'appsWireInspection' },
+  {
+    label: '线材质检入库',
+    icon: '/images/apps/线材质检.svg',
+    routeName: 'appsWireInspectionSubmit',
+  },
+  {
+    label: '线材质检出库',
+    icon: '/images/apps/线材质检.svg',
+    routeName: 'appsWireOutspectionList',
+  },
   { label: '出货资料上传', icon: '/images/apps/出货资料上传.svg', routeName: 'appsShipmentUpload' },
   { label: '外协核价', icon: '/images/apps/外协核价.svg', routeName: 'appsOutsourcingQuotation' },
   { label: '自助出库', icon: '/images/apps/自助出库.svg', routeName: 'appsSelfOutbound' },

@@ -42,7 +42,7 @@
         />
       </van-cell-group>
     </van-form>
-    <div class="wf-exam-form__spacer"></div>
+    <!-- <div class="wf-exam-form__spacer"></div> -->
   </div>
 </template>
 
@@ -67,7 +67,7 @@ export default defineComponent({
       hideExamine: false,
       fileList: [],
       uploadOption: {
-        action: '/api/blade-resource/oss/endpoint/put-file',
+        action: '/api/blade-resource/oss/endpoint/put-file-attach-path',
         propsHttp: {
           res: 'data',
           url: 'link',

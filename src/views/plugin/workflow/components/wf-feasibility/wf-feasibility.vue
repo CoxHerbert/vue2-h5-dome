@@ -48,7 +48,7 @@ export default defineComponent({
       default: () => [],
     },
   },
-  emits: ['update:modelValue', 'input'],
+  emits: ['update:modelValue'],
   data() {
     return {
       localValue: [],
@@ -114,7 +114,7 @@ export default defineComponent({
     },
     emitValue(value) {
       this.$emit('update:modelValue', value);
-      this.$emit('input', value);
+      this.$emit('update:modelValue', value);
     },
   },
 });
@@ -141,9 +141,9 @@ export default defineComponent({
   justify-content: center;
   padding: 10px;
   line-height: 1.4;
-  font-size: 28rpx;
+  font-size: 14px;
   border-left: 1px solid #eaeaeb;
-  min-height: 100rpx;
+  min-height: 50px;
   box-sizing: border-box;
 }
 

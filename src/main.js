@@ -5,6 +5,8 @@ import App from './App.vue';
 import router from '@/router';
 import i18n from './locales';
 import { setupPermissionGuard } from './permission';
+import Api from '@/api/index';
+import dayjs from 'dayjs';
 
 // 样式
 import 'nprogress/nprogress.css';
@@ -62,12 +64,21 @@ async function bootstrap() {
       // 忽略启动期拉取失败，交由页面或拦截器兜底
     }
   }
+  app.config.globalProperties.api = Api;
+  app.config.globalProperties.$axios = request;
+  app.config.globalProperties.$dayjs = dayjs;
+
   app.config.globalProperties.$http = {
     request,
   };
   app.config.globalProperties.$store = {
     getters: {
       userInfo: user.userInfo,
+    },
+    state: {
+      user: {
+        userInfoAll: user.userInfo,
+      },
     },
   };
 

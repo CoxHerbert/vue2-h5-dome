@@ -8,6 +8,7 @@ import application from './modules/application/index';
 import wms from './modules/wms/index';
 import org from './modules/org/index';
 import material from './modules/material/index';
+import system from './modules/system/index';
 
 export default {
   recruit,
@@ -20,4 +21,5 @@ export default {
   wms,
   org,
   material,
+  system,
 };

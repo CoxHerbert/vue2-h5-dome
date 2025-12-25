@@ -11,6 +11,7 @@ export default {
     initVal() {
       this.stringMode = typeof this.modelValue == 'string';
       this.text = initVal(this.modelValue, this.column);
+      console.log(this.text);
     },
     handleFocus(event) {
       bindEvent(this, 'focus', event);
@@ -23,9 +24,7 @@ export default {
     },
     handleChange(value) {
       let result =
-        value && typeof value === 'object' && 'target' in value
-          ? value?.target?.value
-          : value;
+        value && typeof value === 'object' && 'target' in value ? value?.target?.value : value;
       let flag =
         this.isString || this.isNumber || this.stringMode || this.listType === 'picture-img';
       if (flag && Array.isArray(value)) {
@@ -37,7 +36,7 @@ export default {
       if (typeof this.change === 'function' && this.column.cell !== true) {
         this.change({ value: result, column: this.column, index: this.dynamicIndex });
       }
-      this.$emit('input', result);
+      this.$emit('update:modelValue', result);
       this.$emit('change', result);
     },
   },

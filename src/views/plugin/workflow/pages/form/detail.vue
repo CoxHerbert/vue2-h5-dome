@@ -2,7 +2,6 @@
   <div class="workflow-form-detail">
     <!-- 顶部导航栏 -->
     <van-nav-bar title="流程详情" left-arrow @click-left="handleBack" />
-
     <!-- 加一点左右间距，骨架屏和内容共用同一容器 -->
     <div v-if="waiting" class="detail">
       <van-skeleton :row="6" animate />
@@ -245,6 +244,7 @@ export default defineComponent({
             labelPosition: 'top',
             group: [],
           };
+
           formList.forEach((f) => {
             const { content, appContent, taskName, taskKey } = f;
             let resolved;
@@ -362,11 +362,11 @@ export default defineComponent({
       delete col.value;
       const event = ['change', 'blur', 'click', 'focus'];
       event.forEach((e) => {
-        if (col[e]) col[e] = eval((col[e] + '').replace(/this/g, '_this'));
+        if (col[e]) col[e] = eval((col[e] + '').replace(/this|proxy/g, '_this'));
       });
       if (col.event) {
         Object.keys(col.event).forEach((key) => {
-          col.event[key] = eval((col.event[key] + '').replace(/this/g, '_this'));
+          col.event[key] = eval((col.event[key] + '').replace(/this|proxy/g, '_this'));
         });
       }
       if (col.type === 'dynamic') {
@@ -387,7 +387,6 @@ export default defineComponent({
                 if (this.form[`$${v}`]) variables[`$${v}`] = this.form[`$${v}`];
               }
             });
-
             // 可行性评估提交处理
             if (this.process.processDefinitionKey === 'feasibilityAsessment') {
               variables.feaEvaluationConclusion = JSON.stringify(this.form.feaEvaluationConclusion);
@@ -452,7 +451,6 @@ page {
   box-sizing: border-box;
 
   .content {
-    /* 16rpx -> 8px */
     padding-bottom: 8px;
   }
 
@@ -461,11 +459,8 @@ page {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* 24rpx -> 12px */
     gap: 12px;
-    /* 24rpx 30rpx -> 12px 15px */
     padding: 12px 15px;
-    /* 8rpx -> 4px */
     margin-bottom: 4px;
     background-color: #fff;
     border-bottom: 1px solid #f2f3f5;
@@ -474,7 +469,6 @@ page {
   .detail-head-info {
     display: flex;
     align-items: center;
-    /* 24rpx -> 12px */
     gap: 12px;
     flex: 1;
     min-width: 0;
@@ -490,23 +484,19 @@ page {
 
     .leave {
       color: #1f2b4a;
-      /* 34rpx -> 17px */
       font-size: 17px;
       line-height: 1.4;
     }
 
     .name {
-      /* 8rpx -> 4px */
       margin-top: 4px;
       color: #7a8499;
-      /* 28rpx -> 14px */
       font-size: 14px;
     }
   }
 
   /* Tabs 区域，使用 Vant 默认主色 */
   &-tabs {
-    /* 24rpx -> 12px */
     margin-bottom: 12px;
     background-color: #fff;
 
@@ -515,7 +505,6 @@ page {
     }
 
     :deep(.van-tab__text) {
-      /* 28rpx -> 14px */
       font-size: 14px;
     }
   }
@@ -523,13 +512,9 @@ page {
 
 .card {
   background-color: #fff;
-  /* 24rpx -> 12px */
   border-radius: 12px;
-  /* 0 12rpx 32rpx -> 0 6px 16px */
   box-shadow: 0 6px 16px rgba(31, 43, 74, 0.08);
-  /* 24rpx -> 12px */
   margin-bottom: 12px;
-  /* 30rpx -> 15px */
   padding: 15px;
 }
 
@@ -537,16 +522,13 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 90rpx -> 45px */
   width: 45px;
   height: 45px;
   border-radius: 50%;
   background: linear-gradient(135deg, #fab022 0%, #ffcd4e 100%);
   color: #fff;
-  /* 34rpx -> 17px */
   font-size: 17px;
   font-weight: 600;
-  /* 4rpx -> 2px */
   letter-spacing: 2px;
 }
 
@@ -556,16 +538,12 @@ page {
 }
 
 .detail-section {
-  /* 30rpx 30rpx 10rpx -> 15px 15px 5px */
-  padding: 0 15px 5px;
-
   & + .detail-section {
     border-top: 1px solid #f2f3f5;
   }
 }
 
 .flow-wrapper {
-  /* 24rpx -> 12px */
   padding: 12px;
 }
 
@@ -574,7 +552,6 @@ page {
 
   :deep(canvas),
   :deep(svg) {
-    /* 0 0 24rpx 24rpx -> 0 0 12px 12px */
     border-radius: 0 0 12px 12px;
   }
 }

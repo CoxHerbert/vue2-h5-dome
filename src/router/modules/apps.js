@@ -89,7 +89,7 @@ export default {
         {
           path: '',
           name: 'appsWireInspection',
-          meta: { title: '线材质检', requiresAuth: true },
+          meta: { title: '线材质检入库', requiresAuth: true },
           component: () => import('@/views/apps/WireInspection/List.vue'),
         },
         {
@@ -100,6 +100,30 @@ export default {
         },
       ],
     },
+    {
+      path: 'wire-outspection',
+      component: () => import('@/views/apps/WireOutspection/index.vue'),
+      children: [
+        {
+          path: '',
+          name: 'appsWireOutspectionList',
+          meta: { title: '线材质检出库', requiresAuth: true },
+          component: () => import('@/views/apps/WireOutspection/list.vue'),
+        },
+        {
+          path: 'wire-outspection',
+          name: 'appsWireOutspection',
+          meta: { title: '线材质检出库', requiresAuth: true },
+          component: () => import('@/views/apps/WireOutspection/Submit.vue'),
+        },
+      ],
+    },
+    // {
+    //   path: 'wire-outspection',
+    //   name: 'appsWireOutspection',
+    //   meta: { title: '线材质检出库', requiresAuth: true },
+    //   component: () => import('@/views/apps/WireOutspection/Submit.vue'),
+    // },
     {
       path: 'shipment-upload',
       name: 'appsShipmentUpload',

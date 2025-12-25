@@ -188,7 +188,7 @@ export default {
       handler(val) {
         if (this.init || !this.validateNull(val)) {
           this.init = true;
-          this.$emit('input', val);
+          this.$emit('update:modelValue', val);
           this.$emit('change', val);
         } else {
           this.init = true;
@@ -241,10 +241,10 @@ export default {
   }
 
   &--top {
-    flex-direction: column;
+    // flex-direction: column;
 
     .wf-form-item__label {
-      width: 100%;
+      // width: 100%;
       margin-bottom: 5px;
     }
 

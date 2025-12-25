@@ -169,7 +169,7 @@ export default {
     form: {
       handler(val) {
         if (this.formCreate) {
-          this.$emit('input', val);
+          this.$emit('update:modelValue', val);
         }
       },
       deep: true,
@@ -316,7 +316,8 @@ export default {
       this.allDisabled = false;
     },
     handleLabelChange({ prop, value, change }) {
-      this.form[`${prop}`] = value;
+      console.log('wkf-form label changed:', value, prop);
+      this.form[`$${prop}`] = value;
       if (change) {
         change.call(this, { value });
       }

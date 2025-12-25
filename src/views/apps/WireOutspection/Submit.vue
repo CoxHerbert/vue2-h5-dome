@@ -1,41 +1,16 @@
 <template>
   <div class="page wire-inspection-submit">
-    <van-nav-bar title="线材质检入库" left-arrow @click-left="goBack" />
+    <van-nav-bar title="线材质检出库" left-arrow @click-left="goBack" />
 
     <div class="wire-inspection-submit__body">
+      <van-cell-group>
+        <van-cell title="库位编码" :value="form.locatorNo" />
+        <van-cell
+          title="出库类型"
+          :value="outTypeOptions.find((item) => item.value === form.outType)?.label || '未知'"
+        />
+      </van-cell-group>
       <van-form ref="formRef" :model="form" scroll-to-error>
-        <van-cell-group inset class="section">
-          <van-field
-            v-model="form.locatorNo"
-            name="locatorNo"
-            label="库位编码"
-            disabled="true"
-            required="true"
-            placeholder="请输入库位编码"
-            :rules="[{ required: true, message: '请输入库位编码' }]"
-          >
-            <template #button>
-              <dc-scan-code
-                v-model="form.locatorNo"
-                @confirm="handleLocatorScanSuccess"
-                @error="handleScanError"
-              >
-                <template #default="{ open, disabled, loading }">
-                  <van-button
-                    size="small"
-                    type="primary"
-                    :loading="loading"
-                    :disabled="disabled"
-                    @click="open"
-                  >
-                    扫码
-                  </van-button>
-                </template>
-              </dc-scan-code>
-            </template>
-          </van-field>
-        </van-cell-group>
-
         <div class="section__header">
           <div class="section__title">明细信息</div>
           <div class="section__actions">
@@ -47,7 +22,7 @@
             >
               <template #default="{ open, disabled, loading }">
                 <van-button
-                  size="small"
+                  size="mini"
                   type="success"
                   plain
                   :loading="loading"
@@ -60,148 +35,12 @@
             </dc-scan-code>
           </div>
         </div>
-
-        <div v-if="form.data.length" class="detail-list">
-          <div v-for="(row, index) in form.data" :key="row._uid" class="detail-card">
-            <div class="detail-card__header">
-              <div class="detail-card__title">#{{ index + 1 }}</div>
-              <van-button size="mini" type="danger" plain @click="removeRow(index)">
-                删除
-              </van-button>
-            </div>
-
-            <div class="detail-card__meta">
-              <div class="meta-row">
-                <div class="meta-item">
-                  <span class="label">BOM编码</span>
-                  <span class="value">{{ row.bomNo || '—' }}</span>
-                </div>
-                <div class="meta-item">
-                  <span class="label">BOM版本</span>
-                  <span class="value">{{ row.bomVersion || '—' }}</span>
-                </div>
-              </div>
-              <div class="meta-row">
-                <div class="meta-item">
-                  <span class="label">执行单号</span>
-                  <span class="value">{{ row.no || '—' }}</span>
-                </div>
-                <div class="meta-item">
-                  <span class="label">物料编码</span>
-                  <span class="value">{{
-                    row.exeMaterialNumber || row.itemMaterialNumber || '—'
-                  }}</span>
-                </div>
-              </div>
-              <div class="meta-row">
-                <div class="meta-item">
-                  <span class="label">物料名称</span>
-                  <span class="value">{{
-                    row.exeMaterialName || row.itemMaterialName || '—'
-                  }}</span>
-                </div>
-                <div class="meta-item">
-                  <span class="label">专案号</span>
-                  <span class="value">{{ row.mtoNo || '—' }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="detail-card__content">
-              <van-cell-group inset>
-                <!-- <van-field
-                  v-model="row.drawQty"
-                  :name="`data[${index}].drawQty`"
-                  label="图档数量"
-                  type="digit"
-                  placeholder="请输入图档数量"
-                  :rules="[{ required: true, message: '请输入图档数量' }]"
-                /> -->
-                <van-field
-                  name="stepper1"
-                  label="图档合格数量"
-                  placeholder="请输入图档合格数量"
-                  :rules="[{ required: true, message: '请输入图档合格数量' }]"
-                >
-                  <template #input>
-                    <van-stepper
-                      v-model="row.drawQty"
-                      :min="0"
-                      :max="parseInt(row.maxDrawQty) || 999"
-                      @change="(value) => handleQtyChange(row, 'drawQty', value)"
-                    />
-                  </template>
-                </van-field>
-
-                <!-- <van-field
-                  :name="`data[${index}].isQualified`"
-                  label="是否合格"
-                  :rules="[{ required: true, message: '请选择是否合格' }]"
-                >
-                  <template #input>
-                    <van-radio-group
-                      v-model="row.isQualified"
-                      direction="horizontal"
-                      @change="() => handleQualifiedChange(row)"
-                    >
-                      <van-radio
-                        v-for="option in qualifiedOptions"
-                        :key="option.value ?? option.dictValue"
-                        :name="option.value ?? option.dictValue"
-                      >
-                        {{ option.label ?? option.dictLabel }}
-                      </van-radio>
-                    </van-radio-group>
-                  </template>
-                </van-field> -->
-
-                <!-- <van-field
-                  v-if="row.isQualified === '0'"
-                  :name="`data[${index}].execeptionType`"
-                  label="异常类型"
-                  is-link
-                  readonly
-                  :model-value="resolveDictLabel('DC_WIRE_EXCEPTION_TYPE', row.execeptionType)"
-                  placeholder="请选择异常类型"
-                  :rules="[{ required: true, message: '请选择异常类型' }]"
-                  @click="openExceptionPicker(index)"
-                /> -->
-                <!-- <van-field
-                  v-if="row.isQualified === '0'"
-                  v-model="row.noQty"
-                  :name="`data[${index}].noQty`"
-                  label="不合格数量"
-                  type="digit"
-                  placeholder="请输入不合格数量"
-                  :rules="[{ required: true, message: '请输入不合格数量' }]"
-                /> -->
-                <van-field
-                  name="stepper2"
-                  label="不合格数量"
-                  placeholder="请输入不合格数量"
-                  :rules="[{ required: true, message: '请输入不合格数量' }]"
-                >
-                  <template #input>
-                    <van-stepper
-                      v-model="row.noQty"
-                      :min="0"
-                      :max="parseInt(row.maxDrawQty) || 999"
-                      @change="(value) => handleQtyChange(row, 'noQty', value)"
-                    />
-                  </template>
-                </van-field>
-                <van-field
-                  v-model="row.remark"
-                  :name="`data[${index}].remark`"
-                  label="备注"
-                  type="textarea"
-                  rows="2"
-                  autosize
-                  placeholder="请输入备注"
-                />
-              </van-cell-group>
-            </div>
-          </div>
-        </div>
+        <ProductList
+          v-if="form.data.length"
+          :list="form.data"
+          @remove="removeProduct"
+          @quantity-change="handleQuantityChange"
+        />
 
         <van-empty v-else class="detail-empty" description="请新增或扫码录入质检明细" />
       </van-form>
@@ -223,8 +62,10 @@
 
 <script setup>
 import { computed, getCurrentInstance, reactive, ref, unref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
+import ProductList from './components/ProductList.vue';
+import { useDictStore } from '@/store/dict';
 import Api from '@/api';
 import { goBackOrHome } from '@/utils/navigation';
 
@@ -232,6 +73,8 @@ defineOptions({ name: 'WireInspectionSubmit' });
 
 const { proxy } = getCurrentInstance();
 const router = useRouter();
+// const route = useRoute();
+const dictStore = useDictStore();
 
 const formRef = ref(null);
 const rowScanCode = ref('');
@@ -242,14 +85,44 @@ const form = reactive({
   locatorNo: '',
   data: [],
 });
+const route = useRoute();
+const { locatorNo = '', outType = '', warehouseId = '', warehouseLocationId = '' } = route.query;
 
+// 初始化表单值
+form.locatorNo = locatorNo;
+form.outType = outType;
+form.warehouseId = warehouseId;
+form.warehouseLocationId = warehouseLocationId;
 const dictRefs = proxy?.dicts ? proxy.dicts(['QualifiedEnum', 'DC_WIRE_EXCEPTION_TYPE']) : {};
 
 const defaultQualified = [
   { label: '合格', value: '1' },
   { label: '不合格', value: '0' },
 ];
+const outTypeOptions = ref([]);
 
+async function initOutTypeDict() {
+  try {
+    const list = await dictStore.get('DC_WMS_OUT_TYPE_WMS');
+    outTypeOptions.value = Array.isArray(list)
+      ? list.map((item) => {
+          const text = item?.label ?? item?.text ?? item?.raw?.dictLabel ?? '';
+          const value = item?.value ?? item?.dictValue ?? item?.raw?.dictValue ?? '';
+          return {
+            text,
+            label: text,
+            value,
+            raw: item?.raw ?? item,
+          };
+        })
+      : [];
+    syncOutTypeName();
+  } catch (error) {
+    console.error('failed to load out stock dict', error);
+  }
+}
+
+initOutTypeDict();
 const qualifiedOptions = computed(() => {
   const resolved = unref(dictRefs?.QualifiedEnum);
   if (Array.isArray(resolved) && resolved.length) return resolved;
@@ -260,13 +133,27 @@ const exceptionOptions = computed(() => {
   const resolved = unref(dictRefs?.DC_WIRE_EXCEPTION_TYPE);
   return Array.isArray(resolved) ? resolved : [];
 });
+function syncOutTypeName(value = form.outType) {
+  const target = value != null ? String(value) : '';
+  if (!target) {
+    form.outStockTypeName = '';
+    return;
+  }
+  const option = outTypeOptions.value.find((item) => String(item?.value ?? '') === target);
+  form.outStockTypeName = option?.text ?? option?.label ?? '';
+}
+function handleOutTypeChange(value) {
+  syncOutTypeName(value);
+}
 
 const picker = reactive({
   show: false,
   rowIndex: null,
   columns: [],
 });
-
+function removeProduct(index) {
+  form.data.splice(index, 1);
+}
 function resolveDictLabel(key, value) {
   const source = key === 'QualifiedEnum' ? qualifiedOptions.value : exceptionOptions.value;
   const hit = source?.find?.((item) => item?.value === value || item?.dictValue === value);
@@ -311,23 +198,6 @@ function removeRow(index) {
 function handleQualifiedChange(row) {
   if (row.isQualified !== '0') {
     row.execeptionType = '';
-  }
-}
-
-function handleQtyChange(row, field, value) {
-  // 确保值是数字类型
-  const numValue = parseInt(value) || 0;
-  const totalQty = parseInt(row.maxDrawQty) || 999;
-  if (field === 'drawQty') {
-    // 合格数量变化，确保不超过总量
-    row.drawQty = Math.min(numValue, totalQty);
-    // 不合格数量 = 总量 - 合格数量
-    row.noQty = totalQty - row.drawQty;
-  } else if (field === 'noQty') {
-    // 不合格数量变化，确保不超过总量
-    row.noQty = Math.min(numValue, totalQty);
-    // 合格数量 = 总量 - 不合格数量
-    row.drawQty = totalQty - row.noQty;
   }
 }
 
@@ -410,37 +280,74 @@ async function handleSubmit() {
   } catch (_err) {
     return;
   }
-  console.log(form.data);
-  const payload = form.data.map((item) => ({
-    executeDetailId: item.executeId,
-    warehouseLocationId: form.warehouseLocationId,
-    // materialNumber: item.itemMaterialNumber,
-    // materialName: item.itemMaterialName,
-    // specification: item.specification,
-    inQty: Number(item.drawQty),
-    // unit: item.unit,
-    // remark: item.remark,
-
-    noQty: Number(item.noQty),
-  }));
-  let params = {
-    warehouseId: form.locatorNo,
-    executeVoList: payload,
+  // console.log(form.data);
+  // const payload = form.data.map((item) => ({
+  //   executeId: item.executeId,
+  //   materialNumber: item.itemMaterialNumber,
+  //   materialName: item.itemMaterialName,
+  //   specification: item.specification,
+  //   inQty: Number(item.drawQty),
+  //   unit: item.unit,
+  //   remark: item.remark,
+  //   warehouseLocationId: form.warehouseLocationId,
+  //   noQty: Number(item.noQty),
+  // }));
+  // let params = {
+  //   warehouseId: form.locatorNo,
+  //   executeVoList: payload,
+  // };
+  const payload = {
+    // warehouseId: form.warehouseId,
+    // outType: form.outType,
+    executeVoList: form.data.map((item) => ({
+      executeDetailId: item.executeId,
+      // materialNumber: item.itemMaterialNumber,
+      // materialName: item.itemMaterialName,
+      // specification: item.specification,
+      outQty: Number(item.drawQty) || 0,
+      // unit: item.unit,
+      warehouseLocationId: form.warehouseLocationId,
+      warehouseCountId: form.warehouseCountId,
+    })),
   };
-  // console.log(params);
+  // const res = await Api.application.wireInspection.outChangExecute(payload);
+  // console.log(payload);
   // return;
   try {
-    const res = await Api.application.wireInspection.inChangExecute(payload);
+    const res = await Api.application.wireInspection.outChangExecute(payload.executeVoList);
     const { code, msg } = res?.data || {};
     if (code !== 200) throw new Error(msg || '提交失败');
     showToast({ type: 'success', message: '提交成功' });
     // 清空当前数据
     form.locatorNo = '';
+    form.outType = '';
     form.data = [];
+    router.go(-1);
   } catch (err) {
     showToast({ type: 'fail', message: err.message || '提交失败' });
   }
 }
+
+async function handleSearch() {
+  if (!form.locatorNo) {
+    showToast({ message: '请先扫描库位', type: 'fail' });
+    return;
+  }
+  try {
+    const res = await Api.application.wireInspection.searchProduct({
+      warehouseId: form.warehouseId,
+      // locationName: form.locatorNo,
+    });
+    const payload = res?.data || {};
+    const { code, msg, data } = payload;
+    if (code !== 200 || !data) throw new Error(msg || '未获取到库存信息');
+    // productList.value = data || [];
+    form.warehouseCountId = data.records?.[0]?.id || '';
+  } catch (err) {
+    showToast({ type: 'fail', message: err.message || '查询失败' });
+  }
+}
+handleSearch();
 </script>
 
 <style scoped>
@@ -466,8 +373,11 @@ async function handleSubmit() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  background: #fff;
+  box-shadow: 0 6px 12px rgba(31, 35, 41, 0.05);
+  padding: 10px 16px;
   margin-top: 8px;
+  margin-bottom: 12px;
 }
 
 .section__title {
