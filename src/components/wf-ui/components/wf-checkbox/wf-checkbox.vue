@@ -48,13 +48,21 @@ export default defineComponent({
       },
     },
     checkedValues(val) {
-      this.text = val.join(',');
+      if (this.isArray || Array.isArray(this.text)) {
+        this.text = [...val];
+      } else {
+        this.text = val.join(',');
+      }
     },
   },
   methods: {
     syncFromText() {
       if (this.validateNull(this.text)) {
         this.checkedValues = [];
+        return;
+      }
+      if (Array.isArray(this.text)) {
+        this.checkedValues = this.text.filter((item) => item !== '');
         return;
       }
       const values = (this.text + '').split(',');
