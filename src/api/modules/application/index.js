@@ -5,6 +5,8 @@ import workReport from './workReport';
 import materialMaintenance from './materialMaintenance';
 import wireInspection from './wireInspection';
 import nameplateBinding from './nameplateBinding';
+import outboundOrder from './outboundOrder';
+import warehousingEntry from './warehousingEntry';
 
 export default {
   planSheep,
@@ -12,6 +14,8 @@ export default {
   materialMaintenance,
   wireInspection,
   nameplateBinding,
+  outboundOrder,
+  warehousingEntry,
   // 入库单列表
   inventoryList(params) {
     return request({

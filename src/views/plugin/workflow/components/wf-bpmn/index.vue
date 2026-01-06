@@ -26,7 +26,6 @@ export default defineComponent({
   },
   mounted() {
     this.$nextTick(() => {
-      console.log(this.bpmnOption);
       const baseUrl = import.meta.env.DEV ? 'http://localhost:2888' : 'https://www.eastwinbip.com';
       const { processInsId, taskId, token } = this.bpmnOption || {};
       this.urlSrc = `${baseUrl}/process-priview?processInsId=${processInsId || ''}&taskId=${taskId || ''}&token=${token || ''}`;

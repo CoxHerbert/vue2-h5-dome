@@ -53,6 +53,7 @@
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
         @label-change="handleLabelChange"
+        @change="handleLabelChange"
       />
       <wf-rate
         v-else-if="column.type === 'rate'"

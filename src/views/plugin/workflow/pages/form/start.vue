@@ -281,8 +281,6 @@ export default defineComponent({
       this.submitLoading = true;
       form.processId = this.process.id;
       form['wf_platform'] = 'app';
-      console.log('form=======>', form);
-      debugger;
       this.handleStartProcess(form)
         .then(() => {
           this.handleNavigateTo(

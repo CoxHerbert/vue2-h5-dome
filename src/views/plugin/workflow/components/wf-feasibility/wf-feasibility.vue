@@ -114,7 +114,6 @@ export default defineComponent({
     },
     emitValue(value) {
       this.$emit('update:modelValue', value);
-      this.$emit('update:modelValue', value);
     },
   },
 });

@@ -33,7 +33,6 @@ export default defineComponent({
   watch: {
     dic: {
       handler(val) {
-        console.log('wf-checkbox dic changed:', val);
         if (!this.validateNull(val)) {
           this.syncFromText();
         }
@@ -42,8 +41,7 @@ export default defineComponent({
     },
     text: {
       immediate: true,
-      handler(val) {
-        console.log('wf-checkbox text changed:', val);
+      handler() {
         this.syncFromText();
       },
     },

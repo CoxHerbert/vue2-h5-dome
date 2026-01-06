@@ -53,6 +53,7 @@ const apps = [
   { label: '入库单', icon: '/images/apps/入库单.svg', routeName: 'appsInboundOrder' },
   { label: '现场计划单', icon: '/images/apps/现场计划单.svg', routeName: 'appsSitePlanning' },
   { label: '工时汇报', icon: '/images/apps/工时汇报.svg', routeName: 'appsWorkReport' },
+  { label: '工序外发', icon: '/images/apps/工序外发.svg', routeName: 'appsOutSourcing' },
   { label: '确认领料', icon: '/images/apps/确认领料.svg', routeName: 'appsPickingConfirmation' },
   {
     label: '物料信息维护',

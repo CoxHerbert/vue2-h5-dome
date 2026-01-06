@@ -9,6 +9,7 @@ import wms from './modules/wms/index';
 import org from './modules/org/index';
 import material from './modules/material/index';
 import system from './modules/system/index';
+import outsourcing from './modules/outsourcing/index';
 
 export default {
   recruit,
@@ -22,4 +23,5 @@ export default {
   org,
   material,
   system,
+  outsourcing,
 };

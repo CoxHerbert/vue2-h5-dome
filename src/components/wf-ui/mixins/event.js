@@ -11,7 +11,6 @@ export default {
     initVal() {
       this.stringMode = typeof this.modelValue == 'string';
       this.text = initVal(this.modelValue, this.column);
-      console.log(this.text);
     },
     handleFocus(event) {
       bindEvent(this, 'focus', event);

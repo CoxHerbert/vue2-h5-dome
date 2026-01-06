@@ -316,7 +316,6 @@ export default {
       this.allDisabled = false;
     },
     handleLabelChange({ prop, value, change }) {
-      console.log('wkf-form label changed:', value, prop);
       this.form[`$${prop}`] = value;
       if (change) {
         change.call(this, { value });

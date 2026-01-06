@@ -65,6 +65,12 @@ export default {
       component: () => import('@/views/apps/WorkReport/WorkReport.vue'),
     },
     {
+      path: 'out-sourcing',
+      name: 'appsOutSourcing',
+      meta: { title: '工序外发', requiresAuth: true },
+      component: () => import('@/views/apps/OutSourcing/OutSourcing.vue'),
+    },
+    {
       path: 'work-report/missing-material',
       name: 'appsWorkReportMissingMaterial',
       meta: { title: '缺料明细', requiresAuth: true },

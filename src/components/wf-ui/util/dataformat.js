@@ -38,13 +38,6 @@ export const calcCascader = (list = []) => {
 export const initVal = (value, column) => {
   let { type, multiple, dataType, separator = DIC_SPLIT, alone, emitPath, range } = column;
   let list = value;
-  console.log(column, value, 'before array init');
-  console.log(
-    '------------====>',
-    MULTIPLE_LIST.includes(type) && multiple == true,
-    ARRAY_VALUE_LIST.includes(type) && emitPath !== false,
-    RANGE_LIST.includes(type) && range == true
-  );
   if (
     (MULTIPLE_LIST.includes(type) && multiple == true) ||
     (ARRAY_VALUE_LIST.includes(type) && emitPath !== false) ||
