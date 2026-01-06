@@ -1,180 +1,204 @@
 <template>
-  <div class="list-page">
-    <el-form
-      class="search-container"
-      :model="queryParams"
-      ref="queryRef"
-      :inline="true"
-      @keyup.enter="handleQuery"
-    >
-      <!-- 在此添加搜索项 -->
-      <el-form-item label="示例" prop="ex">
-        <el-input v-model="queryParams.ex" placeholder="示例" clearable />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="Search" @click="handleQuery">查找</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
-    <div class="action-banner">
-      <el-button type="primary" icon="Plus" @click="handleSubmit">新增</el-button>
-    </div>
-    <div class="table-container">
-      <el-table v-loading="loading" :data="dataList">
-        <el-table-column label="序号" width="60" type="index" align="center">
-          <template #default="scoped">
-            <span>{{ (queryParams.current - 1) * queryParams.size + scoped.$index + 1 }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="名称" width="100" prop="name" align="center" show-overflow-tooltip>
-          <template #default="scoped">
-            <span>{{ scoped.row.name || '-' }}</span>
-          </template>
-        </el-table-column>
-        <!-- 在此添加其他列 -->
-        <el-table-column width="150" fixed="right" label="操作" align="center">
-          <template #default="scoped">
-            <el-button link type="primary" icon="Edit" @click="handleSubmit(scoped.row)"
-              >编辑</el-button
-            >
-            <el-button link type="primary" icon="Delete" @click="handleDelete(scoped.row)"
-              >删除</el-button
-            >
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+  <div class="page warehouse-notice-board">
     <dc-pagination
-      v-show="total > 0"
-      :total="total"
-      v-model:page="queryParams.current"
-      v-model:limit="queryParams.size"
-      @pagination="getData"
-    />
+      ref="listRef"
+      v-model:keyword="keyword"
+      search-placeholder="请输入关键字"
+      :page-size="8"
+      :offset="200"
+      :fetcher="fetcher"
+      :get-nav-el="resolveNavEl"
+      :tabs-visible="false"
+      @add="handleAdd"
+    >
+      <template #nav>
+        <van-nav-bar ref="navRef" title="装配工具借用" fixed left-arrow @click-left="goBack" />
+      </template>
+
+      <template #item="{ item }">
+        <div class="card">
+          <div class="card__header">
+            <div class="title">{{ item.name || '未命名' }}</div>
+          </div>
+          <div class="card__footer">
+            <van-button size="small" type="primary" plain @click.stop="handleEdit(item)"
+              >编辑</van-button
+            >
+            <van-button size="small" type="danger" plain @click.stop="handleDelete(item)"
+              >删除</van-button
+            >
+          </div>
+        </div>
+      </template>
+
+      <template #empty>
+        <van-empty description="暂无记录">
+          <van-button type="primary" round size="small" @click="handleAdd">新增记录</van-button>
+        </van-empty>
+      </template>
+    </dc-pagination>
+
+    <van-popup v-model:show="open" position="bottom" round class="notice-popup">
+      <div class="notice-popup__header">{{ title }}</div>
+      <van-form @submit="submitForm">
+        <van-cell-group inset>
+          <van-field v-model="formData.name" label="示例" placeholder="示例" />
+        </van-cell-group>
+        <div class="notice-popup__footer">
+          <van-button type="primary" block native-type="submit">提交</van-button>
+          <van-button block class="notice-popup__cancel" @click="closePopup">取消</van-button>
+        </div>
+      </van-form>
+    </van-popup>
   </div>
-  <el-drawer v-model="open" :title="title" destroy-on-close append-to-body @close="closeDrawer">
-    <el-form ref="formRef" :model="formData" :rules="rules" label-width="80px"> </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button type="primary" @click="submitForm">提交</el-button>
-        <el-button @click="closeDrawer">取消</el-button>
-      </span>
-    </template>
-  </el-drawer>
 </template>
 
-<script setup name="ComponentName">
-import { reactive, toRefs, onMounted, getCurrentInstance } from 'vue';
+<script setup>
+import { reactive, ref } from 'vue';
+import { showConfirmDialog, showToast } from 'vant';
+import { useRouter } from 'vue-router';
 import Api from '@/api/index';
-import { deepClone } from '@/utils/util';
+import { goBackOrHome } from '@/utils/navigation';
 
-const { proxy } = getCurrentInstance();
+const router = useRouter();
 
-const {} = proxy.useCache([]);
-
-const pageData = reactive({
-  loading: false,
-  queryParams: {
-    current: 1,
-    size: 10,
-  },
-  dataList: [],
-  total: 0,
-  open: false,
-  formData: {},
-  rules: {},
-  title: '',
+const navRef = ref(null);
+const listRef = ref(null);
+const keyword = ref('');
+const open = ref(false);
+const title = ref('');
+const formData = reactive({
+  id: null,
+  name: '',
 });
 
-const { loading, queryParams, dataList, total, open, formData, rules, title } = toRefs(pageData);
-
-onMounted(() => {
-  getData();
-});
-
-// 获取数据
-const getData = async () => {
-  try {
-    loading.value = true;
-    const res = await Api.list(queryParams.value);
-    const { code, data } = res.data;
-    if (code === 200) {
-      dataList.value = data.records;
-      total.value = data.total;
-    }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    loading.value = false;
-  }
+const resolveNavEl = () => {
+  const target = navRef.value;
+  if (!target) return null;
+  if (target instanceof HTMLElement) return target;
+  if (target.$el instanceof HTMLElement) return target.$el;
+  if (target.$?.subTree?.el instanceof HTMLElement) return target.$?.subTree?.el;
+  return null;
 };
 
-// 处理新增或编辑逻辑
-const handleSubmit = async row => {
+async function fetcher({ pageNo, pageSize, keyword }) {
+  const params = {
+    current: pageNo,
+    size: pageSize,
+  };
+  const trimmedKeyword = (keyword ?? '').toString().trim();
+  if (trimmedKeyword) params.ex = trimmedKeyword;
+  const res = await Api.list(params);
+  const { code, data, msg } = res?.data || {};
+  if (code !== 200 || !data) throw new Error(msg || '加载失败');
+  return data;
+}
+
+const handleAdd = () => {
   title.value = '新增';
-  if (row?.id) {
-    title.value = '编辑';
-    formData.value = deepClone(row);
-  }
+  formData.id = null;
+  formData.name = '';
   open.value = true;
 };
 
-// 关闭弹窗
-const closeDrawer = () => {
-  title.value = '';
-  formData.value = {};
+const handleEdit = (row) => {
+  title.value = '编辑';
+  formData.id = row?.id ?? null;
+  formData.name = row?.name ?? '';
+  open.value = true;
+};
+
+const closePopup = () => {
   open.value = false;
+  title.value = '';
+  formData.id = null;
+  formData.name = '';
 };
 
-// 保存提交
-const submitForm = () => {
-  proxy.$refs['formRef'].validate(async valid => {
-    if (valid) {
-      const res = await Api.submit(formData.value);
-      const { code } = res.data;
-      if (code === 200) {
-        proxy.$message({ type: 'success', message: '保存成功' });
-        getData();
-        closeDrawer();
-      }
-    }
-  });
+const submitForm = async () => {
+  const payload = { ...formData };
+  const res = await Api.submit(payload);
+  const { code } = res?.data || {};
+  if (code === 200) {
+    showToast({ type: 'success', message: '保存成功' });
+    closePopup();
+    listRef.value?.resetAndLoad?.();
+  }
 };
 
-// 处理删除
-const handleDelete = row => {
-  const ids = row.id;
-  proxy
-    .$confirm(`确定将“[${ids}]”数据删除?`, {
+const handleDelete = async (row) => {
+  try {
+    await showConfirmDialog({
+      title: '确认删除',
+      message: `确定删除“${row.name || row.id}”吗？`,
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
-    })
-    .then(() => Api.remove({ ids }))
-    .then(() => {
-      proxy.$message({
-        type: 'success',
-        message: '操作成功!',
-      });
-      getData();
     });
+    await Api.remove({ ids: row.id });
+    showToast({ type: 'success', message: '操作成功' });
+    listRef.value?.resetAndLoad?.();
+  } catch (error) {
+    if (error && error !== 'cancel') {
+      showToast({ type: 'fail', message: '删除失败' });
+    }
+  }
 };
 
-// 处理查询
-const handleQuery = () => {
-  queryParams.value.current = 1;
-  getData();
-};
-
-// 重置查询
-const resetQuery = () => {
-  queryParams.value = {
-    current: 1,
-    size: 10,
-  };
-  proxy.resetForm('queryRef');
-  getData();
+const goBack = () => {
+  goBackOrHome(router);
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.warehouse-notice-board {
+  min-height: 100vh;
+  background: #f7f8fa;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+}
+
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.card__header .title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #323233;
+}
+
+.card__footer {
+  display: flex;
+  gap: 8px;
+}
+
+.notice-popup {
+  padding-bottom: 16px;
+
+  &__header {
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  &__footer {
+    padding: 12px 16px 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  &__cancel {
+    margin-bottom: 12px;
+  }
+}
+</style>

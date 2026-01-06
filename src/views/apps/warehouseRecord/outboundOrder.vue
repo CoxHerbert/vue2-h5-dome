@@ -1,269 +1,303 @@
 <template>
-  <div class="list-page">
-    <div class="search">
-      <div class="search-left">
-        <el-form
-          ref="queryRef"
-          class="search-container"
-          :model="queryParams"
-          :inline="true"
-          @keyup.enter="handleQuery"
-        >
-          <!-- 出库 -->
-          <!-- 在此添加搜索项 -->
-          <el-form-item label="单据状态" prop="outStockStatus">
-            <el-select
-              v-model="queryParams.outStockStatus"
-              clearable
-              placeholder="请选择单据状态进行搜索"
-            >
-              <el-option
-                v-for="item in DC_WMS_OUT_STATUS"
-                :key="item.dictKey"
-                :label="item.dictValue"
-                :value="item.dictKey"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="单号" prop="outStockCode">
-            <el-input
-              v-model="queryParams.outStockCode"
-              placeholder="请输入单号进行搜索"
-              clearable
-            />
-          </el-form-item>
-          <el-form-item label="出库类型" prop="outStockType">
-            <el-select
-              v-model="queryParams.outStockType"
-              clearable
-              placeholder="请选择出库类型进行搜索"
-            >
-              <el-option
-                v-for="item in DC_WMS_OUT_TYPE_WMS"
-                :key="item.dictKey"
-                :label="item.dictValue"
-                :value="item.dictKey"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="仓库名称" prop="warehouseId">
-            <wf-select-dialog
-              v-model="queryParams.warehouseId"
-              placeholder="请点击选择仓库"
-              object-name="warehouse"
-              :clearable="true"
-            />
-          </el-form-item>
-        </el-form>
-      </div>
-      <div class="search-right">
-        <el-button type="primary" icon="Search" @click="handleQuery">查找</el-button>
-        <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-      </div>
-    </div>
-    <div class="action-banner">
-      <el-button
-        v-permission="{ id: 'DC_OUTBOUNDORDER_ADD' }"
-        type="primary"
-        icon="Plus"
-        @click="handleSubmit"
-        >新增</el-button
-      >
-    </div>
-    <div class="table-container">
-      <el-table v-loading="loading" :data="dataList" @row-dblclick="handleRowDbClick">
-        <!-- <el-table-column type="selection" width="55" /> -->
-        <el-table-column label="序号" width="60" type="index" align="center">
-          <template #default="scoped">
-            <span>{{ (queryParams.current - 1) * queryParams.size + scoped.$index + 1 }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="出库类型" prop="outStockType" align="center">
-          <template #default="scoped">
-            <dc-dict-key :value="scoped.row.outStockType" :options="DC_WMS_OUT_TYPE_WMS" />
-          </template>
-        </el-table-column>
-        <el-table-column label="单据状态" prop="outStockStatus" align="center">
-          <template #default="scoped">
-            <dc-dict-key :value="scoped.row.outStockStatus" :options="DC_WMS_OUT_STATUS" />
-          </template>
-        </el-table-column>
-        <el-table-column label="单据编号" prop="outStockCode" align="center">
-          <template #default="scoped">
-            <el-popover
-              v-if="scoped.row.outStockCode"
-              placement="top-start"
-              title="出库单号"
-              :width="'100px'"
-              trigger="click"
-            >
-              <template #default>
-                <div class="qr-code-box">
-                  <QrcodeVue :value="scoped.row.outStockCode" />
-                </div>
-              </template>
-              <template #reference>
-                <span class="code">{{ scoped.row.outStockCode }}</span>
-              </template>
-            </el-popover>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="申请人" prop="applicantId" align="center">
-          <template #default="scoped">
-            <dc-view v-model="scoped.row.applicantId" object-name="user" />
-          </template>
-        </el-table-column>
-        <el-table-column label="处理人" prop="processingPersonnel" align="center">
-          <template #default="scoped">
-            <dc-view v-model="scoped.row.processingPersonnel" object-name="user" />
-          </template>
-        </el-table-column>
-        <el-table-column label="登记时间" prop="createTime" align="center" />
-
-        <!-- <el-table-column label="审核人" prop="auditUserId" align="center">
-            <template #default="scoped">
-              <dc-view v-model="scoped.row.auditUserId" objectName="user" />
-            </template>
-          </el-table-column> -->
-
-        <!-- 在此添加其他列 -->
-        <el-table-column width="150" fixed="right" label="操作" align="center">
-          <template #default="scoped">
-            <el-button
-              v-permission="{ id: 'DC_OUTBOUNDORDER_EDIT', row: scoped.row }"
-              link
-              type="primary"
-              icon="Edit"
-              @click.stop="handleSubmit(scoped.row)"
-              >编辑</el-button
-            >
-            <el-button
-              v-permission="{ id: 'DC_OUTBOUNDORDER_DEL', row: scoped.row }"
-              link
-              type="primary"
-              icon="Delete"
-              @click.stop="handleDelete(scoped.row)"
-              >删除</el-button
-            >
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+  <div class="page outbound-order-list">
     <dc-pagination
-      v-show="total > 0"
-      v-model:page="queryParams.current"
-      v-model:limit="queryParams.size"
-      :total="total"
-      @pagination="getData"
-    />
+      ref="listRef"
+      v-model:keyword="keyword"
+      v-model:active-status="activeStatus"
+      v-model:query="queryParams"
+      :status-options="statusOptions"
+      search-placeholder="请输入单号"
+      :page-size="8"
+      :offset="200"
+      :fetcher="fetcher"
+      :get-nav-el="resolveNavEl"
+      @add="handleAdd"
+    >
+      <template #nav>
+        <van-nav-bar ref="navRef" title="装配工具借用" fixed left-arrow @click-left="goBack" />
+      </template>
+
+      <template #filters="{ apply }">
+        <van-cell-group inset class="filter-card">
+          <dc-selector
+            v-model="queryParams.outStockType"
+            label="出库类型"
+            :options="outTypeOptions"
+            placeholder="请选择出库类型"
+          />
+          <dc-select-dialog
+            v-model="selectedWarehouse"
+            label="仓库"
+            object-name="warehouse"
+            :multiple="false"
+            return-type="object"
+            placeholder="请选择仓库"
+          />
+          <van-button type="primary" block size="small" class="filter-card__action" @click="apply"
+            >筛选</van-button
+          >
+        </van-cell-group>
+      </template>
+
+      <template #item="{ item }">
+        <div class="card" @click="handleEdit(item)">
+          <div class="card__header">
+            <div class="title">单号：{{ item.outStockCode ?? '—' }}</div>
+            <van-tag plain round class="status-tag">
+              {{ resolveStatusLabel(item.outStockStatus) }}
+            </van-tag>
+          </div>
+
+          <div class="card__meta">
+            <div class="row">
+              <span class="label">出库类型</span>
+              <span class="value">{{ resolveOutTypeLabel(item.outStockType) }}</span>
+            </div>
+            <div class="row">
+              <span class="label">仓库</span>
+              <span class="value">
+                <dc-view :value="item.warehouseId" object-name="warehouse" />
+              </span>
+            </div>
+            <div class="row">
+              <span class="label">申请人</span>
+              <span class="value">
+                <dc-view :value="item.applicantId" object-name="user" />
+              </span>
+            </div>
+            <div class="row">
+              <span class="label">处理人</span>
+              <span class="value">
+                <dc-view :value="item.processingPersonnel" object-name="user" />
+              </span>
+            </div>
+            <div class="row">
+              <span class="label">登记时间</span>
+              <span class="value">{{ item.createTime ?? '-' }}</span>
+            </div>
+          </div>
+
+          <div class="card__footer">
+            <van-button
+              v-permission="{ id: 'DC_OUTBOUNDORDER_EDIT', row: item }"
+              size="small"
+              type="primary"
+              plain
+              @click.stop="handleEdit(item)"
+              >编辑</van-button
+            >
+            <van-button
+              v-permission="{ id: 'DC_OUTBOUNDORDER_DEL', row: item }"
+              size="small"
+              type="danger"
+              plain
+              @click.stop="handleDelete(item)"
+              >删除</van-button
+            >
+          </div>
+        </div>
+      </template>
+
+      <template #empty>
+        <van-empty description="暂无借用记录">
+          <van-button type="primary" round size="small" @click="handleAdd">新增记录</van-button>
+        </van-empty>
+      </template>
+
+      <template #fab>
+        <button
+          v-permission="{ id: 'DC_OUTBOUNDORDER_ADD' }"
+          class="dc-fab-add"
+          aria-label="新增"
+          @click="handleAdd"
+        >
+          <van-icon name="plus" size="18" />
+        </button>
+      </template>
+    </dc-pagination>
   </div>
 </template>
 
-<script setup name="ComponentName">
-import { reactive, toRefs, onMounted, getCurrentInstance } from 'vue';
-import Api from '@/api/index';
-import QrcodeVue from 'qrcode.vue';
+<script setup>
+import { computed, getCurrentInstance, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { showConfirmDialog, showToast } from 'vant';
+import Api from '@/api';
+import { goBackOrHome } from '@/utils/navigation';
+
 const { proxy } = getCurrentInstance();
+const router = useRouter();
+
+const navRef = ref(null);
+const listRef = ref(null);
+
+const keyword = ref('');
+const activeStatus = ref(null);
+const queryParams = ref({
+  outStockType: null,
+  warehouseId: null,
+});
+const selectedWarehouse = ref(null);
 
 const { DC_WMS_OUT_TYPE_WMS, DC_WMS_OUT_STATUS } = proxy.useCache([
   { key: 'DC_WMS_OUT_TYPE_WMS' },
   { key: 'DC_WMS_OUT_STATUS' },
 ]);
-const router = useRouter();
-const pageData = reactive({
-  loading: false,
-  queryParams: {
-    current: 1,
-    size: 10,
+
+const outTypeOptions = computed(() =>
+  (DC_WMS_OUT_TYPE_WMS.value || []).map((item) => ({
+    label: item.dictValue,
+    text: item.dictValue,
+    value: item.dictKey,
+    raw: item,
+  }))
+);
+
+const statusOptions = computed(() => {
+  const list = DC_WMS_OUT_STATUS.value || [];
+  return [{ label: '全部', value: null }, ...list.map((item) => ({
+    label: item.dictValue,
+    value: item.dictKey,
+  }))];
+});
+
+const resolveNavEl = () => {
+  const target = navRef.value;
+  if (!target) return null;
+  if (target instanceof HTMLElement) return target;
+  if (target.$el instanceof HTMLElement) return target.$el;
+  if (target.$?.subTree?.el instanceof HTMLElement) return target.$?.subTree?.el;
+  return null;
+};
+
+const resolveDictLabel = (list = [], value) => {
+  const hit = list.find((item) => item.dictKey === value);
+  return hit?.dictValue ?? value ?? '—';
+};
+
+const resolveOutTypeLabel = (value) =>
+  resolveDictLabel(DC_WMS_OUT_TYPE_WMS.value || [], value);
+const resolveStatusLabel = (value) => resolveDictLabel(DC_WMS_OUT_STATUS.value || [], value);
+
+watch(
+  selectedWarehouse,
+  (val) => {
+    const row = val && typeof val === 'object' ? val : null;
+    queryParams.value.warehouseId = row?.id ?? row?.warehouseId ?? null;
   },
-  dataList: [],
-  total: 0,
-});
+  { immediate: true }
+);
 
-const { loading, queryParams, dataList, total } = toRefs(pageData);
+async function fetcher({ pageNo, pageSize, keyword, status, outStockType, warehouseId }) {
+  const params = {
+    current: pageNo,
+    size: pageSize,
+  };
+  const trimmedKeyword = (keyword ?? '').toString().trim();
+  if (trimmedKeyword) params.outStockCode = trimmedKeyword;
+  if (status) params.outStockStatus = status;
+  if (outStockType) params.outStockType = outStockType;
+  if (warehouseId) params.warehouseId = warehouseId;
 
-onMounted(() => {
-  getData();
-});
+  const res = await Api.application.outboundOrder.list(params);
+  const { code, data, msg } = res?.data || {};
+  if (code !== 200 || !data) throw new Error(msg || '加载失败');
+  return data;
+}
 
-// 获取数据
-const getData = async () => {
+const handleAdd = () => {
+  router.push({ name: '出库提交', params: { id: 'create' } });
+};
+
+const handleEdit = (row) => {
+  router.push({ name: '出库提交', params: { id: row.id } });
+};
+
+const handleDelete = async (row) => {
   try {
-    loading.value = true;
-    const res = await Api.application.outboundOrder.list(queryParams.value);
-    const { code, data } = res.data;
-    if (code === 200) {
-      dataList.value = data.records;
-      total.value = data.total;
-    }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    loading.value = false;
-  }
-};
-
-// 处理新增或编辑逻辑
-const handleSubmit = (row) => {
-  router.push({
-    name: '出库提交',
-    params: { id: 'create' },
-  });
-  if (row?.id) {
-    router.push({
-      name: '出库提交',
-      params: { id: row.id },
-    });
-  }
-};
-
-// 处理删除
-const handleDelete = (row) => {
-  const ids = row.id;
-  proxy
-    .$confirm(`确定将“[${ids}]”数据删除?`, {
+    await showConfirmDialog({
+      title: '确认删除',
+      message: `确定删除单据“${row.outStockCode || row.id}”吗？`,
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
-    })
-    .then(() => Api.application.outboundOrder.remove({ ids }))
-    .then(() => {
-      proxy.$message({
-        type: 'success',
-        message: '操作成功!',
-      });
-      getData();
-    })
-    .catch((err) => {});
+    });
+    await Api.application.outboundOrder.remove({ ids: row.id });
+    showToast({ type: 'success', message: '删除成功' });
+    listRef.value?.resetAndLoad?.();
+  } catch (error) {
+    if (error && error !== 'cancel') {
+      showToast({ type: 'fail', message: '删除失败' });
+    }
+  }
 };
 
-const handleRowDbClick = (row) => {
-  handleSubmit(row);
-};
-
-// 处理查询
-const handleQuery = () => {
-  queryParams.value.current = 1;
-  getData();
-};
-
-// 重置查询
-const resetQuery = () => {
-  queryParams.value = {
-    current: 1,
-    size: 10,
-  };
-  proxy.resetForm('queryRef');
-  getData();
+const goBack = () => {
+  goBackOrHome(router);
 };
 </script>
 
 <style lang="scss" scoped>
-.qr-code-box {
-  text-align: center;
+.outbound-order-list {
+  min-height: 100vh;
+  background: #f7f8fa;
+}
+
+.filter-card {
+  margin: 12px 12px 8px;
+
+  &__action {
+    margin: 12px 0 4px;
+  }
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+}
+
+.card__header {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.card__header .title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #323233;
+}
+
+.status-tag {
+  background: rgba(25, 137, 250, 0.12);
+  color: #1989fa;
+  border-color: transparent;
+}
+
+.card__meta {
+  margin-top: 6px;
+  color: #666;
+  font-size: 13px;
+  display: grid;
+  gap: 6px;
+}
+
+.card__meta .row {
+  display: flex;
+  gap: 8px;
+}
+
+.card__meta .label {
+  color: #888;
+  min-width: 56px;
+}
+
+.card__footer {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
 }
 </style>
