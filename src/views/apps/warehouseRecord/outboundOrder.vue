@@ -135,7 +135,7 @@ const listRef = ref(null);
 const keyword = ref('');
 const activeStatus = ref(null);
 const queryParams = ref({
-  outStockType: null,
+  outStockType: 'DC_WMS_OUT_TYPE_BORROW',
   warehouseId: null,
 });
 const selectedWarehouse = ref(null);
