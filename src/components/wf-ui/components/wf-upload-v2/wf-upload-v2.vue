@@ -45,7 +45,7 @@
         @click="previewAt(i)"
       >
         <template #icon>
-          <van-icon name="description" class="mr-6" />
+          <van-icon name="description" class="mr-6 file-icon" />
         </template>
 
         <template #right-icon>
@@ -57,7 +57,7 @@
               @click.stop="removeAt(i)"
             />
             <van-icon name="eye-o" class="op" @click.stop="previewAt(i)" />
-            <!-- <van-icon name="down" class="op" @click.stop="downloadAt(i)" /> -->
+            <van-icon name="down" class="op" @click.stop="downloadAt(i)" />
           </div>
         </template>
       </van-cell>
@@ -92,8 +92,8 @@
       position="bottom"
       :style="{ height: '85vh' }"
       round
-      @closed="cancelCrop"
       lock-scroll
+      @closed="cancelCrop"
     >
       <div class="crop-header">
         <div class="title">裁剪图片</div>
@@ -152,7 +152,7 @@
           </div>
 
           <div class="quick-actions">
-            <van-button size="small" plain type="primary" @click="resetCropBox" icon="replay">
+            <van-button size="small" plain type="primary" icon="replay" @click="resetCropBox">
               重置
             </van-button>
             <!-- <van-button 
@@ -169,8 +169,8 @@
       </div>
 
       <div class="crop-footer">
-        <van-button @click="cancelCrop" style="flex: 1">取消</van-button>
-        <van-button type="primary" @click="confirmCrop" style="flex: 1">确认裁剪</van-button>
+        <van-button style="flex: 1" @click="cancelCrop">取消</van-button>
+        <van-button type="primary" style="flex: 1" @click="confirmCrop">确认裁剪</van-button>
       </div>
     </van-popup>
   </div>
@@ -268,7 +268,7 @@ export default {
         ? this.accept
         : this.params.accept !== undefined
           ? this.params.accept
-          : ['image/*'];
+          : ['*/*'];
     },
     actualMaxSizeMB() {
       return this.maxSizeMB !== undefined
@@ -411,7 +411,6 @@ export default {
       immediate: true,
       handler() {
         // 只在初始化时同步，避免上传过程中覆盖
-        console.log(this.modelValue, 'modelValue');
         if (this.fileObjs.length === 0) {
           this.syncFromModel();
         }
@@ -764,7 +763,7 @@ export default {
       const obj = this.fileObjs[index];
       if (!obj) return;
 
-      const finalUrl = obj.link || '';
+      const finalUrl = obj.link || obj.name;
       if (!finalUrl) {
         showToast('暂无可下载地址');
         return;
@@ -1201,7 +1200,11 @@ export default {
 
 .list-card {
   overflow: hidden;
-
+  .file-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
   .ops {
     display: inline-flex;
     align-items: center;

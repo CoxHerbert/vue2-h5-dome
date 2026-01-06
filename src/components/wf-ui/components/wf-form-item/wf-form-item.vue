@@ -5,6 +5,8 @@
       <span>{{ column.label }}：</span>
     </div>
     <div class="wf-form-item__content">
+      {{ column }}
+
       <wf-input
         v-if="
           [undefined, 'input', 'password', 'textarea', 'number'].includes(column.type) &&
