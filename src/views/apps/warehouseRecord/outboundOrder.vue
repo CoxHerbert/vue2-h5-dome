@@ -39,31 +39,33 @@
           <div class="card__header">
             <div class="title">单号：{{ item.outStockCode ?? '—' }}</div>
             <van-tag plain round class="status-tag">
-              {{ resolveStatusLabel(item.outStockStatus) }}
+              <dc-dict type="text" :value="item.outStockStatus" :options="outStatusDict" />
             </van-tag>
           </div>
 
           <div class="card__meta">
             <div class="row">
               <span class="label">出库类型</span>
-              <span class="value">{{ resolveOutTypeLabel(item.outStockType) }}</span>
+              <span class="value">
+                <dc-dict type="text" :value="item.outStockType" :options="outTypeDict" />
+              </span>
             </div>
             <div class="row">
               <span class="label">仓库</span>
               <span class="value">
-                <dc-view :value="item.warehouseId" object-name="warehouse" />
+                <dc-view v-model="item.warehouseId" object-name="warehouse" />
               </span>
             </div>
             <div class="row">
               <span class="label">申请人</span>
               <span class="value">
-                <dc-view :value="item.applicantId" object-name="user" />
+                <dc-view v-model="item.applicantId" object-name="user" />
               </span>
             </div>
             <div class="row">
               <span class="label">处理人</span>
               <span class="value">
-                <dc-view :value="item.processingPersonnel" object-name="user" />
+                <dc-view v-model="item.processingPersonnel" object-name="user" />
               </span>
             </div>
             <div class="row">
@@ -140,10 +142,8 @@ const outStatusDict = ref([]);
 
 const statusOptions = computed(() => {
   const list = outStatusDict.value || [];
-  return [{ label: '全部', value: null }, ...list.map((item) => ({
-    label: item.dictValue,
-    value: item.dictKey,
-  }))];
+  console.log(list);
+  return [{ label: '全部', value: null }, ...list];
 });
 
 const resolveNavEl = () => {
@@ -154,15 +154,6 @@ const resolveNavEl = () => {
   if (target.$?.subTree?.el instanceof HTMLElement) return target.$?.subTree?.el;
   return null;
 };
-
-const resolveDictLabel = (list = [], value) => {
-  const hit = list.find((item) => item.dictKey === value);
-  return hit?.dictValue ?? value ?? '—';
-};
-
-const resolveOutTypeLabel = (value) =>
-  resolveDictLabel(outTypeDict.value || [], value);
-const resolveStatusLabel = (value) => resolveDictLabel(outStatusDict.value || [], value);
 
 const loadDicts = async () => {
   outTypeDict.value = (await dictStore.get('DC_WMS_OUT_TYPE_WMS')) || [];

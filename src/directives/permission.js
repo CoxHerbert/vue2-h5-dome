@@ -2,7 +2,8 @@
 /**
  * 按钮权限控制指令  v-permission="{ id: '按钮id', ...ortherProps }"
  */
-import store from '../store/index';
+// import store from '../store/index';
+const store = {};
 
 /** 数据按钮 */
 const isDataButton = (permissionObj) => {
