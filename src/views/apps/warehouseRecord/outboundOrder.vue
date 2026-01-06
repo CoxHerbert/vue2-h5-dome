@@ -19,12 +19,7 @@
 
       <template #filters="{ apply }">
         <van-cell-group inset class="filter-card">
-          <dc-selector
-            v-model="queryParams.outStockType"
-            label="出库类型"
-            :options="outTypeOptions"
-            placeholder="请选择出库类型"
-          />
+          <van-field label="出库类型" readonly :model-value="resolveOutTypeLabel(queryParams.outStockType)" />
           <dc-select-dialog
             v-model="selectedWarehouse"
             label="仓库"
@@ -142,15 +137,6 @@ const selectedWarehouse = ref(null);
 
 const outTypeDict = ref([]);
 const outStatusDict = ref([]);
-
-const outTypeOptions = computed(() =>
-  (outTypeDict.value || []).map((item) => ({
-    label: item.dictValue,
-    text: item.dictValue,
-    value: item.dictKey,
-    raw: item,
-  }))
-);
 
 const statusOptions = computed(() => {
   const list = outStatusDict.value || [];
