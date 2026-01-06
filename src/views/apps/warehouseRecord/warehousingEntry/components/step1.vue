@@ -244,7 +244,7 @@
 import { reactive, toRefs, getCurrentInstance } from 'vue';
 import Api from '@/api';
 import { useRouter, useRoute } from 'vue-router';
-import { ElMessage } from 'element-plus';
+import { showToast } from 'vant';
 
 const inTypeMap = {
   // 现场仓库
@@ -567,15 +567,15 @@ const uploadFile = async (fileObj) => {
     const response = await axios.post(url, form);
     if (response.data.code === 200) {
       loading.value = false;
-      ElMessage.success('导入成功！');
+      showToast({ type: 'success', message: '导入成功！' });
       formData.value.detailList = response.data.data;
     } else {
-      ElMessage.error(response.data.message || '导入失败');
+      showToast({ type: 'fail', message: response.data.message || '导入失败' });
     }
   } catch (error) {
     loading.value = false;
     console.error('导入失败', error);
-    ElMessage.error('导入失败，请稍后重试');
+    showToast({ type: 'fail', message: '导入失败，请稍后重试' });
   }
 };
 
