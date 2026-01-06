@@ -235,7 +235,7 @@ const outStockTypeMap = {
 };
 
 // 获取入库类型
-const getStockType = outType => {
+const getStockType = (outType) => {
   return outType && outStockTypeMap[outType] ? outStockTypeMap[outType] : undefined;
 };
 
@@ -339,15 +339,18 @@ onMounted(() => {
 });
 
 // 监听出库类型变化
-watch(() => formData.value.outStockType, (newVal) => {
-  if (newVal) {
-    emit('out-stock-type-change', newVal);
+watch(
+  () => formData.value.outStockType,
+  (newVal) => {
+    if (newVal) {
+      emit('out-stock-type-change', newVal);
+    }
   }
-});
+);
 
 // 确认创建
 const submitForm = async () => {
-  proxy.$refs.ruleFormRef.validate(async valid => {
+  proxy.$refs.ruleFormRef.validate(async (valid) => {
     if (valid) {
       const warehouseId =
         typeof formData.value.warehouseId === 'object'
@@ -358,7 +361,7 @@ const submitForm = async () => {
         warehouseId: warehouseId,
       };
 
-      const res = await Api.wms.outboundOrder.submit(form);
+      const res = await Api.application.outboundOrder.submit(form);
       const { code, msg } = res.data;
       if (code === 200) {
         proxy.$message({ type: 'success', message: '保存成功' });
@@ -372,7 +375,7 @@ const submitForm = async () => {
 };
 // 审核
 const submitAudit = () => {
-  proxy.$refs.ruleFormRef.validate(async valid => {
+  proxy.$refs.ruleFormRef.validate(async (valid) => {
     if (valid) {
       const warehouseId =
         typeof formData.value.warehouseId === 'object'
@@ -383,7 +386,7 @@ const submitAudit = () => {
         warehouseId: warehouseId,
       };
 
-      const res = await Api.wms.outboundOrder.submitAudit(form);
+      const res = await Api.application.outboundOrder.submitAudit(form);
       const { code, msg } = res.data;
       if (code === 200) {
         proxy.$message({ type: 'success', message: '审核成功' });
@@ -397,8 +400,8 @@ const submitAudit = () => {
 };
 
 // 表格编辑
-const handleUpdate = row => {
-  editIndex.value = formData.value.detailList.findIndex(item => item === row);
+const handleUpdate = (row) => {
+  editIndex.value = formData.value.detailList.findIndex((item) => item === row);
   if (editIndex.value !== -1) {
     open.value = true;
     numbers.value = row.productQty;
@@ -421,8 +424,8 @@ const submitFormTable = async () => {
 };
 
 // 表格删除
-const removeEvaluate = async row => {
-  const index = formData.value.detailList.findIndex(item => item === row);
+const removeEvaluate = async (row) => {
+  const index = formData.value.detailList.findIndex((item) => item === row);
   if (index !== -1) {
     formData.value.detailList.splice(index, 1);
   }
@@ -442,16 +445,16 @@ const cancelSubmit = () => {
 };
 
 //仓库监听事件
-const handleWarehouseChange = async row => {
+const handleWarehouseChange = async (row) => {
   formData.value.processingPersonnel = row.warehouseSupervisor;
   isDisabled.value = false;
   ids.value = row.id;
 };
 
 // 查询明细
-const handleSerchDetail = row => {
+const handleSerchDetail = (row) => {
   formData.value.detailList = row;
-  formData.value.detailList = row.map(item => ({
+  formData.value.detailList = row.map((item) => ({
     warehouseId: item.warehouseId,
     productName: item.productName,
     productCode: item.productCode,

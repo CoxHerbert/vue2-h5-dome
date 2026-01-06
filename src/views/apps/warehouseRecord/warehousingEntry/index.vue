@@ -1,5 +1,5 @@
 <template>
-  <div class="wrap-box" v-loading="loading">
+  <div v-loading="loading" class="wrap-box">
     <div class="wrap-left">
       <!-- <div class="step-new">
         <dc-steps v-bind="stepProps" :activeIndex="step"></dc-steps>
@@ -17,9 +17,9 @@
           </template>
         </el-step>
       </el-steps>
-      <step1 v-if="steps2 === 0" :info="info"></step1>
-      <step2 v-if="steps2 === 1" :info="info" @detail="getDetail"></step2>
-      <step3 v-if="steps2 === 2" :info="info" @detail="getDetail"></step3>
+      <step1 v-if="steps2 === 0" :info="info" />
+      <step2 v-if="steps2 === 1" :info="info" @detail="getDetail" />
+      <step3 v-if="steps2 === 2" :info="info" @detail="getDetail" />
     </div>
   </div>
 </template>
@@ -70,7 +70,7 @@ onBeforeMount(() => {
   if (route.params.id !== 'create') getDetail();
 });
 
-const getCalss = index => {
+const getCalss = (index) => {
   if (step.value === index) return 'step-item-process';
   if (step.value < index) return 'step-item-wait';
   if (step.value > index) return 'step-item-finish';
@@ -116,7 +116,7 @@ const getCalss = index => {
 const getDetail = async () => {
   try {
     loading.value = true;
-    const res = await Api.wms.warehousingEntry.detail({ id: pageId.value });
+    const res = await Api.application.warehousingEntry.detail({ id: pageId.value });
     const { code, msg, data } = res.data;
     if (code === 200) {
       info.value = data;

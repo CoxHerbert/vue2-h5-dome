@@ -43,7 +43,7 @@
             :params="{
               stockType: getStockType(formData.inType),
             }"
-            @change="row => handleWarehouseChange(row, 'warehouse')"
+            @change="(row) => handleWarehouseChange(row, 'warehouse')"
           />
         </el-form-item>
 
@@ -63,7 +63,7 @@
             :params="{
               outStockStatus: 'DC_WMS_OUT_STATUS_BORROW',
             }"
-            @change="row => handleWarehouseChange(row, 'outboundOrder')"
+            @change="(row) => handleWarehouseChange(row, 'outboundOrder')"
           />
         </el-form-item>
 
@@ -256,7 +256,7 @@ const inTypeMap = {
 };
 
 // 获取入库类型
-const getStockType = inType => {
+const getStockType = (inType) => {
   return inType && inTypeMap[inType] ? inTypeMap[inType] : undefined;
 };
 
@@ -328,7 +328,7 @@ const {
 
 // 确认创建
 const submitForm = () => {
-  proxy.$refs.ruleFormRef.validate(async valid => {
+  proxy.$refs.ruleFormRef.validate(async (valid) => {
     if (valid) {
       loading.value = true;
       try {
@@ -340,7 +340,7 @@ const submitForm = () => {
           ...formData.value,
           warehouseId: warehouseId,
         };
-        const res = await Api.wms.warehousingEntry.submit(parmas);
+        const res = await Api.application.warehousingEntry.submit(parmas);
         const { code, msg } = res.data;
         loading.value = false;
         if (code === 200) {
@@ -375,7 +375,7 @@ onMounted(() => {
 
 // 获取单位下拉列表
 const getUnitData = async () => {
-  const res = await Api.wms.warehousingEntry.unitList();
+  const res = await Api.application.warehousingEntry.unitList();
   const { code, data } = res.data;
   if (code === 200) {
     unitList.value = data;
@@ -384,7 +384,7 @@ const getUnitData = async () => {
 
 // 审核
 const submitAudit = () => {
-  proxy.$refs.ruleFormRef.validate(async valid => {
+  proxy.$refs.ruleFormRef.validate(async (valid) => {
     if (valid) {
       loading.value = true;
       const warehouseId =
@@ -392,7 +392,7 @@ const submitAudit = () => {
           ? formData.value.warehouseId?.id
           : formData.value.warehouseId;
 
-      const dataList = formData.value.detailList.map(item => ({
+      const dataList = formData.value.detailList.map((item) => ({
         ...item,
         warehouseId: warehouseId,
       }));
@@ -402,7 +402,7 @@ const submitAudit = () => {
         detailList: dataList,
       };
 
-      const res = await Api.wms.warehousingEntry.submitAudit(form);
+      const res = await Api.application.warehousingEntry.submitAudit(form);
       const { code, msg } = res.data;
       if (code === 200) {
         proxy.$message({ type: 'success', message: '审核成功' });
@@ -417,9 +417,9 @@ const submitAudit = () => {
 };
 
 // 表格编辑
-const handleUpdate = row => {
+const handleUpdate = (row) => {
   show.value = true;
-  editIndex.value = formData.value.detailList.findIndex(item => item === row);
+  editIndex.value = formData.value.detailList.findIndex((item) => item === row);
   if (editIndex.value !== -1) {
     open.value = true;
     formDataTable.value = { ...row }; // 创建一个新对象，避免直接修改引用
@@ -441,8 +441,8 @@ const submitFormTable = async () => {
 };
 
 // 表格删除
-const removeEvaluate = async row => {
-  const index = formData.value.detailList.findIndex(item => item === row);
+const removeEvaluate = async (row) => {
+  const index = formData.value.detailList.findIndex((item) => item === row);
   if (index !== -1) {
     formData.value.detailList.splice(index, 1);
   }
@@ -466,7 +466,7 @@ const cancelSubmit = () => {
   });
 };
 
-const handleSerch = async row => {
+const handleSerch = async (row) => {
   if (row) {
     try {
       loading.value = true;
@@ -474,7 +474,7 @@ const handleSerch = async row => {
         type: formData.value.inType,
         sourceId: formData.value.inSourceNumber,
       };
-      const res = await Api.wms.warehousingEntry.detailList(params);
+      const res = await Api.application.warehousingEntry.detailList(params);
       const { code, data } = res.data;
       if (code === 200) {
         formData.value.detailList = data;
@@ -489,7 +489,7 @@ const handleSerch = async row => {
 };
 
 // 选中入库类型监听事件
-const hangleInTypeChange = row => {
+const hangleInTypeChange = (row) => {
   formData.value.inSourceNumber = null;
   if (formData.value.inType == 'DC_WMS_IN_TYPE_OTHER') {
     formData.value.inSourceNumber = null;
@@ -516,12 +516,12 @@ const handleWarehouseChange = (row, type) => {
 };
 
 // 入库明细
-const getOutboundDetail = async id => {
+const getOutboundDetail = async (id) => {
   if (id) {
     const params = {
       id: id,
     };
-    const res = await Api.wms.warehousingEntry.outboundDetail(params);
+    const res = await Api.application.warehousingEntry.outboundDetail(params);
     const { code, data } = res.data;
     if (code === 200) {
       formData.value.detailList = data.detailList;
@@ -530,11 +530,11 @@ const getOutboundDetail = async id => {
 };
 
 // 获取来源单号下拉列表
-const getInStockNumberList = async query => {
+const getInStockNumberList = async (query) => {
   const params = {
     code: query || null,
   };
-  const res = await Api.wms.warehousingEntry.inStockNumberList(params);
+  const res = await Api.application.warehousingEntry.inStockNumberList(params);
   const { code, data } = res.data;
   if (code === 200) {
     inStockNumberList.value = data;
@@ -542,7 +542,7 @@ const getInStockNumberList = async query => {
 };
 
 // 搜索来源单号监听事件
-const remoteMethod = query => {
+const remoteMethod = (query) => {
   if (query.length > 3) {
     loading.value = true;
     setTimeout(() => {
@@ -554,7 +554,7 @@ const remoteMethod = query => {
   }
 };
 
-const uploadFile = async fileObj => {
+const uploadFile = async (fileObj) => {
   const form = new FormData();
   form.append('file', fileObj.file); // fileObj.file 是上传的文件
   const param =

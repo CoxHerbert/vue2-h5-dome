@@ -69,10 +69,10 @@ const dictData = ref([]);
 // 数据字典
 const { DC_WMS_OUT_STATUS } = proxy.useCache([{ key: 'DC_WMS_OUT_STATUS' }]);
 
-const dictOutStockStatus = value => {
+const dictOutStockStatus = (value) => {
   let dcWmsOutStatus = DC_WMS_OUT_STATUS.value;
   if (value === 'DC_WMS_OUT_TYPE_BORROW') {
-    dictData.value = dcWmsOutStatus.filter(item => item.dictKey !== 'DC_WMS_OUT_STATUS_C');
+    dictData.value = dcWmsOutStatus.filter((item) => item.dictKey !== 'DC_WMS_OUT_STATUS_C');
     console.log(dictData.value);
   } else {
     dictData.value = dcWmsOutStatus.slice(0, 4);
@@ -132,7 +132,7 @@ onMounted(() => {
   }
 });
 
-const getCalss = index => {
+const getCalss = (index) => {
   if (step.value === index) return 'step-item-process';
   if (step.value < index) return 'step-item-wait';
   if (step.value > index) return 'step-item-finish';
@@ -140,7 +140,7 @@ const getCalss = index => {
 const getDetail = async () => {
   try {
     loading.value = true;
-    const res = await Api.wms.outboundOrder.detail({ id: pageId.value });
+    const res = await Api.application.outboundOrder.detail({ id: pageId.value });
     const { code, msg, data } = res.data;
     if (code === 200) {
       info.value = data;
@@ -157,7 +157,7 @@ const getDetail = async () => {
 };
 
 // 处理出库类型变化
-const handleOutStockTypeChange = newOutStockType => {
+const handleOutStockTypeChange = (newOutStockType) => {
   if (route.params.id === 'create') {
     info.value.outStockType = newOutStockType;
     console.log('出库类型已变更:', newOutStockType);

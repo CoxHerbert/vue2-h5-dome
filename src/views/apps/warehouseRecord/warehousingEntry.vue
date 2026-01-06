@@ -25,7 +25,7 @@
         :data="tableData"
         row-key="id"
         @row-dblclick="
-          row => {
+          (row) => {
             doAction('row-dblclick', row);
           }
         "
@@ -150,9 +150,9 @@ export default {
     /** 获取列表数据 **/
     getData() {
       this.loading = true;
-      Api.wms.warehousingEntry
+      Api.application.warehousingEntry
         .list(this.queryParams)
-        .then(res => {
+        .then((res) => {
           const { code, data } = res.data;
           if (code === 200) {
             this.tableData = data.records;
@@ -162,7 +162,7 @@ export default {
           }
           this.loading = false;
         })
-        .catch(err => {
+        .catch((err) => {
           this.loading = false;
           console.error(err);
         });
@@ -184,7 +184,7 @@ export default {
           this.$message.error('请先勾选要删除的数据');
           return;
         }
-        this.deleteData(this.batchSelectRows.map(row => row.id));
+        this.deleteData(this.batchSelectRows.map((row) => row.id));
       } else if (action === 'delete') {
         this.deleteData([scope.row.id]);
       }
@@ -194,7 +194,7 @@ export default {
       this.handleDeleteCommon(
         ids,
         `确定要删除数据id为[${ids.join(',')}]的数据项？`,
-        Api.wms.warehousingEntry.remove
+        Api.application.warehousingEntry.remove
       );
     },
   },

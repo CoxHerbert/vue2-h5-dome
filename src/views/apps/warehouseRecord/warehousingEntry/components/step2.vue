@@ -1,8 +1,8 @@
 <template>
-  <div class="wrap-left-form" v-loading="loading">
+  <div v-loading="loading" class="wrap-left-form">
     <el-form
-      class="custom-form"
       ref="ruleFormRef"
+      class="custom-form"
       :model="formData"
       :rules="rules"
       label-width="120px"
@@ -16,8 +16,8 @@
             v-model="formData.inType"
             clearable
             placeholder="请选择入库类型"
-            @change="hangleInTypeChange"
             disabled
+            @change="hangleInTypeChange"
           >
             <el-option
               v-for="item in DC_WMS_IN_TYPE_WMS"
@@ -31,7 +31,7 @@
           <dc-select-dialog
             v-model="formData.warehouseId"
             placeholder="请点击选择仓库"
-            objectName="warehouse"
+            object-name="warehouse"
             type="input"
             :multiple="false"
             :multiple-limit="1"
@@ -40,14 +40,14 @@
           />
         </el-form-item>
         <el-form-item
-          class="form-itme-width_50"
           v-if="formData.inType === 'DC_WMS_IN_TYPE_RETURN'"
+          class="form-itme-width_50"
           label="来源单号"
           prop="inSourceNumber"
         >
           <dc-select-dialog
             v-model="formData.inSourceNumber"
-            objectName="outboundOrder"
+            object-name="outboundOrder"
             type="input"
             :multiple="false"
             disabled="show"
@@ -56,11 +56,11 @@
             :params="{
               outStockStatus: 'DC_WMS_OUT_STATUS_BORROW',
             }"
-            @change="row => handleWarehouseChange(row, 'outboundOrder')"
+            @change="(row) => handleWarehouseChange(row, 'outboundOrder')"
           />
         </el-form-item>
 
-        <el-form-item class="form-itme-width_50" v-else label="来源单号" prop="inSourceNumber">
+        <el-form-item v-else class="form-itme-width_50" label="来源单号" prop="inSourceNumber">
           <el-input
             v-model="formData.inSourceNumber"
             placeholder="请输入来源单号点击查询"
@@ -68,7 +68,7 @@
             disabled
           >
             <template #append>
-              <el-button :icon="Search" @click="handleSerch" disabled />
+              <el-button :icon="Search" disabled @click="handleSerch" />
             </template>
           </el-input>
         </el-form-item>
@@ -76,7 +76,7 @@
           <dc-select-user
             v-model="formData.applicantId"
             placeholder="请选择"
-            :multipleLimit="1"
+            :multiple-limit="1"
             disabled
           />
         </el-form-item>
@@ -84,14 +84,14 @@
           <dc-select-user
             v-model="formData.processingPersonnel"
             placeholder="请选择"
-            :multipleLimit="1"
+            :multiple-limit="1"
             disabled
           />
         </el-form-item>
       </div>
       <div class="form-group-title">入库明细</div>
       <el-form-item class="form-itme-width_100 tabel-border">
-        <el-button class="mb-5" type="primary" @click="addRow" v-if="btnOpen">新增</el-button>
+        <el-button v-if="btnOpen" class="mb-5" type="primary" @click="addRow">新增</el-button>
         <el-table :data="formData.detailList" :height="300">
           <el-table-column type="index" label="序号" align="center" width="60" />
           <el-table-column prop="productCode" label="物料编号" align="center" min-width="150" />
@@ -109,8 +109,8 @@
             <template #default="scoped">
               <dc-view
                 v-model="scoped.row.locationId"
-                objectName="warehouseLocation"
-                showKey="locationName"
+                object-name="warehouseLocation"
+                show-key="locationName"
               />
             </template>
           </el-table-column>
@@ -176,7 +176,7 @@
         <dc-select-dialog
           v-model="formDataTable.locationId"
           placeholder="请点击仓位编号"
-          objectName="warehouseLocation"
+          object-name="warehouseLocation"
           type="input"
           :multiple="false"
           :multiple-limit="1"
@@ -235,11 +235,11 @@ onMounted(() => {
 
 // 审核
 const submitAudit = () => {
-  proxy.$refs.ruleFormRef.validate(async valid => {
+  proxy.$refs.ruleFormRef.validate(async (valid) => {
     if (valid) {
       loading.value = true;
       try {
-        const res = await Api.wms.warehousingEntry.submitAudit({
+        const res = await Api.application.warehousingEntry.submitAudit({
           ...formData.value,
         });
         const { code, msg } = res.data;
@@ -272,7 +272,7 @@ const submitReject = async () => {
       reject: rejectValue.value,
     };
     try {
-      const res = await Api.wms.warehousingEntry.reject(form);
+      const res = await Api.application.warehousingEntry.reject(form);
       const { code, msg } = res.data;
 
       if (code === 200) {
@@ -304,8 +304,8 @@ const cancelSubmit = () => {
 };
 
 // 表格编辑
-const handleUpdate = row => {
-  editIndex.value = formData.value.detailList.findIndex(item => item === row);
+const handleUpdate = (row) => {
+  editIndex.value = formData.value.detailList.findIndex((item) => item === row);
   if (editIndex.value !== -1) {
     open.value = true;
     formDataTable.value = { ...row }; // 创建一个新对象，避免直接修改引用

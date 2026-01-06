@@ -129,7 +129,7 @@ onMounted(() => {
 // 监听出库类型变化
 watch(
   () => formData.value.outStockType,
-  newVal => {
+  (newVal) => {
     if (newVal) {
       emit('out-stock-type-change', newVal);
     }
@@ -137,9 +137,9 @@ watch(
 );
 // 审核
 const submitAudit = () => {
-  proxy.$refs.ruleFormRef.validate(async valid => {
+  proxy.$refs.ruleFormRef.validate(async (valid) => {
     if (valid) {
-      const res = await Api.wms.outboundOrder.submitAudit({
+      const res = await Api.application.outboundOrder.submitAudit({
         ...formData.value,
       });
       const { code, msg } = res.data;
@@ -168,7 +168,7 @@ const submitReject = async () => {
       reject: rejectValue.value,
     };
     try {
-      const res = await Api.wms.outboundOrder.reject(form);
+      const res = await Api.application.outboundOrder.reject(form);
       const { code, msg } = res.data;
 
       if (code === 200) {

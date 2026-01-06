@@ -1,4 +1,4 @@
-import request from '@/axios';
+import request from '@/utils/http';
 
 export default {
   // 入库列表

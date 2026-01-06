@@ -3,9 +3,9 @@
     <div class="search">
       <div class="search-left">
         <el-form
+          ref="queryRef"
           class="search-container"
           :model="queryParams"
-          ref="queryRef"
           :inline="true"
           @keyup.enter="handleQuery"
         >
@@ -50,7 +50,7 @@
             <wf-select-dialog
               v-model="queryParams.warehouseId"
               placeholder="请点击选择仓库"
-              objectName="warehouse"
+              object-name="warehouse"
               :clearable="true"
             />
           </el-form-item>
@@ -63,15 +63,15 @@
     </div>
     <div class="action-banner">
       <el-button
+        v-permission="{ id: 'DC_OUTBOUNDORDER_ADD' }"
         type="primary"
         icon="Plus"
-        v-permission="{ id: 'DC_OUTBOUNDORDER_ADD' }"
         @click="handleSubmit"
         >新增</el-button
       >
     </div>
     <div class="table-container">
-      <el-table v-loading="loading" @row-dblclick="handleRowDbClick" :data="dataList">
+      <el-table v-loading="loading" :data="dataList" @row-dblclick="handleRowDbClick">
         <!-- <el-table-column type="selection" width="55" /> -->
         <el-table-column label="序号" width="60" type="index" align="center">
           <template #default="scoped">
@@ -99,7 +99,7 @@
             >
               <template #default>
                 <div class="qr-code-box">
-                  <QrcodeVue :value="scoped.row.outStockCode"></QrcodeVue>
+                  <QrcodeVue :value="scoped.row.outStockCode" />
                 </div>
               </template>
               <template #reference>
@@ -111,12 +111,12 @@
         </el-table-column>
         <el-table-column label="申请人" prop="applicantId" align="center">
           <template #default="scoped">
-            <dc-view v-model="scoped.row.applicantId" objectName="user" />
+            <dc-view v-model="scoped.row.applicantId" object-name="user" />
           </template>
         </el-table-column>
         <el-table-column label="处理人" prop="processingPersonnel" align="center">
           <template #default="scoped">
-            <dc-view v-model="scoped.row.processingPersonnel" objectName="user" />
+            <dc-view v-model="scoped.row.processingPersonnel" object-name="user" />
           </template>
         </el-table-column>
         <el-table-column label="登记时间" prop="createTime" align="center" />
@@ -131,18 +131,18 @@
         <el-table-column width="150" fixed="right" label="操作" align="center">
           <template #default="scoped">
             <el-button
+              v-permission="{ id: 'DC_OUTBOUNDORDER_EDIT', row: scoped.row }"
               link
               type="primary"
               icon="Edit"
-              v-permission="{ id: 'DC_OUTBOUNDORDER_EDIT', row: scoped.row }"
               @click.stop="handleSubmit(scoped.row)"
               >编辑</el-button
             >
             <el-button
+              v-permission="{ id: 'DC_OUTBOUNDORDER_DEL', row: scoped.row }"
               link
               type="primary"
               icon="Delete"
-              v-permission="{ id: 'DC_OUTBOUNDORDER_DEL', row: scoped.row }"
               @click.stop="handleDelete(scoped.row)"
               >删除</el-button
             >
@@ -152,9 +152,9 @@
     </div>
     <dc-pagination
       v-show="total > 0"
-      :total="total"
       v-model:page="queryParams.current"
       v-model:limit="queryParams.size"
+      :total="total"
       @pagination="getData"
     />
   </div>
@@ -192,7 +192,7 @@ onMounted(() => {
 const getData = async () => {
   try {
     loading.value = true;
-    const res = await Api.wms.outboundOrder.list(queryParams.value);
+    const res = await Api.application.outboundOrder.list(queryParams.value);
     const { code, data } = res.data;
     if (code === 200) {
       dataList.value = data.records;
@@ -206,7 +206,7 @@ const getData = async () => {
 };
 
 // 处理新增或编辑逻辑
-const handleSubmit = row => {
+const handleSubmit = (row) => {
   router.push({
     name: '出库提交',
     params: { id: 'create' },
@@ -220,7 +220,7 @@ const handleSubmit = row => {
 };
 
 // 处理删除
-const handleDelete = row => {
+const handleDelete = (row) => {
   const ids = row.id;
   proxy
     .$confirm(`确定将“[${ids}]”数据删除?`, {
@@ -228,7 +228,7 @@ const handleDelete = row => {
       cancelButtonText: '取消',
       type: 'warning',
     })
-    .then(() => Api.wms.outboundOrder.remove({ ids }))
+    .then(() => Api.application.outboundOrder.remove({ ids }))
     .then(() => {
       proxy.$message({
         type: 'success',
@@ -236,10 +236,10 @@ const handleDelete = row => {
       });
       getData();
     })
-    .catch(err => {});
+    .catch((err) => {});
 };
 
-const handleRowDbClick = row => {
+const handleRowDbClick = (row) => {
   handleSubmit(row);
 };
 
