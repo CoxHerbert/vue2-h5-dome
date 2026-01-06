@@ -197,11 +197,11 @@
 </template>
 
 <script setup name="customerSubmit">
-import { reactive, toRefs, getCurrentInstance, onMounted, watch } from 'vue';
+import { h, reactive, ref, toRefs, getCurrentInstance, onMounted, watch } from 'vue';
 import Api from '@/api';
 import { useRouter, useRoute } from 'vue-router';
 import { Search } from '@element-plus/icons-vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { Field, showConfirmDialog, showToast } from 'vant';
 const { proxy } = getCurrentInstance();
 const router = useRouter();
 const route = useRoute();
@@ -229,6 +229,7 @@ const pageData = reactive({
 });
 
 const { loading, rules, formData, open, title, editIndex, formDataTable, show } = toRefs(pageData);
+const rejectReason = ref('');
 onMounted(() => {
   formData.value = props.info;
 });
@@ -244,7 +245,7 @@ const submitAudit = () => {
         });
         const { code, msg } = res.data;
         if (code === 200) {
-          proxy.$message({ type: 'success', message: '审核成功' });
+          showToast({ type: 'success', message: '审核成功' });
           loading.value = false;
           router.push({
             path: '/wms/warehouseRecord/warehousingEntry',
@@ -258,25 +259,47 @@ const submitAudit = () => {
   });
 };
 
+const promptRejectReason = async () => {
+  rejectReason.value = '';
+  await showConfirmDialog({
+    title: '驳回原因',
+    message: () =>
+      h(Field, {
+        modelValue: rejectReason.value,
+        'onUpdate:modelValue': (value) => {
+          rejectReason.value = value;
+        },
+        placeholder: '请输入驳回原因',
+        type: 'textarea',
+        autosize: true,
+      }),
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+  });
+
+  if (!rejectReason.value) {
+    showToast({ type: 'fail', message: '请输入驳回原因' });
+    throw new Error('reject reason required');
+  }
+
+  return rejectReason.value;
+};
+
 // 驳回
 const submitReject = async () => {
   try {
-    const rejectValue = await ElMessageBox.prompt('请输入驳回原因', '驳回原因', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-    });
-
+    const reason = await promptRejectReason();
     loading.value = true;
     const form = {
       ...formData.value,
-      reject: rejectValue.value,
+      reject: reason,
     };
     try {
       const res = await Api.application.warehousingEntry.reject(form);
       const { code, msg } = res.data;
 
       if (code === 200) {
-        proxy.$message.success(msg);
+        showToast({ type: 'success', message: msg });
         router.push({
           path: '/wms/warehouseRecord/warehousingEntry',
           params: {},
@@ -287,12 +310,11 @@ const submitReject = async () => {
     } finally {
       loading.value = false;
     }
-  } catch {
-    // 用户点击“取消”
-    ElMessage({
-      type: 'info',
-      message: '取消驳回',
-    });
+  } catch (error) {
+    if (error?.message === 'reject reason required') {
+      return;
+    }
+    showToast('取消驳回');
   }
 };
 // 取消

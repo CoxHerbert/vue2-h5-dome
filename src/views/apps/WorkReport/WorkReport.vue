@@ -88,9 +88,9 @@ const resetData = () => {
 };
 
 // 接口
-const fetchPlanId = async () => {
+const fetchPlanId = async (sn) => {
   const { code, data, message } = await Api.application.workReport.plan.getPlanId({
-    sn: snCode.value.trim(),
+    sn,
   });
   if (code === 200) {
     return data;
@@ -133,16 +133,18 @@ const fetchPlanDetail = async (planId) => {
 };
 
 // 事件
-const handleSearch = async () => {
-  if (!snCode.value.trim()) {
+const handleSearch = async (value) => {
+  const normalized = (value ?? snCode.value).toString().trim();
+  if (!normalized) {
     showFailToast('请输入需要查询的SN码');
     return;
   }
+  snCode.value = normalized;
   activeTab.value = 'detail';
   resetData();
   const toast = showLoadingToast({ message: '加载中…', duration: 0, forbidClick: true });
   try {
-    const planId = await fetchPlanId();
+    const planId = await fetchPlanId(normalized);
     if (!planId) {
       showFailToast('未找到相关专案');
       return;

@@ -1,206 +1,314 @@
 <template>
-  <div class="list-page warehousing-entry-list-page">
-    <div class="header">
-      <dc-search
-        v-model="queryParams"
-        v-bind="searchConfig"
-        @reset="handleReset"
-        @search="handleSearch"
-      />
-    </div>
-    <div class="action-banner">
-      <el-button
-        type="primary"
-        icon="Plus"
-        v-permission="{ id: 'DC_WAREHOUSING_ENTRY_ADD' }"
-        @click="doAction('add')"
-        >新增</el-button
-      >
-    </div>
-
-    <div class="table-container">
-      <el-table
-        ref="tableRef"
-        v-loading="loading"
-        :data="tableData"
-        row-key="id"
-        @row-dblclick="
-          (row) => {
-            doAction('row-dblclick', row);
-          }
-        "
-        @select="handleSelect"
-        @select-all="handleSelectAll"
-        @selection-change="handleSelectionChange"
-      >
-        <template v-for="(col, i) in columns">
-          <!-- 多选 -->
-          <el-table-column
-            v-if="col.type === 'selection'"
-            :key="i"
-            type="selection"
-            :align="col.align"
-            :width="col.width"
-          />
-          <!-- 序号类型 -->
-          <el-table-column
-            v-else-if="col.type === 'index'"
-            :key="'index' + i"
-            label="序号"
-            :align="col.align"
-            :width="col.width"
-          >
-            <template #default="{ $index }">
-              {{ $index + 1 }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            v-else-if="col.type === 'actions'"
-            :key="'option' + i"
-            :fixed="col.fixed"
-            :label="col.label"
-            :width="col.width ? col.width : 180"
-            :min-width="col.minWidth"
-            :align="col.align ? col.align : 'center'"
-          >
-            <template #default="scoped">
-              <el-button
-                v-for="(btn, j) in col.children"
-                :key="j"
-                link
-                v-show="!btn.showFunc || (btn.showFunc && btn.showFunc(scoped))"
-                type="primary"
-                v-permission="col?.permission && col.permission(scoped)"
-                @click="doAction(btn.action, scoped)"
-                >{{ btn.label }}</el-button
-              >
-            </template>
-          </el-table-column>
-          <el-table-column
-            v-else
-            :key="col.type + i"
-            :label="col.label"
-            :width="col.width"
-            :min-width="col.minWidth"
-            :prop="col.prop"
-            :align="col.align ? col.align : 'center'"
-            show-overflow-tooltip
-          >
-            <template #default="scoped">
-              <dc-field-view
-                :value="col?.transVal ? col?.transVal(scoped, treeData) : scoped.row[col.prop]"
-                :data="col"
-                :dictMaps="dictMaps"
-              />
-            </template>
-          </el-table-column>
-        </template>
-      </el-table>
-    </div>
+  <div class="page warehousing-entry-list">
     <dc-pagination
-      v-show="total > 0"
-      :total="total"
-      v-model:page="queryParams.current"
-      v-model:limit="queryParams.size"
-      @pagination="getData"
-    />
+      ref="listRef"
+      v-model:keyword="keyword"
+      v-model:active-status="activeStatus"
+      v-model:query="queryParams"
+      :status-options="statusOptions"
+      search-placeholder="请输入入库单号"
+      :page-size="8"
+      :offset="200"
+      :fetcher="fetcher"
+      :get-nav-el="resolveNavEl"
+      @add="handleAdd"
+    >
+      <template #nav>
+        <van-nav-bar ref="navRef" title="装配工具借用" fixed left-arrow @click-left="goBack" />
+      </template>
+
+      <template #filters="{ apply }">
+        <van-cell-group inset class="filter-card">
+          <dc-selector
+            v-model="queryParams.inType"
+            label="入库类型"
+            :options="inTypeOptions"
+            placeholder="请选择入库类型"
+          />
+          <dc-select-dialog
+            v-model="selectedWarehouse"
+            label="仓库"
+            object-name="warehouse"
+            :multiple="false"
+            return-type="object"
+            placeholder="请选择仓库"
+          />
+          <van-button type="primary" block size="small" class="filter-card__action" @click="apply"
+            >筛选</van-button
+          >
+        </van-cell-group>
+      </template>
+
+      <template #item="{ item }">
+        <div class="card" @click="handleEdit(item)">
+          <div class="card__header">
+            <div class="title">入库单号：{{ item.inStockCode ?? '—' }}</div>
+            <van-tag plain round class="status-tag">
+              {{ resolveStatusLabel(item.inStockStatus) }}
+            </van-tag>
+          </div>
+
+          <div class="card__meta">
+            <div class="row">
+              <span class="label">入库类型</span>
+              <span class="value">{{ resolveInTypeLabel(item.inType) }}</span>
+            </div>
+            <div class="row">
+              <span class="label">仓库</span>
+              <span class="value">
+                <dc-view :value="item.warehouseId" object-name="warehouse" />
+              </span>
+            </div>
+            <div class="row">
+              <span class="label">申请人</span>
+              <span class="value">
+                <dc-view :value="item.applicantId" object-name="user" />
+              </span>
+            </div>
+            <div class="row">
+              <span class="label">处理人</span>
+              <span class="value">
+                <dc-view :value="item.processingPersonnel" object-name="user" />
+              </span>
+            </div>
+            <div class="row">
+              <span class="label">登记时间</span>
+              <span class="value">{{ item.createTime ?? '-' }}</span>
+            </div>
+            <div class="row">
+              <span class="label">备注</span>
+              <span class="value">{{ item.remark ?? '-' }}</span>
+            </div>
+          </div>
+
+          <div class="card__footer">
+            <van-button
+              v-permission="{ id: 'DC_WAREHOUSING_ENTRY_EDIT', row: item }"
+              size="small"
+              type="primary"
+              plain
+              @click.stop="handleEdit(item)"
+              >编辑</van-button
+            >
+            <van-button
+              v-permission="{ id: 'DC_WAREHOUSING_ENTRY_DEL', row: item }"
+              size="small"
+              type="danger"
+              plain
+              @click.stop="handleDelete(item)"
+              >删除</van-button
+            >
+          </div>
+        </div>
+      </template>
+
+      <template #empty>
+        <van-empty description="暂无入库记录">
+          <van-button type="primary" round size="small" @click="handleAdd">新增记录</van-button>
+        </van-empty>
+      </template>
+
+      <template #fab>
+        <button
+          v-permission="{ id: 'DC_WAREHOUSING_ENTRY_ADD' }"
+          class="dc-fab-add"
+          aria-label="新增"
+          @click="handleAdd"
+        >
+          <van-icon name="plus" size="18" />
+        </button>
+      </template>
+    </dc-pagination>
   </div>
 </template>
-<script>
-import { mapGetters } from 'vuex';
-import options from './warehousingEntry.js';
-import Api from '@/api/index';
-import listPage from '@/mixins/list-page';
 
-export default {
-  mixins: [listPage],
-  name: 'warehousing-entry-list',
-  data() {
-    return {
-      mode: 'customize',
-      loading: false,
-      queryParams: {
-        current: 1,
-        size: 10,
-        processDefinitionName: '',
-        processDefinitionKey: '',
-        serialNumber: '',
-        category: '',
-        startUsername: '',
-        taskType: '待办',
-      },
-      tableData: [],
-      total: 0,
-      bpmnVisible: false,
-      bpmnOption: {},
-    };
+<script setup>
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { showConfirmDialog, showToast } from 'vant';
+import Api from '@/api';
+import { goBackOrHome } from '@/utils/navigation';
+import { useDictStore } from '@/store/dict';
+
+const router = useRouter();
+const dictStore = useDictStore();
+
+const navRef = ref(null);
+const listRef = ref(null);
+
+const keyword = ref('');
+const activeStatus = ref(null);
+const queryParams = ref({
+  inType: null,
+  warehouseId: null,
+});
+const selectedWarehouse = ref(null);
+
+const inTypeDict = ref([]);
+const inStatusDict = ref([]);
+
+const inTypeOptions = computed(() =>
+  (inTypeDict.value || []).map((item) => ({
+    label: item.dictValue,
+    text: item.dictValue,
+    value: item.dictKey,
+    raw: item,
+  }))
+);
+
+const statusOptions = computed(() => {
+  const list = inStatusDict.value || [];
+  return [{ label: '全部', value: null }, ...list.map((item) => ({
+    label: item.dictValue,
+    value: item.dictKey,
+  }))];
+});
+
+const resolveNavEl = () => {
+  const target = navRef.value;
+  if (!target) return null;
+  if (target instanceof HTMLElement) return target;
+  if (target.$el instanceof HTMLElement) return target.$el;
+  if (target.$?.subTree?.el instanceof HTMLElement) return target.$?.subTree?.el;
+  return null;
+};
+
+const resolveDictLabel = (list = [], value) => {
+  const hit = list.find((item) => item.dictKey === value);
+  return hit?.dictValue ?? value ?? '—';
+};
+
+const resolveInTypeLabel = (value) => resolveDictLabel(inTypeDict.value || [], value);
+const resolveStatusLabel = (value) => resolveDictLabel(inStatusDict.value || [], value);
+
+const loadDicts = async () => {
+  inTypeDict.value = (await dictStore.get('DC_WMS_IN_TYPE_WMS')) || [];
+  inStatusDict.value = (await dictStore.get('DC_WMS_IN_STATUS')) || [];
+};
+
+onMounted(() => {
+  loadDicts();
+});
+
+watch(
+  selectedWarehouse,
+  (val) => {
+    const row = val && typeof val === 'object' ? val : null;
+    queryParams.value.warehouseId = row?.id ?? row?.warehouseId ?? null;
   },
-  computed: {
-    ...mapGetters(['permission']),
-  },
-  created() {
-    this.columns = options().columns;
-    this.handleDictKeys();
-    this.getDictData().then(() => {
-      this.initSearchConfig();
-      this.getData();
+  { immediate: true }
+);
+
+async function fetcher({ pageNo, pageSize, keyword, status, inType, warehouseId }) {
+  const params = {
+    current: pageNo,
+    size: pageSize,
+  };
+  const trimmedKeyword = (keyword ?? '').toString().trim();
+  if (trimmedKeyword) params.inStockCode = trimmedKeyword;
+  if (status) params.inStockStatus = status;
+  if (inType) params.inType = inType;
+  if (warehouseId) params.warehouseId = warehouseId;
+
+  const res = await Api.application.warehousingEntry.list(params);
+  const { code, data, msg } = res?.data || {};
+  if (code !== 200 || !data) throw new Error(msg || '加载失败');
+  return data;
+}
+
+const handleAdd = () => {
+  router.push({ name: '入库提交', params: { id: 'create' } });
+};
+
+const handleEdit = (row) => {
+  router.push({ name: '入库提交', params: { id: row.id } });
+};
+
+const handleDelete = async (row) => {
+  try {
+    await showConfirmDialog({
+      title: '确认删除',
+      message: `确定删除单据“${row.inStockCode || row.id}”吗？`,
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
     });
-  },
-  methods: {
-    /** 获取列表数据 **/
-    getData() {
-      this.loading = true;
-      Api.application.warehousingEntry
-        .list(this.queryParams)
-        .then((res) => {
-          const { code, data } = res.data;
-          if (code === 200) {
-            this.tableData = data.records;
-            this.total = data.total;
-            this.queryParams.current = data.current;
-            this.queryParams.size = data.size;
-          }
-          this.loading = false;
-        })
-        .catch((err) => {
-          this.loading = false;
-          console.error(err);
-        });
-    },
-    doAction(action, scope = {}) {
-      const { row } = scope;
-      if (action === 'edit') {
-        this.$router.push({
-          name: '入库提交',
-          params: { id: row.id },
-        });
-      } else if (action === 'add') {
-        this.$router.push({
-          name: '入库提交',
-          params: { id: 'create' },
-        });
-      } else if (action === 'batchDelete') {
-        if (this.batchSelectRows.length < 1) {
-          this.$message.error('请先勾选要删除的数据');
-          return;
-        }
-        this.deleteData(this.batchSelectRows.map((row) => row.id));
-      } else if (action === 'delete') {
-        this.deleteData([scope.row.id]);
-      }
-    },
-    /** 处理删除 **/
-    deleteData(ids) {
-      this.handleDeleteCommon(
-        ids,
-        `确定要删除数据id为[${ids.join(',')}]的数据项？`,
-        Api.application.warehousingEntry.remove
-      );
-    },
-  },
+    await Api.application.warehousingEntry.remove({ ids: row.id });
+    showToast({ type: 'success', message: '删除成功' });
+    listRef.value?.resetAndLoad?.();
+  } catch (error) {
+    if (error && error !== 'cancel') {
+      showToast({ type: 'fail', message: '删除失败' });
+    }
+  }
+};
+
+const goBack = () => {
+  goBackOrHome(router);
 };
 </script>
+
 <style lang="scss" scoped>
-.warehousing-entry-list-page {
+.warehousing-entry-list {
+  min-height: 100vh;
+  background: #f7f8fa;
+}
+
+.filter-card {
+  margin: 12px 12px 8px;
+
+  &__action {
+    margin: 12px 0 4px;
+  }
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+}
+
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.card__header .title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #323233;
+}
+
+.status-tag {
+  background: rgba(25, 137, 250, 0.12);
+  color: #1989fa;
+  border-color: transparent;
+}
+
+.card__meta {
+  margin-top: 6px;
+  color: #666;
+  font-size: 13px;
+  display: grid;
+  gap: 6px;
+}
+
+.card__meta .row {
+  display: flex;
+  gap: 8px;
+}
+
+.card__meta .label {
+  color: #888;
+  min-width: 56px;
+}
+
+.card__footer {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
 }
 </style>
