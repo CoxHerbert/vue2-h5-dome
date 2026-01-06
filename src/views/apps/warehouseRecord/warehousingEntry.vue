@@ -123,14 +123,15 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import Api from '@/api';
 import { goBackOrHome } from '@/utils/navigation';
+import { useDictStore } from '@/store/dict';
 
-const { proxy } = getCurrentInstance();
 const router = useRouter();
+const dictStore = useDictStore();
 
 const navRef = ref(null);
 const listRef = ref(null);
@@ -143,13 +144,11 @@ const queryParams = ref({
 });
 const selectedWarehouse = ref(null);
 
-const { DC_WMS_IN_TYPE_WMS, DC_WMS_IN_STATUS } = proxy.useCache([
-  { key: 'DC_WMS_IN_TYPE_WMS' },
-  { key: 'DC_WMS_IN_STATUS' },
-]);
+const inTypeDict = ref([]);
+const inStatusDict = ref([]);
 
 const inTypeOptions = computed(() =>
-  (DC_WMS_IN_TYPE_WMS.value || []).map((item) => ({
+  (inTypeDict.value || []).map((item) => ({
     label: item.dictValue,
     text: item.dictValue,
     value: item.dictKey,
@@ -158,7 +157,7 @@ const inTypeOptions = computed(() =>
 );
 
 const statusOptions = computed(() => {
-  const list = DC_WMS_IN_STATUS.value || [];
+  const list = inStatusDict.value || [];
   return [{ label: '全部', value: null }, ...list.map((item) => ({
     label: item.dictValue,
     value: item.dictKey,
@@ -179,8 +178,17 @@ const resolveDictLabel = (list = [], value) => {
   return hit?.dictValue ?? value ?? '—';
 };
 
-const resolveInTypeLabel = (value) => resolveDictLabel(DC_WMS_IN_TYPE_WMS.value || [], value);
-const resolveStatusLabel = (value) => resolveDictLabel(DC_WMS_IN_STATUS.value || [], value);
+const resolveInTypeLabel = (value) => resolveDictLabel(inTypeDict.value || [], value);
+const resolveStatusLabel = (value) => resolveDictLabel(inStatusDict.value || [], value);
+
+const loadDicts = async () => {
+  inTypeDict.value = (await dictStore.get('DC_WMS_IN_TYPE_WMS')) || [];
+  inStatusDict.value = (await dictStore.get('DC_WMS_IN_STATUS')) || [];
+};
+
+onMounted(() => {
+  loadDicts();
+});
 
 watch(
   selectedWarehouse,

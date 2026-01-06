@@ -119,14 +119,15 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import Api from '@/api';
 import { goBackOrHome } from '@/utils/navigation';
+import { useDictStore } from '@/store/dict';
 
-const { proxy } = getCurrentInstance();
 const router = useRouter();
+const dictStore = useDictStore();
 
 const navRef = ref(null);
 const listRef = ref(null);
@@ -139,13 +140,11 @@ const queryParams = ref({
 });
 const selectedWarehouse = ref(null);
 
-const { DC_WMS_OUT_TYPE_WMS, DC_WMS_OUT_STATUS } = proxy.useCache([
-  { key: 'DC_WMS_OUT_TYPE_WMS' },
-  { key: 'DC_WMS_OUT_STATUS' },
-]);
+const outTypeDict = ref([]);
+const outStatusDict = ref([]);
 
 const outTypeOptions = computed(() =>
-  (DC_WMS_OUT_TYPE_WMS.value || []).map((item) => ({
+  (outTypeDict.value || []).map((item) => ({
     label: item.dictValue,
     text: item.dictValue,
     value: item.dictKey,
@@ -154,7 +153,7 @@ const outTypeOptions = computed(() =>
 );
 
 const statusOptions = computed(() => {
-  const list = DC_WMS_OUT_STATUS.value || [];
+  const list = outStatusDict.value || [];
   return [{ label: '全部', value: null }, ...list.map((item) => ({
     label: item.dictValue,
     value: item.dictKey,
@@ -176,8 +175,17 @@ const resolveDictLabel = (list = [], value) => {
 };
 
 const resolveOutTypeLabel = (value) =>
-  resolveDictLabel(DC_WMS_OUT_TYPE_WMS.value || [], value);
-const resolveStatusLabel = (value) => resolveDictLabel(DC_WMS_OUT_STATUS.value || [], value);
+  resolveDictLabel(outTypeDict.value || [], value);
+const resolveStatusLabel = (value) => resolveDictLabel(outStatusDict.value || [], value);
+
+const loadDicts = async () => {
+  outTypeDict.value = (await dictStore.get('DC_WMS_OUT_TYPE_WMS')) || [];
+  outStatusDict.value = (await dictStore.get('DC_WMS_OUT_STATUS')) || [];
+};
+
+onMounted(() => {
+  loadDicts();
+});
 
 watch(
   selectedWarehouse,
