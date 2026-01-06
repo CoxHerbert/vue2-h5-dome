@@ -214,11 +214,11 @@ async function fetcher({ pageNo, pageSize, keyword, status, outStockType, wareho
 }
 
 const handleAdd = () => {
-  router.push({ name: '出库提交', params: { id: 'create' } });
+  router.push({ name: 'appsWarehouseRecordOutboundSubmit', params: { id: 'create' } });
 };
 
 const handleEdit = (row) => {
-  router.push({ name: '出库提交', params: { id: row.id } });
+  router.push({ name: 'appsWarehouseRecordOutboundSubmit', params: { id: row.id } });
 };
 
 const handleDelete = async (row) => {
