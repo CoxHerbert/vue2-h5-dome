@@ -7,15 +7,20 @@
     <!-- 内容（搜索不吸顶） -->
     <div class="nameplate-binding__content">
       <!-- 搜索框 -->
-      <div class="search-bar">
-        <DcSearchBar
-          v-model="snCode"
-          placeholder="请输入 SN 码 或 铭牌码"
-          button-text="搜索"
-          @search="handleSearch"
-        />
-      </div>
-
+      <!-- <div class="search-bar">
+    
+      </div> -->
+      <dc-scan-code v-model="snCode" @confirm="handleScanConfirm" @error="handleScanError">
+        <template #default="{ open, disabled }">
+          <van-floating-bubble
+            axis="xy"
+            icon="scan"
+            magnetic="x"
+            :class="[{ 'is-disabled': disabled }]"
+            @click="handleScanBubbleClick(open, disabled)"
+          />
+        </template>
+      </dc-scan-code>
       <!-- 铭牌信息卡 / 空态 -->
       <div v-if="hasProduct" class="nameplate-card">
         <div class="nameplate-card__header">
@@ -83,7 +88,7 @@ import QrcodeVue from 'qrcode.vue';
 import { showConfirmDialog, showLoadingToast, showToast } from 'vant';
 import Api from '@/api';
 import { withBase } from '@/utils/util';
-import DcSearchBar from '@/components/dc-ui/components/SearchBar/index.vue';
+// import DcSearchBar from '@/components/dc-ui/components/SearchBar/index.vue';
 
 // 页面状态
 const snCode = ref('');
@@ -109,15 +114,15 @@ const handleBack = () => {
   else window.location.href = '/';
 };
 
-const handleSearch = () => {
-  const code = snCode.value?.toString().trim();
-  if (!code) {
-    showToast({ type: 'fail', message: '请输入SN码或铭牌码' });
-    return;
-  }
-  snCode.value = code;
-  indeCode();
-};
+// const handleSearch = () => {
+//   const code = snCode.value?.toString().trim();
+//   if (!code) {
+//     showToast({ type: 'fail', message: '请输入SN码或铭牌码' });
+//     return;
+//   }
+//   snCode.value = code;
+//   indeCode();
+// };
 
 const handleScanError = (error) => {
   const msg = (error?.message || '').trim();
@@ -125,12 +130,19 @@ const handleScanError = (error) => {
   showToast({ type: 'fail', message: `扫码失败: ${msg || '未知错误'}`, duration: 3000 });
 };
 
-const handleScanSuccess = (code) => {
+const handleScanConfirm = (code) => {
   if (!code) return;
   snCode.value = code;
   indeCode();
 };
+// 浮窗点击：未选仓库不允许 open
+const handleScanBubbleClick = (open, disabled) => {
+  // 组件自身或环境禁用，直接不响应
+  if (disabled) return;
 
+  // 正常打开扫码
+  open();
+};
 // 查询 & 提交
 const indeCode = async () => {
   if (!snCode.value) return;
@@ -149,22 +161,19 @@ const indeCode = async () => {
 
 const stepFunc = (data) => {
   if (step.value === 0) {
-    if (!data) {
-      showToast({ type: 'fail', message: '请先输入或扫描SN码', duration: 2000 });
+    if (data === null || data === undefined) {
+      showToast({ type: 'fail', message: '请先扫SN码', duration: 2000 });
       return;
     }
     if (data.code && data.bindCustomerNameplate) {
       productList.value = data;
       btnState.value = true;
-      disable.value = false;
       return;
     }
     if (data.code) {
       step.value = 1;
       productList.value = data;
       btnState.value = false;
-      disable.value = true;
-      showToast({ type: 'success', message: '请继续扫描铭牌', duration: 2000 });
     }
   } else {
     productList.value = {

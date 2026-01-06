@@ -12,7 +12,6 @@ export default {
         if (DIC_LIST.includes(this.column.type)) {
           this.initTextLabel();
         }
-        console.log('props mixin text changed:', val);
         this.handleChange(val);
       },
     },

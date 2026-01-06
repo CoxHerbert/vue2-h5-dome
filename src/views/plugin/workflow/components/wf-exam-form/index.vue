@@ -90,12 +90,6 @@ export default defineComponent({
         if (next.copyUserName) {
           this.examineForm.$copyUser = next.copyUserName;
         }
-        if (next.assignee) {
-          this.examineForm.assignee = next.assignee;
-        }
-        if (next.assigneeName) {
-          this.examineForm.$assignee = next.assigneeName;
-        }
       },
       immediate: true,
       deep: true,

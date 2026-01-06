@@ -1,6 +1,7 @@
 import request from '@/utils/http';
 
 const prefix = '/blade-workflow/app/task';
+const processPrefix = '/blade-workflow/process';
 
 // 获取流程发起表单
 export const getFormByProcessDefId = (params) => {
@@ -54,7 +55,7 @@ export const startProcess = (data) => {
 export const completeTask = (data) => {
   return new Promise((reslove, reject) => {
     request({
-      url: `${prefix}/completeTask`,
+      url: `${processPrefix}/completeTask`,
       method: 'POST',
       data,
     })

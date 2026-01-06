@@ -52,8 +52,8 @@
         :dic="dic"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
-        @change="handleValueChange"
-        @label-change="handleLabelOnlyChange"
+        @label-change="handleLabelChange"
+        @change="handleLabelChange"
       />
       <wf-rate
         v-else-if="column.type === 'rate'"
@@ -292,17 +292,6 @@ export default {
     },
     handleLabelChange(val) {
       this.text = val;
-      this.$emit('label-change', {
-        prop: this.column.prop,
-        value: val,
-        index: this.dynamicIndex,
-        change: this.column.change,
-      });
-    },
-    handleValueChange(val) {
-      this.text = val;
-    },
-    handleLabelOnlyChange(val) {
       this.$emit('label-change', {
         prop: this.column.prop,
         value: val,
