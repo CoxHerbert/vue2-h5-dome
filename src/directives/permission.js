@@ -2,8 +2,19 @@
 /**
  * 按钮权限控制指令  v-permission="{ id: '按钮id', ...ortherProps }"
  */
-// import store from '../store/index';
-const store = {};
+import { usePermissionStore } from '@/store/permission';
+import { useUserStore } from '@/store/user';
+
+const getPermissionState = () => {
+  const permissionStore = usePermissionStore();
+  const userStore = useUserStore();
+  return {
+    permission: permissionStore.permission || {},
+    btnPermission: permissionStore.btnPermission || {},
+    deptInfo: permissionStore.deptInfo || {},
+    userInfo: userStore.userInfo || {},
+  };
+};
 
 /** 数据按钮 */
 const isDataButton = (permissionObj) => {
@@ -40,7 +51,7 @@ const isDeptDeepMode = (permissionObj) => {
 
 /** 判断是否有权限 */
 export const hasPermissionCommon = (id, dataRow) => {
-  const { permission, btnPermission, userInfo, deptInfo } = store.state.user;
+  const { permission, btnPermission, userInfo, deptInfo } = getPermissionState();
   const permissionObj = btnPermission?.[id];
   if (!permissionObj) {
     return !!permission[id];
@@ -96,7 +107,7 @@ const checkBtnAuth = (el, binding = {}) => {
   if (!value) {
     return;
   }
-  const { permission, btnPermission, userInfo, deptInfo } = store.state.user;
+  const { permission, btnPermission, userInfo, deptInfo } = getPermissionState();
 
   // console.log(
   //   'userPermission',
