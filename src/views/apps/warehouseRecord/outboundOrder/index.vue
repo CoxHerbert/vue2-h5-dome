@@ -1,43 +1,43 @@
 <template>
   <div class="wrap-box">
     <div class="wrap-left">
-      <van-steps :active="step">
+      <!-- 移动端：顶部横向步骤条，减少占高 -->
+      <van-steps :active="step" direction="horizontal">
         <van-step v-for="(item, index) in dictData" :key="index">
-          {{ item.dictValue }}
+          {{ index + 1 }}
         </van-step>
       </van-steps>
-      <step1
-        v-if="steps2 === 0"
-        :info="info"
-        @out-stock-type-change="handleOutStockTypeChange"
-      ></step1>
+
+      <!-- 当前步骤标题：让用户始终知道正在填什么 -->
+      <div class="step-title">{{ dictData?.[step]?.dictValue || '' }}</div>
+      <step1 v-if="steps2 === 0" :info="info" @out-stock-type-change="handleOutStockTypeChange" />
       <step2
         v-if="steps2 === 1"
         :info="info"
         @out-stock-type-change="handleOutStockTypeChange"
         @detail="getDetail"
-      ></step2>
+      />
       <step3
         v-if="steps2 === 2"
         :info="info"
         @out-stock-type-change="handleOutStockTypeChange"
         @detail="getDetail"
-      ></step3>
+      />
       <OutboundReadonlyStep
         v-if="steps2 === 3"
         :info="info"
         @out-stock-type-change="handleOutStockTypeChange"
-      ></OutboundReadonlyStep>
+      />
       <OutboundReadonlyStep
         v-if="steps2 === 4"
         :info="info"
         @out-stock-type-change="handleOutStockTypeChange"
-      ></OutboundReadonlyStep>
+      />
       <OutboundReadonlyStep
         v-if="steps2 === 5"
         :info="info"
         @out-stock-type-change="handleOutStockTypeChange"
-      ></OutboundReadonlyStep>
+      />
     </div>
   </div>
 </template>
@@ -77,7 +77,7 @@ const pageData = reactive({
   info: {},
 });
 
-const { loading, step, pageId, steps, info } = toRefs(pageData);
+const { loading, step, pageId, info } = toRefs(pageData);
 
 const steps2 = computed(() => {
   if (route.params.id !== 'create') {
@@ -157,181 +157,70 @@ const handleOutStockTypeChange = (newOutStockType) => {
 
 <style lang="scss" scoped>
 .wrap-box {
+  min-height: 100vh;
   background: #f5f7fb;
-  min-height: 100%;
 }
+
 .wrap-left {
   padding: 12px;
+  /* 预留底部空间：防止移动端按钮/系统底栏遮挡 */
+  padding-bottom: 72px;
+  min-height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
+
+/* 顶部步骤条：卡片样式 */
 :deep(.van-steps) {
   margin-bottom: 12px;
   background: #fff;
   border-radius: 12px;
-  padding: 12px 8px;
+  padding: 12px 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
-</style>
-<style lang="scss">
-@media (max-width: 1360px) {
-  .form-itme-width_50 {
-    width: 100% !important;
-    margin-right: 0;
-  }
+
+.step-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  margin: 10px 4px 12px;
 }
-.wrap-box {
-  width: 100%;
-  height: 100%;
+
+/* 步骤标题更适合小屏 */
+:deep(.van-step__title) {
+  font-size: 12px;
+  line-height: 16px;
+  word-break: break-all;
+}
+
+/* 横向步骤条：把标题隐藏掉，只保留圆点/序号逻辑 */
+:deep(.van-steps--horizontal .van-step__title) {
+  display: none;
+}
+
+
+/* 如果 step 组件内部是表单：强制单列更舒服 */
+:deep(.custom-form) {
   display: flex;
-  justify-content: space-between;
-  background: #f5f5f5;
-  .wrap-left {
-    padding: 30px 100px;
-    flex: 1;
-    height: 100%;
-    overflow: auto;
-    background: #fff;
-    margin-right: 16px;
-    .wrap-left-form {
-      display: flex;
-      justify-content: center;
-    }
-    .form-group-title {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      margin: 28px 0 17px 0;
-      font-weight: 600;
-      font-size: 16px;
-      color: #333;
-
-      &::before {
-        margin-right: 4px;
-        display: block;
-        content: '';
-        width: 4px;
-        height: 13px;
-        background-color: #f78431;
-      }
-      .add-box {
-        display: flex;
-        align-items: center;
-        margin-left: 40px;
-        font-weight: 400;
-        font-size: 14px;
-        color: #f78431;
-        cursor: pointer;
-      }
-    }
-  }
-  .wrap-right {
-    width: 240px;
-    .nav-wrap {
-      width: 224px;
-      background: #fff;
-      border-radius: 8px;
-      .nav-item {
-        padding: 24px 0 24px 25px;
-        font-weight: 500;
-        font-size: 14px;
-        color: #333;
-        line-height: 14px;
-        cursor: pointer;
-        user-select: none;
-        .process-state {
-          &_finish {
-            color: #f78431;
-          }
-          &_processing {
-            color: #e12137;
-          }
-        }
-      }
-    }
-  }
-  .custom-form {
-    display: flex;
-    flex-wrap: wrap;
-
-    .form-item-info {
-      width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-    }
-
-    .group-box {
-      width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-      &-item {
-        width: 100%;
-      }
-      &-head {
-        padding-left: 50px;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        gap: 11px;
-        font-weight: 400;
-        font-size: 14px;
-        color: #848488;
-        line-height: 14px;
-      }
-
-      .form-item-btn {
-        padding: 8px 8px 8px 10px;
-        display: inline-flex;
-        box-sizing: border-box;
-        flex-direction: column;
-        justify-content: space-between;
-        width: 120px;
-        height: 48px;
-        background: #f6f8fa;
-        border-radius: 2px;
-        border: 1px solid #dadbe0;
-        margin-right: 20px;
-        font-size: 14px;
-        color: #333;
-        line-height: 14px;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        user-select: none;
-        &:last-child {
-          margin-right: 0;
-        }
-
-        &_active {
-          background: rgba(247, 132, 49, 0.1);
-          border-radius: 2px;
-          border: 1px solid #dadbe0;
-        }
-      }
-    }
-
-    .form-itme-width {
-      &_50 {
-        width: 50%;
-        margin-right: 0;
-
-        .form-item-value {
-          width: 100%;
-          height: 100%;
-          border-radius: 4px;
-          border: 1px solid #ccc;
-        }
-      }
-
-      &_100 {
-        width: 100%;
-        margin-right: 0;
-
-        .form-itme-btn {
-          padding-top: 20px;
-          width: 100%;
-          display: flex;
-          justify-content: flex-start;
-        }
-      }
-    }
-  }
+  flex-direction: column;
+  gap: 12px;
 }
+
+:deep(.form-itme-width_50),
+:deep(.form-itme-width_100) {
+  width: 100% !important;
+  margin-right: 0 !important;
+}
+
+/* 你原来有 form-item-value 的边框，这里保留但更柔和一点 */
+:deep(.form-item-value) {
+  border-radius: 8px;
+}
+
+/* 可选：让步骤条吸顶（体验更好） */
+/* :deep(.van-steps) {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+} */
 </style>

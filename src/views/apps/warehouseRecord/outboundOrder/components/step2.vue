@@ -3,8 +3,8 @@
     <van-form ref="ruleFormRef">
       <div class="form-group-title">基本信息</div>
       <van-cell-group inset>
-        <van-field label="出库类型" :model-value="outStockTypeLabel" readonly />
-        <van-field label="仓库名称">
+        <van-field label="出库类型" label-align="top" :model-value="outStockTypeLabel" readonly />
+        <van-field label="仓库名称" label-align="top">
           <template #input>
             <dc-select-dialog
               v-model="formData.warehouseId"
@@ -18,7 +18,7 @@
             />
           </template>
         </van-field>
-        <van-field label="申请人">
+        <van-field label="申请人" label-align="top">
           <template #input>
             <dc-select-user
               v-model="formData.applicantId"
@@ -28,7 +28,7 @@
             />
           </template>
         </van-field>
-        <van-field label="处理人">
+        <van-field label="处理人" label-align="top">
           <template #input>
             <dc-select-user
               v-model="formData.processingPersonnel"
@@ -41,6 +41,7 @@
         <van-field
           v-model="formData.remark"
           label="备注"
+          label-align="top"
           type="textarea"
           rows="2"
           placeholder="请输入备注"

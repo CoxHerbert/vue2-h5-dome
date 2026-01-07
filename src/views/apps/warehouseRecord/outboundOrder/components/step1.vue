@@ -5,6 +5,7 @@
       <van-cell-group inset>
         <van-field
           label="出库类型"
+          label-align="top"
           :model-value="outStockTypeLabel"
           readonly
           is-link
@@ -17,7 +18,7 @@
             @cancel="showOutTypePicker = false"
           />
         </van-popup>
-        <van-field label="仓库名称">
+        <van-field label="仓库名称" label-align="top">
           <template #input>
             <dc-select-dialog
               v-model="formData.warehouseId"
@@ -34,12 +35,12 @@
             />
           </template>
         </van-field>
-        <van-field label="申请人">
+        <van-field label="申请人" label-align="top">
           <template #input>
             <dc-select-user v-model="formData.applicantId" placeholder="请选择" :multipleLimit="1" />
           </template>
         </van-field>
-        <van-field label="处理人">
+        <van-field label="处理人" label-align="top">
           <template #input>
             <dc-select-user
               v-model="formData.processingPersonnel"
@@ -51,6 +52,7 @@
         <van-field
           v-model="formData.remark"
           label="备注"
+          label-align="top"
           type="textarea"
           rows="2"
           placeholder="请输入备注"
@@ -59,6 +61,7 @@
           v-if="formData.reject"
           v-model="formData.reject"
           label="驳回原因"
+          label-align="top"
           type="textarea"
           rows="2"
           readonly
@@ -79,12 +82,14 @@
             <van-field
               v-model="queryParams.mtoNo"
               label="计划跟踪号"
+              label-align="top"
               placeholder="请输入计划跟踪号"
             />
             <van-field
               v-model="queryParams[currentObject?.defaultLabel]"
               :placeholder="currentObject?.placeholder"
               label="物料名称"
+              label-align="top"
               clearable
             />
           </div>
@@ -141,28 +146,37 @@
           <van-field
             v-model="formDataTable.productName"
             label="物料名称"
+            label-align="top"
             placeholder="物料名称"
             readonly
           />
           <van-field
             v-model="formDataTable.productCode"
             label="物料编码"
+            label-align="top"
             placeholder="物料编码"
             readonly
           />
           <van-field
             v-model="formDataTable.productSpec"
             label="规格型号"
+            label-align="top"
             placeholder="规格型号"
             readonly
           />
-          <van-field label="数量">
+          <van-field label="数量" label-align="top">
             <template #input>
               <van-stepper v-model="formDataTable.productQty" min="1" :max="numbers" />
             </template>
           </van-field>
-          <van-field v-model="formDataTable.productUnit" label="单位" placeholder="单位" readonly />
-          <van-field label="仓位编号">
+          <van-field
+            v-model="formDataTable.productUnit"
+            label="单位"
+            label-align="top"
+            placeholder="单位"
+            readonly
+          />
+          <van-field label="仓位编号" label-align="top">
             <template #input>
               <dc-view
                 v-model="formDataTable.locationId"
