@@ -18,7 +18,7 @@
             :disabled="isShow"
           >
             <el-option
-              v-for="item in DC_WMS_OUT_TYPE_WMS"
+              v-for="item in DC_WMS_OUT_TYPE_WMS?.value"
               :key="item.dictKey"
               :label="item.dictValue"
               :value="item.dictKey"
@@ -105,7 +105,7 @@ const detail = () => {
   emit('detail');
 };
 
-const { DC_WMS_OUT_TYPE_WMS } = proxy.useCache([{ key: 'DC_WMS_OUT_TYPE_WMS' }]);
+const { DC_WMS_OUT_TYPE_WMS } = proxy.dicts(['DC_WMS_OUT_TYPE_WMS']);
 const props = defineProps({
   // 详情
   info: {

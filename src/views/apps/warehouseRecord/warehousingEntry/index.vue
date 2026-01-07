@@ -5,7 +5,7 @@
         <dc-steps v-bind="stepProps" :activeIndex="step"></dc-steps>
       </div> -->
       <el-steps :active="step">
-        <el-step v-for="(item, index) in DC_WMS_IN_STATUS" :key="index">
+        <el-step v-for="(item, index) in DC_WMS_IN_STATUS?.value" :key="index">
           <template #icon>
             <div class="step-item" :class="getCalss(index)">
               <span class="step-num">
@@ -37,7 +37,7 @@ const route = useRoute();
 const { proxy } = getCurrentInstance();
 
 // 数据字典
-const { DC_WMS_IN_STATUS } = proxy.useCache([{ key: 'DC_WMS_IN_STATUS' }]);
+const { DC_WMS_IN_STATUS } = proxy.dicts(['DC_WMS_IN_STATUS']);
 
 const pageData = reactive({
   loading: false,

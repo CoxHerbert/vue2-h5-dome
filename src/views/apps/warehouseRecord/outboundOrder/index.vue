@@ -67,7 +67,7 @@ const { proxy } = getCurrentInstance();
 const dictData = ref([]);
 
 // 数据字典
-const { DC_WMS_OUT_STATUS } = proxy.useCache([{ key: 'DC_WMS_OUT_STATUS' }]);
+const { DC_WMS_OUT_STATUS } = proxy.dicts(['DC_WMS_OUT_STATUS']);
 
 const dictOutStockStatus = (value) => {
   let dcWmsOutStatus = DC_WMS_OUT_STATUS.value;

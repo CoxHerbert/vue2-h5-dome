@@ -19,7 +19,7 @@
             @change="hangleInTypeChange"
           >
             <el-option
-              v-for="item in DC_WMS_IN_TYPE_WMS"
+              v-for="item in DC_WMS_IN_TYPE_WMS?.value"
               :key="item.dictKey"
               :label="item.dictValue"
               :value="item.dictKey"
@@ -271,7 +271,7 @@ const props = defineProps({
     default: {},
   },
 });
-const { DC_WMS_IN_TYPE_WMS } = proxy.useCache([{ key: 'DC_WMS_IN_TYPE_WMS' }]);
+const { DC_WMS_IN_TYPE_WMS } = proxy.dicts(['DC_WMS_IN_TYPE_WMS']);
 
 const pageData = reactive({
   loading: false,
