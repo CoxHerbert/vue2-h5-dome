@@ -1,63 +1,72 @@
 <template>
-  <div class="wrap-left-form" v-loading="loading">
-    <el-form
-      class="custom-form"
-      ref="ruleFormRef"
-      :model="formData"
-      :rules="formRules"
-      label-width="120px"
-      :inline="true"
-    >
+  <div class="wrap-left-form">
+    <van-form ref="ruleFormRef">
       <div class="form-group-title">基本信息</div>
-      <div class="form-item-info">
-        <el-form-item class="form-itme-width_50" label="出库类型" prop="outStockType">
-          <el-select v-model="formData.outStockType" clearable placeholder="请选择入库类型">
-            <el-option
-              v-for="item in DC_WMS_OUT_TYPE_WMS"
-              :key="item.dictKey"
-              :label="item.dictValue"
-              :value="item.dictKey"
+      <van-cell-group inset>
+        <van-field
+          label="出库类型"
+          label-align="top"
+          :model-value="outStockTypeLabel"
+          readonly
+          is-link
+          @click="showOutTypePicker = true"
+        />
+        <van-popup v-model:show="showOutTypePicker" position="bottom" round>
+          <van-picker
+            :columns="outStockTypeOptions"
+            @confirm="handleOutTypeConfirm"
+            @cancel="showOutTypePicker = false"
+          />
+        </van-popup>
+        <van-field label="仓库名称" label-align="top">
+          <template #input>
+            <dc-select-dialog
+              v-model="formData.warehouseId"
+              placeholder="请点击选择仓库"
+              objectName="warehouse"
+              type="input"
+              :multiple="false"
+              :multiple-limit="1"
+              :clearable="true"
+              :params="{
+                stockType: getStockType(formData.outStockType),
+              }"
+              @change="handleWarehouseChange"
             />
-          </el-select>
-        </el-form-item>
-        <el-form-item class="form-itme-width_50" label="仓库名称" prop="warehouseId">
-          <dc-select-dialog
-            v-model="formData.warehouseId"
-            placeholder="请点击选择仓库"
-            objectName="warehouse"
-            type="input"
-            :multiple="false"
-            :multiple-limit="1"
-            :clearable="true"
-            :params="{
-              stockType: getStockType(formData.outStockType),
-            }"
-            @change="handleWarehouseChange"
-          />
-        </el-form-item>
-        <el-form-item class="form-itme-width_50" label="申请人" prop="applicantId">
-          <dc-select-user v-model="formData.applicantId" placeholder="请选择" :multipleLimit="1" />
-        </el-form-item>
-        <el-form-item class="form-itme-width_50" label="处理人" prop="processingPersonnel">
-          <dc-select-user
-            v-model="formData.processingPersonnel"
-            placeholder="请选择"
-            :multipleLimit="1"
-          />
-        </el-form-item>
-        <el-form-item class="form-itme-width_100" label="备注" prop="applicant">
-          <el-input v-model="formData.remark" :rows="2" type="textarea" placeholder="请输入备注" />
-        </el-form-item>
-        <el-form-item
+          </template>
+        </van-field>
+        <van-field label="申请人" label-align="top">
+          <template #input>
+            <dc-select-user v-model="formData.applicantId" placeholder="请选择" :multipleLimit="1" />
+          </template>
+        </van-field>
+        <van-field label="处理人" label-align="top">
+          <template #input>
+            <dc-select-user
+              v-model="formData.processingPersonnel"
+              placeholder="请选择"
+              :multipleLimit="1"
+            />
+          </template>
+        </van-field>
+        <van-field
+          v-model="formData.remark"
+          label="备注"
+          label-align="top"
+          type="textarea"
+          rows="2"
+          placeholder="请输入备注"
+        />
+        <van-field
           v-if="formData.reject"
-          class="form-itme-width_100"
+          v-model="formData.reject"
           label="驳回原因"
-          id="reject"
-          prop="reject"
-        >
-          <el-input text v-model="formData.reject" clearable disabled :rows="2" type="textarea" />
-        </el-form-item>
-      </div>
+          label-align="top"
+          type="textarea"
+          rows="2"
+          readonly
+        />
+      </van-cell-group>
       <div class="form-group-title">出库明细</div>
       <dc-select-dialog-v2
         v-if="formData.warehouseId"
@@ -70,166 +79,134 @@
       >
         <template #search-items="{ queryParams, currentObject }">
           <div class="dialog-search-box">
-            <el-form-item label-width="100px" label="计划跟踪号">
-              <el-input placeholder="请输入计划跟踪号" v-model="queryParams.mtoNo" />
-            </el-form-item>
-            <el-form-item label-width="100px" label="物料名称">
-              <el-input
-                v-model="queryParams[currentObject?.defaultLabel]"
-                :placeholder="currentObject?.placeholder"
-                prefix-icon="Search"
-                clearable
-              />
-            </el-form-item>
+            <van-field
+              v-model="queryParams.mtoNo"
+              label="计划跟踪号"
+              label-align="top"
+              placeholder="请输入计划跟踪号"
+            />
+            <van-field
+              v-model="queryParams[currentObject?.defaultLabel]"
+              :placeholder="currentObject?.placeholder"
+              label="物料名称"
+              label-align="top"
+              clearable
+            />
           </div>
         </template>
-        <el-button class="mb-5" type="primary">查询明细</el-button></dc-select-dialog-v2
-      >
-      <el-button v-else class="mb-5" @click="handleClickQueryDetail" type="primary"
-        >查询明细</el-button
-      >
-      <el-form-item class="form-itme-width_100 tabel-border">
-        <el-table :data="formData.detailList" :height="280">
-          <el-table-column prop="productName" label="物料名称" align="center" min-width="150" />
-          <el-table-column prop="productCode" label="物料编码" align="center" min-width="150" />
-          <el-table-column prop="productSpec" label="规格型号" align="center" min-width="150" />
-          <el-table-column prop="productQty" label="数量" align="center" min-width="150" />
-          <el-table-column prop="productUnit" label="单位" align="center" min-width="150" />
-          <el-table-column prop="locationId" label="仓位编号" align="center" min-width="150">
-            <template #default="scoped">
+        <van-button class="mb-5" type="primary">查询明细</van-button>
+      </dc-select-dialog-v2>
+      <van-button v-else class="mb-5" type="primary" @click="handleClickQueryDetail">
+        查询明细
+      </van-button>
+      <van-cell-group inset class="tabel-border">
+        <van-cell
+          v-for="(item, index) in formData.detailList"
+          :key="index"
+          :title="item.productName"
+          :label="`编码：${item.productCode || '-'}`"
+        >
+          <template #value>
+            <div class="detail-values">
+              <div>规格：{{ item.productSpec || '-' }}</div>
+              <div>数量：{{ item.productQty ?? '-' }}</div>
+              <div>单位：{{ item.productUnit || '-' }}</div>
+              <div>
+                仓位：
+                <dc-view
+                  v-model="item.locationId"
+                  objectName="warehouseLocation"
+                  showKey="locationName"
+                />
+              </div>
+              <div class="detail-actions">
+                <van-button size="small" type="primary" plain @click="handleUpdate(item)">
+                  编辑
+                </van-button>
+                <van-button size="small" type="danger" plain @click="removeEvaluate(item)">
+                  删除
+                </van-button>
+              </div>
+            </div>
+          </template>
+        </van-cell>
+      </van-cell-group>
+      <div class="form-itme-btn">
+        <van-button type="primary" block @click="submitForm">保存</van-button>
+        <van-button type="primary" block @click="submitAudit">审核</van-button>
+        <van-button block @click="cancelSubmit">取消</van-button>
+      </div>
+    </van-form>
+  </div>
+  <van-popup v-model:show="open" position="right" class="drawer-popup" @close="closeDrawer">
+    <div class="drawer-content">
+      <div class="drawer-title">{{ title }}</div>
+      <van-form ref="formRef">
+        <van-cell-group inset>
+          <van-field
+            v-model="formDataTable.productName"
+            label="物料名称"
+            label-align="top"
+            placeholder="物料名称"
+            readonly
+          />
+          <van-field
+            v-model="formDataTable.productCode"
+            label="物料编码"
+            label-align="top"
+            placeholder="物料编码"
+            readonly
+          />
+          <van-field
+            v-model="formDataTable.productSpec"
+            label="规格型号"
+            label-align="top"
+            placeholder="规格型号"
+            readonly
+          />
+          <van-field label="数量" label-align="top">
+            <template #input>
+              <van-stepper v-model="formDataTable.productQty" min="1" :max="numbers" />
+            </template>
+          </van-field>
+          <van-field
+            v-model="formDataTable.productUnit"
+            label="单位"
+            label-align="top"
+            placeholder="单位"
+            readonly
+          />
+          <van-field label="仓位编号" label-align="top">
+            <template #input>
               <dc-view
-                v-model="scoped.row.locationId"
+                v-model="formDataTable.locationId"
                 objectName="warehouseLocation"
                 showKey="locationName"
               />
             </template>
-          </el-table-column>
-          <el-table-column fixed="right" label="操作" align="center" width="100">
-            <template #default="scoped">
-              <el-button link type="primary" size="small" @click="handleUpdate(scoped.row)">
-                编辑
-              </el-button>
-              <el-button link type="primary" size="small" @click="removeEvaluate(scoped.row)">
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-form-item>
-      <el-form-item class="form-itme-width_100">
-        <div class="form-itme-btn">
-          <el-button type="primary" @click="submitForm">保存</el-button>
-          <el-button type="primary" @click="submitAudit">审核</el-button>
-          <el-button @click="cancelSubmit">取消</el-button>
-        </div>
-      </el-form-item>
-    </el-form>
-  </div>
-  <el-drawer v-model="open" :title="title" destroy-on-close append-to-body @close="closeDrawer">
-    <el-form ref="formRef" :model="formDataTable" :rules="rules" label-width="86px">
-      <el-form-item label="物料名称" prop="productName">
-        <el-input v-model="formDataTable.productName" placeholder="物料名称" clearable disabled />
-      </el-form-item>
-      <el-form-item label="物料编码" prop="productCode">
-        <el-input v-model="formDataTable.productCode" placeholder="物料编码" clearable disabled />
-      </el-form-item>
-      <el-form-item label="规格型号" prop="productSpec">
-        <el-input v-model="formDataTable.productSpec" placeholder="规格型号" clearable disabled />
-      </el-form-item>
-      <el-form-item label="数量" prop="productQty">
-        <el-input-number v-model="formDataTable.productQty" min="1" :max="numbers" />
-      </el-form-item>
-      <el-form-item label="单位" prop="productUnit">
-        <el-input v-model="formDataTable.productUnit" placeholder="单位" clearable disabled />
-      </el-form-item>
-      <el-form-item label="仓位编号" prop="locationId">
-        <dc-view
-          v-model="formDataTable.locationId"
-          objectName="warehouseLocation"
-          showKey="locationName"
-        />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button type="primary" @click="submitFormTable">提交</el-button>
-        <el-button @click="closeDrawer">取消</el-button>
-      </span>
-    </template>
-  </el-drawer>
+          </van-field>
+        </van-cell-group>
+      </van-form>
+      <div class="drawer-footer">
+        <van-button type="primary" block @click="submitFormTable">提交</van-button>
+        <van-button block @click="closeDrawer">取消</van-button>
+      </div>
+    </div>
+  </van-popup>
 </template>
 
 <script setup name="customerSubmit">
-import { reactive, toRefs, getCurrentInstance, watch } from 'vue';
+import { reactive, toRefs, getCurrentInstance, watch, computed, ref, onMounted } from 'vue';
 import Api from '@/api';
 import { useRouter, useRoute } from 'vue-router';
 
-/*
- {
-            "id": "1899337926232064001",
-            "tenantId": "000000",
-            "parentId": "1907004340336377858",
-            "code": "DC_WMS_OUT_TYPE_WMS",
-            "dictKey": "",
-            "dictValue": "领用出库",
-            "sort": 0,
-            "remark": "领用出库",
-            "isSealed": null,
-            "status": null,
-            "isDeleted": null,
-            "listClass": "dict-6"
-        },
-        {
-            "id": "1899338015847563266",
-            "tenantId": "000000",
-            "parentId": "1907004340336377858",
-            "code": "DC_WMS_OUT_TYPE_WMS",
-            "dictKey": "",
-            "dictValue": "其他",
-            "sort": 1,
-            "remark": "其他出库",
-            "isSealed": null,
-            "status": null,
-            "isDeleted": null,
-            "listClass": "dict-7"
-        },
-        {
-            "id": "1910144345372827650",
-            "tenantId": "000000",
-            "parentId": "1899337611537629185",
-            "code": "DC_WMS_OUT_TYPE_WMS",
-            "dictKey": "",
-            "dictValue": "现场出库",
-            "sort": 1,
-            "remark": "",
-            "isSealed": null,
-            "status": null,
-            "isDeleted": null,
-            "listClass": "dict-text"
-        },
-        {
-            "id": "1910144484778909697",
-            "tenantId": "000000",
-            "parentId": "1899337611537629185",
-            "code": "DC_WMS_OUT_TYPE_WMS",
-            "dictKey": "ff",
-            "dictValue": "线边仓出库",
-            "sort": 2,
-            "remark": "",
-            "isSealed": null,
-            "status": null,
-            "isDeleted": null,
-            "listClass": "dict-text"
-        }
-*/
-
 const outStockTypeMap = {
   // 现场出库
-  DC_WMS_OUT_TYPE_SCENE: 'DC_WMS_STOCK_TYPE_SCENE', //        现场仓
+  DC_WMS_OUT_TYPE_SCENE: 'DC_WMS_STOCK_TYPE_SCENE',
   // 线边仓出库
-  DC_WMS_OUT_TYPE_LINE_EDGE: 'DC_WMS_STOCK_TYPE_LINE_EDGE', //         线边仓
+  DC_WMS_OUT_TYPE_LINE_EDGE: 'DC_WMS_STOCK_TYPE_LINE_EDGE',
   // 其他出库
-  DC_WMS_OUT_TYPE_OTHER: '', // 'DC_WMS_STOCK_TYPE_COMMON', //         普通仓
+  DC_WMS_OUT_TYPE_OTHER: '',
   // 领用出库
   DC_WMS_OUT_TYPE_USE: '',
 };
@@ -253,7 +230,14 @@ const props = defineProps({
     default: {},
   },
 });
-const { DC_WMS_OUT_TYPE_WMS } = proxy.useCache([{ key: 'DC_WMS_OUT_TYPE_WMS' }]);
+const { DC_WMS_OUT_TYPE_WMS } = proxy.dicts(['DC_WMS_OUT_TYPE_WMS']);
+const showOutTypePicker = ref(false);
+const outStockTypeOptions = computed(() =>
+  (DC_WMS_OUT_TYPE_WMS?.value || []).map((item) => ({
+    text: item.dictValue,
+    value: item.dictKey,
+  }))
+);
 
 const pageData = reactive({
   loading: false,
@@ -328,6 +312,25 @@ const {
   numbers,
 } = toRefs(pageData);
 
+const outStockTypeLabel = computed(() => {
+  const list = DC_WMS_OUT_TYPE_WMS?.value || [];
+  const hit = list.find((item) => item.dictKey === formData.value.outStockType);
+  return hit?.dictValue || '';
+});
+
+const validateForm = async () => {
+  const formRef = proxy.$refs.ruleFormRef;
+  if (formRef?.validate) {
+    await formRef.validate();
+  }
+};
+
+const handleOutTypeConfirm = (value) => {
+  const selected = Array.isArray(value) ? value[0] : value;
+  formData.value.outStockType = selected?.value ?? selected;
+  showOutTypePicker.value = false;
+};
+
 onMounted(() => {
   formData.value.applicantId = userinfo.value.user_id;
   if (route.params.id != 'create') {
@@ -350,53 +353,57 @@ watch(
 
 // 确认创建
 const submitForm = async () => {
-  proxy.$refs.ruleFormRef.validate(async (valid) => {
-    if (valid) {
-      const warehouseId =
-        typeof formData.value.warehouseId === 'object'
-          ? formData.value.warehouseId?.id
-          : formData.value.warehouseId;
-      const form = {
-        ...formData.value,
-        warehouseId: warehouseId,
-      };
+  try {
+    await validateForm();
+  } catch {
+    return;
+  }
+  const warehouseId =
+    typeof formData.value.warehouseId === 'object'
+      ? formData.value.warehouseId?.id
+      : formData.value.warehouseId;
+  const form = {
+    ...formData.value,
+    warehouseId: warehouseId,
+  };
 
-      const res = await Api.application.outboundOrder.submit(form);
-      const { code, msg } = res.data;
-      if (code === 200) {
-        proxy.$message({ type: 'success', message: '保存成功' });
-        router.push({
-          path: '/wms/warehouseRecord/outboundOrder',
-          params: {},
-        });
-      }
-    }
-  });
+  const res = await Api.application.outboundOrder.submit(form);
+  const { code, msg } = res.data;
+  if (code === 200) {
+    proxy.$message({ type: 'success', message: '保存成功' });
+    router.push({
+      path: '/wms/warehouseRecord/outboundOrder',
+      params: {},
+    });
+  }
 };
 // 审核
 const submitAudit = () => {
-  proxy.$refs.ruleFormRef.validate(async (valid) => {
-    if (valid) {
-      const warehouseId =
-        typeof formData.value.warehouseId === 'object'
-          ? formData.value.warehouseId?.id
-          : formData.value.warehouseId;
-      const form = {
-        ...formData.value,
-        warehouseId: warehouseId,
-      };
-
-      const res = await Api.application.outboundOrder.submitAudit(form);
-      const { code, msg } = res.data;
-      if (code === 200) {
-        proxy.$message({ type: 'success', message: '审核成功' });
-        router.push({
-          path: '/wms/warehouseRecord/outboundOrder',
-          params: {},
-        });
-      }
+  (async () => {
+    try {
+      await validateForm();
+    } catch {
+      return;
     }
-  });
+    const warehouseId =
+      typeof formData.value.warehouseId === 'object'
+        ? formData.value.warehouseId?.id
+        : formData.value.warehouseId;
+    const form = {
+      ...formData.value,
+      warehouseId: warehouseId,
+    };
+
+    const res = await Api.application.outboundOrder.submitAudit(form);
+    const { code, msg } = res.data;
+    if (code === 200) {
+      proxy.$message({ type: 'success', message: '审核成功' });
+      router.push({
+        path: '/wms/warehouseRecord/outboundOrder',
+        params: {},
+      });
+    }
+  })();
 };
 
 // 表格编辑
@@ -481,18 +488,63 @@ const handleClickQueryDetail = () => {
 .tabel-border {
   border: 1px solid #edeae8;
 }
+.wrap-left-form {
+  padding: 16px;
+  background: #f5f7fb;
+}
+.form-group-title {
+  font-weight: 600;
+  color: #303133;
+  margin: 16px 4px 12px;
+  font-size: 15px;
+}
+.wrap-left-form :deep(.van-cell-group) {
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+.wrap-left-form :deep(.van-cell) {
+  padding-left: 12px;
+  padding-right: 12px;
+}
 .dialog-search-box {
-  width: 600px;
   display: flex;
-  padding-top: 16px;
-
-  :deep(.el-form-item) {
-    width: 50%;
-    display: inline-flex;
-
-    .el-form-item__content {
-      width: calc(100% - 120px);
-    }
-  }
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+}
+.detail-values {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.form-itme-btn {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.drawer-popup {
+  width: 85%;
+  max-width: 420px;
+}
+.drawer-content {
+  padding: 16px;
+}
+.drawer-title {
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.drawer-footer {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 </style>

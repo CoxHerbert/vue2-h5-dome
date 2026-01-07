@@ -1,22 +1,14 @@
 <template>
-  <div v-loading="loading" class="wrap-box">
+  <div class="wrap-box">
     <div class="wrap-left">
       <!-- <div class="step-new">
         <dc-steps v-bind="stepProps" :activeIndex="step"></dc-steps>
       </div> -->
-      <el-steps :active="step">
-        <el-step v-for="(item, index) in DC_WMS_IN_STATUS" :key="index">
-          <template #icon>
-            <div class="step-item" :class="getCalss(index)">
-              <span class="step-num">
-                <span v-if="index >= step">{{ index + 1 }}</span>
-                <el-icon v-else><Check /></el-icon>
-              </span>
-              <span class="step-title">{{ item.dictValue }}</span>
-            </div>
-          </template>
-        </el-step>
-      </el-steps>
+      <van-steps :active="step">
+        <van-step v-for="(item, index) in DC_WMS_IN_STATUS?.value" :key="index">
+          {{ item.dictValue }}
+        </van-step>
+      </van-steps>
       <step1 v-if="steps2 === 0" :info="info" />
       <step2 v-if="steps2 === 1" :info="info" @detail="getDetail" />
       <step3 v-if="steps2 === 2" :info="info" @detail="getDetail" />
@@ -25,7 +17,7 @@
 </template>
 
 <script setup name="CustomerSubmit">
-import { reactive, toRefs, onBeforeMount, computed } from 'vue';
+import { reactive, toRefs, onBeforeMount, computed, getCurrentInstance } from 'vue';
 import step1 from './components/step1.vue';
 import step2 from './components/step2.vue';
 import step3 from './components/step3.vue';
@@ -37,7 +29,7 @@ const route = useRoute();
 const { proxy } = getCurrentInstance();
 
 // 数据字典
-const { DC_WMS_IN_STATUS } = proxy.useCache([{ key: 'DC_WMS_IN_STATUS' }]);
+const { DC_WMS_IN_STATUS } = proxy.dicts(['DC_WMS_IN_STATUS']);
 
 const pageData = reactive({
   loading: false,
@@ -70,11 +62,6 @@ onBeforeMount(() => {
   if (route.params.id !== 'create') getDetail();
 });
 
-const getCalss = (index) => {
-  if (step.value === index) return 'step-item-process';
-  if (step.value < index) return 'step-item-wait';
-  if (step.value > index) return 'step-item-finish';
-};
 
 // const uesrIdMaps = {
 //   '1899335959778770945': 'createUserId',
@@ -132,6 +119,22 @@ const getDetail = async () => {
   }
 };
 </script>
+
+<style lang="scss" scoped>
+.wrap-box {
+  background: #f5f7fb;
+  min-height: 100%;
+}
+.wrap-left {
+  padding: 12px;
+}
+:deep(.van-steps) {
+  margin-bottom: 12px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 8px;
+}
+</style>
 <style lang="scss">
 @media (max-width: 1360px) {
   .form-itme-width_50 {

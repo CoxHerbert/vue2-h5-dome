@@ -19,7 +19,11 @@
 
       <template #filters="{ apply }">
         <van-cell-group inset class="filter-card">
-          <van-field label="出库类型" readonly :model-value="resolveOutTypeLabel(queryParams.outStockType)" />
+          <van-field
+            label="出库类型"
+            readonly
+            :model-value="resolveOutTypeLabel(queryParams.outStockType)"
+          />
           <dc-select-dialog
             v-model="selectedWarehouse"
             label="仓库"
@@ -132,7 +136,7 @@ const listRef = ref(null);
 const keyword = ref('');
 const activeStatus = ref(null);
 const queryParams = ref({
-  outStockType: 'DC_WMS_OUT_TYPE_BORROW',
+  outStockType: '',
   warehouseId: null,
 });
 const selectedWarehouse = ref(null);
@@ -158,6 +162,12 @@ const resolveNavEl = () => {
 const loadDicts = async () => {
   outTypeDict.value = (await dictStore.get('DC_WMS_OUT_TYPE_WMS')) || [];
   outStatusDict.value = (await dictStore.get('DC_WMS_OUT_STATUS')) || [];
+};
+
+const resolveOutTypeLabel = (value) => {
+  const list = outTypeDict.value || [];
+  const hit = list.find((item) => item?.dictKey === value || item?.value === value);
+  return hit?.dictValue || hit?.label || value || '';
 };
 
 onMounted(() => {

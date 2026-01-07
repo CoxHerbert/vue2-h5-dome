@@ -1,6 +1,6 @@
 <template>
-  <div class="wrap-left-form">
-    <van-form ref="ruleFormRef">
+  <div class="wrap-left-form readonly-step">
+    <van-form>
       <div class="form-group-title">基本信息</div>
       <van-cell-group inset>
         <van-field label="出库类型" label-align="top" :model-value="outStockTypeLabel" readonly />
@@ -63,42 +63,31 @@
               <div>单位：{{ item.productUnit || '-' }}</div>
               <div>
                 仓位：
-                <dc-view
-                  v-model="item.locationId"
-                  objectName="warehouseLocation"
-                  showKey="locationName"
-                />
+                <dc-view v-model="item.locationId" objectName="warehouseLocation" showKey="locationName" />
               </div>
             </div>
           </template>
         </van-cell>
       </van-cell-group>
       <div class="form-itme-btn">
-        <van-button type="primary" block @click="submitAudit">审核</van-button>
-        <van-button type="primary" block @click="submitReject">驳回</van-button>
-        <van-button block @click="cancelSubmit">取消</van-button>
+        <van-button block @click="cancelSubmit">返回</van-button>
       </div>
     </van-form>
   </div>
 </template>
 
-<script setup name="customerSubmit">
-import { h, reactive, ref, toRefs, getCurrentInstance, onMounted, watch, computed } from 'vue';
-import Api from '@/api';
+<script setup name="OutboundReadonlyStep">
+import { reactive, toRefs, getCurrentInstance, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { Field, showConfirmDialog, showToast } from 'vant';
 
 const { proxy } = getCurrentInstance();
 const router = useRouter();
-// 子组件调用父组件方法
 const emit = defineEmits(['detail', 'out-stock-type-change']);
 const detail = () => {
   emit('detail');
 };
-
 const { DC_WMS_OUT_TYPE_WMS } = proxy.dicts(['DC_WMS_OUT_TYPE_WMS']);
 const props = defineProps({
-  // 详情
   info: {
     type: Object,
     default: {},
@@ -112,24 +101,15 @@ const pageData = reactive({
 });
 
 const { loading, rules, formData, isShow } = toRefs(pageData);
-const rejectReason = ref('');
 const outStockTypeLabel = computed(() => {
   const list = DC_WMS_OUT_TYPE_WMS?.value || [];
   const hit = list.find((item) => item.dictKey === formData.value.outStockType);
   return hit?.dictValue || '';
 });
 
-const validateForm = async () => {
-  const formRef = proxy.$refs.ruleFormRef;
-  if (formRef?.validate) {
-    await formRef.validate();
-  }
-};
-
 onMounted(() => {
   formData.value = props.info;
 });
-// 监听出库类型变化
 watch(
   () => formData.value.outStockType,
   (newVal) => {
@@ -138,73 +118,6 @@ watch(
     }
   }
 );
-// 审核
-const submitAudit = () => {
-  (async () => {
-    try {
-      await validateForm();
-    } catch {
-      return;
-    }
-    const res = await Api.application.outboundOrder.submitAudit({
-      ...formData.value,
-    });
-    const { code, msg } = res.data;
-    if (code === 200) {
-      showToast({ type: 'success', message: '审核成功' });
-      router.push({
-        path: '/wms/warehouseRecord/outboundOrder',
-        params: {},
-      });
-    }
-  })();
-};
-
-const promptRejectReason = async () => {
-  rejectReason.value = '';
-  await showConfirmDialog({
-    title: '驳回原因',
-    message: () =>
-      h(Field, {
-        modelValue: rejectReason.value,
-        'onUpdate:modelValue': (value) => {
-          rejectReason.value = value;
-        },
-        placeholder: '请输入驳回原因',
-        type: 'textarea',
-        autosize: true,
-      }),
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-  });
-
-  if (!rejectReason.value) {
-    showToast({ type: 'fail', message: '请输入驳回原因' });
-    throw new Error('reject reason required');
-  }
-
-  return rejectReason.value;
-};
-
-const submitReject = async () => {
-  try {
-    const reason = await promptRejectReason();
-    const res = await Api.application.outboundOrder.submitReject({
-      ...formData.value,
-      reject: reason,
-    });
-    const { code, msg } = res.data;
-    if (code === 200) {
-      showToast({ type: 'success', message: '驳回成功' });
-      router.push({
-        path: '/wms/warehouseRecord/outboundOrder',
-        params: {},
-      });
-    }
-  } catch (error) {
-    console.error('Reject cancelled or failed:', error);
-  }
-};
 
 const cancelSubmit = () => {
   router.push({
@@ -213,6 +126,7 @@ const cancelSubmit = () => {
   });
 };
 </script>
+
 <style lang="scss" scoped>
 .tabel-border {
   border: 1px solid #edeae8;
@@ -234,8 +148,8 @@ const cancelSubmit = () => {
 }
 .form-itme-btn {
   margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+}
+.readonly-step {
+  padding-bottom: 8px;
 }
 </style>

@@ -50,4 +50,16 @@ export default {
       },
     });
   },
+  getDataPermissionButtons() {
+    return request({
+      url: '/blade-system/permission/list-auth',
+      method: 'get',
+    });
+  },
+  getButtons() {
+    return request({
+      url: '/blade-system/menu/buttons',
+      method: 'get',
+    });
+  },
 };
