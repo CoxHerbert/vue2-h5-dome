@@ -263,10 +263,7 @@ const submitForm = async () => {
   const { code } = res.data;
   if (code === 200) {
     proxy.$message({ type: 'success', message: '保存成功' });
-    router.push({
-      path: '/wms/warehouseRecord/outboundOrder',
-      params: {},
-    });
+    router.push({ name: 'appsWarehouseRecord' });
   }
 };
 
@@ -293,10 +290,7 @@ const submitAudit = () => {
     const { code } = res.data;
     if (code === 200) {
       proxy.$message({ type: 'success', message: '审核成功' });
-      router.push({
-        path: '/wms/warehouseRecord/outboundOrder',
-        params: {},
-      });
+      router.push({ name: 'appsWarehouseRecord' });
     }
   })();
 };
