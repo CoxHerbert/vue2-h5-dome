@@ -1,19 +1,11 @@
 <template>
-  <div class="wrap-box" v-loading="loading">
+  <div class="wrap-box">
     <div class="wrap-left">
-      <el-steps :active="step">
-        <el-step v-for="(item, index) in dictData" :key="index">
-          <template #icon>
-            <div class="step-item" :class="getCalss(index)">
-              <span class="step-num">
-                <span v-if="index >= step">{{ index + 1 }}</span>
-                <el-icon v-else><Check /></el-icon>
-              </span>
-              <span class="step-title">{{ item.dictValue }}</span>
-            </div>
-          </template>
-        </el-step>
-      </el-steps>
+      <van-steps :active="step">
+        <van-step v-for="(item, index) in dictData" :key="index">
+          {{ item.dictValue }}
+        </van-step>
+      </van-steps>
       <step1
         v-if="steps2 === 0"
         :info="info"
@@ -132,11 +124,6 @@ onMounted(() => {
   }
 });
 
-const getCalss = (index) => {
-  if (step.value === index) return 'step-item-process';
-  if (step.value < index) return 'step-item-wait';
-  if (step.value > index) return 'step-item-finish';
-};
 const getDetail = async () => {
   try {
     loading.value = true;

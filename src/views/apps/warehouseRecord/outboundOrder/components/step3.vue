@@ -1,101 +1,88 @@
 <template>
-  <div class="wrap-left-form" v-loading="loading">
-    <el-form
-      class="custom-form"
-      ref="ruleFormRef"
-      :model="formData"
-      :rules="rules"
-      label-width="120px"
-      :inline="true"
-    >
+  <div class="wrap-left-form">
+    <van-form ref="ruleFormRef">
       <div class="form-group-title">基本信息</div>
-      <div class="form-item-info">
-        <el-form-item class="form-itme-width_50" label="出库类型" prop="outStockType">
-          <el-select
-            v-model="formData.outStockType"
-            clearable
-            placeholder="请选择出库类型"
-            :disabled="isShow"
-          >
-            <el-option
-              v-for="item in DC_WMS_OUT_TYPE_WMS?.value"
-              :key="item.dictKey"
-              :label="item.dictValue"
-              :value="item.dictKey"
+      <van-cell-group inset>
+        <van-field label="出库类型" :model-value="outStockTypeLabel" readonly />
+        <van-field label="仓库名称">
+          <template #input>
+            <dc-select-dialog
+              v-model="formData.warehouseId"
+              placeholder="请点击选择仓库"
+              objectName="warehouse"
+              type="input"
+              :multiple="false"
+              :multiple-limit="1"
+              :clearable="true"
+              :disabled="isShow"
             />
-          </el-select>
-        </el-form-item>
-        <el-form-item class="form-itme-width_50" label="仓库名称" prop="warehouseId">
-          <dc-select-dialog
-            v-model="formData.warehouseId"
-            placeholder="请点击选择仓库"
-            objectName="warehouse"
-            type="input"
-            :multiple="false"
-            :multiple-limit="1"
-            :clearable="true"
-            :disabled="isShow"
-            @change="handleWarehouseChange"
-          />
-        </el-form-item>
-        <el-form-item class="form-itme-width_50" label="申请人" prop="applicantId">
-          <dc-select-user
-            v-model="formData.applicantId"
-            placeholder="请选择"
-            :multipleLimit="1"
-            :disabled="isShow"
-          />
-        </el-form-item>
-        <el-form-item class="form-itme-width_50" label="处理人" prop="processingPersonnel">
-          <dc-select-user
-            v-model="formData.processingPersonnel"
-            placeholder="请选择"
-            :multipleLimit="1"
-            :disabled="isShow"
-          />
-        </el-form-item>
-        <el-form-item class="form-itme-width_100" label="备注" prop="applicant">
-          <el-input
-            v-model="formData.remark"
-            :rows="2"
-            type="textarea"
-            placeholder="请输入备注"
-            :disabled="isShow"
-          />
-        </el-form-item>
-      </div>
+          </template>
+        </van-field>
+        <van-field label="申请人">
+          <template #input>
+            <dc-select-user
+              v-model="formData.applicantId"
+              placeholder="请选择"
+              :multipleLimit="1"
+              :disabled="isShow"
+            />
+          </template>
+        </van-field>
+        <van-field label="处理人">
+          <template #input>
+            <dc-select-user
+              v-model="formData.processingPersonnel"
+              placeholder="请选择"
+              :multipleLimit="1"
+              :disabled="isShow"
+            />
+          </template>
+        </van-field>
+        <van-field
+          v-model="formData.remark"
+          label="备注"
+          type="textarea"
+          rows="2"
+          placeholder="请输入备注"
+          :disabled="isShow"
+        />
+      </van-cell-group>
       <div class="form-group-title">出库明细</div>
-      <el-form-item class="form-itme-width_100 tabel-border">
-        <el-table :data="formData.detailList" :height="300">
-          <el-table-column prop="productName" label="物料名称" align="center" min-width="150" />
-          <el-table-column prop="productCode" label="物料编码" align="center" min-width="150" />
-          <el-table-column prop="productSpec" label="规格型号" align="center" min-width="150" />
-          <el-table-column prop="productQty" label="数量" align="center" min-width="150" />
-          <el-table-column prop="productUnit" label="单位" align="center" min-width="150" />
-          <el-table-column prop="locationId" label="仓位编号" align="center" min-width="150">
-            <template #default="scoped">
-              <dc-view
-                v-model="scoped.row.locationId"
-                objectName="warehouseLocation"
-                showKey="locationName"
-              />
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-form-item>
-      <el-form-item class="form-itme-width_100">
-        <div class="form-itme-btn">
-          <el-button type="primary" @click="submitAudit">审核</el-button>
-          <el-button type="primary" @click="submitReject">驳回</el-button>
-          <el-button @click="cancelSubmit">取消</el-button>
-        </div>
-      </el-form-item>
-    </el-form>
+      <van-cell-group inset class="tabel-border">
+        <van-cell
+          v-for="(item, index) in formData.detailList"
+          :key="index"
+          :title="item.productName"
+          :label="`编码：${item.productCode || '-'}`"
+        >
+          <template #value>
+            <div class="detail-values">
+              <div>规格：{{ item.productSpec || '-' }}</div>
+              <div>数量：{{ item.productQty ?? '-' }}</div>
+              <div>单位：{{ item.productUnit || '-' }}</div>
+              <div>
+                仓位：
+                <dc-view
+                  v-model="item.locationId"
+                  objectName="warehouseLocation"
+                  showKey="locationName"
+                />
+              </div>
+            </div>
+          </template>
+        </van-cell>
+      </van-cell-group>
+      <div class="form-itme-btn">
+        <van-button type="primary" block @click="submitAudit">审核</van-button>
+        <van-button type="primary" block @click="submitReject">驳回</van-button>
+        <van-button block @click="cancelSubmit">取消</van-button>
+      </div>
+    </van-form>
   </div>
 </template>
 
 <script setup name="customerSubmit">
-import { h, reactive, ref, toRefs, getCurrentInstance, onMounted, watch } from 'vue';
+import { h, reactive, ref, toRefs, getCurrentInstance, onMounted, watch, computed } from 'vue';
 import Api from '@/api';
 import { useRouter } from 'vue-router';
 import { Field, showConfirmDialog, showToast } from 'vant';
@@ -125,6 +112,19 @@ const pageData = reactive({
 
 const { loading, rules, formData, isShow } = toRefs(pageData);
 const rejectReason = ref('');
+const outStockTypeLabel = computed(() => {
+  const list = DC_WMS_OUT_TYPE_WMS?.value || [];
+  const hit = list.find((item) => item.dictKey === formData.value.outStockType);
+  return hit?.dictValue || '';
+});
+
+const validateForm = async () => {
+  const formRef = proxy.$refs.ruleFormRef;
+  if (formRef?.validate) {
+    await formRef.validate();
+  }
+};
+
 onMounted(() => {
   formData.value = props.info;
 });
@@ -139,21 +139,24 @@ watch(
 );
 // 审核
 const submitAudit = () => {
-  proxy.$refs.ruleFormRef.validate(async (valid) => {
-    if (valid) {
-      const res = await Api.application.outboundOrder.submitAudit({
-        ...formData.value,
-      });
-      const { code, msg } = res.data;
-      if (code === 200) {
-        showToast({ type: 'success', message: '审核成功' });
-        router.push({
-          path: '/wms/warehouseRecord/outboundOrder',
-          params: {},
-        });
-      }
+  (async () => {
+    try {
+      await validateForm();
+    } catch {
+      return;
     }
-  });
+    const res = await Api.application.outboundOrder.submitAudit({
+      ...formData.value,
+    });
+    const { code, msg } = res.data;
+    if (code === 200) {
+      showToast({ type: 'success', message: '审核成功' });
+      router.push({
+        path: '/wms/warehouseRecord/outboundOrder',
+        params: {},
+      });
+    }
+  })();
 };
 
 const promptRejectReason = async () => {
@@ -182,50 +185,47 @@ const promptRejectReason = async () => {
   return rejectReason.value;
 };
 
-// 驳回
 const submitReject = async () => {
   try {
     const reason = await promptRejectReason();
-    loading.value = true;
-    const form = {
+    const res = await Api.application.outboundOrder.submitReject({
       ...formData.value,
       reject: reason,
-    };
-    try {
-      const res = await Api.application.outboundOrder.reject(form);
-      const { code, msg } = res.data;
-
-      if (code === 200) {
-        showToast({ type: 'success', message: msg });
-        router.push({
-          path: '/wms/warehouseRecord/outboundOrder',
-          params: {},
-        });
-      }
-    } catch (error) {
-      console.error('API 调用失败:', error);
-    } finally {
-      loading.value = false;
+    });
+    const { code, msg } = res.data;
+    if (code === 200) {
+      showToast({ type: 'success', message: '驳回成功' });
+      router.push({
+        path: '/wms/warehouseRecord/outboundOrder',
+        params: {},
+      });
     }
   } catch (error) {
-    if (error?.message === 'reject reason required') {
-      return;
-    }
-    showToast('取消驳回');
+    console.error('Reject cancelled or failed:', error);
   }
 };
 
-// 取消
 const cancelSubmit = () => {
-  router.go('-1');
-  // router.push({
-  //   path: '/wms/warehouseRecord/InventoryManage',
-  //   params: {},
-  // });
+  router.push({
+    path: '/wms/warehouseRecord/outboundOrder',
+    params: {},
+  });
 };
 </script>
 <style lang="scss" scoped>
 .tabel-border {
   border: 1px solid #edeae8;
+}
+.detail-values {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+.form-itme-btn {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 </style>

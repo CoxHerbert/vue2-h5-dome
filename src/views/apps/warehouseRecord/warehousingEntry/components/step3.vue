@@ -1,138 +1,87 @@
 <template>
-  <div class="wrap-left-form" v-loading="loading">
-    <el-form
-      class="custom-form"
-      ref="ruleFormRef"
-      :model="formData"
-      :rules="rules"
-      label-width="120px"
-      :inline="true"
-    >
+  <div class="wrap-left-form">
+    <van-form>
       <div class="form-group-title">基本信息</div>
-      <div class="form-item-info">
-        <el-form-item class="form-itme-width_50" label="入库类型" prop="inType">
-          <el-select
-            v-model="formData.inType"
-            clearable
-            placeholder="请选择入库类型"
-            @change="hangleInTypeChange"
-            disabled
-          >
-            <el-option
-              v-for="item in DC_WMS_IN_TYPE_WMS?.value"
-              :key="item.dictKey"
-              :label="item.dictValue"
-              :value="item.dictKey"
+      <van-cell-group inset>
+        <van-field label="入库类型" :model-value="inTypeLabel" readonly />
+        <van-field label="仓库名称">
+          <template #input>
+            <dc-select-dialog
+              v-model="formData.warehouseId"
+              placeholder="请点击选择仓库"
+              object-name="warehouse"
+              type="input"
+              :multiple="false"
+              :multiple-limit="1"
+              :clearable="true"
+              :disabled="show"
             />
-          </el-select>
-        </el-form-item>
-        <el-form-item class="form-itme-width_50" label="仓库名称" prop="warehouseId">
-          <dc-select-dialog
-            v-model="formData.warehouseId"
-            placeholder="请点击选择仓库"
-            objectName="warehouse"
-            type="input"
-            :multiple="false"
-            :multiple-limit="1"
-            :clearable="true"
-            disabled="show"
-          />
-        </el-form-item>
-        <el-form-item
-          class="form-itme-width_50"
-          v-if="formData.inType === 'DC_WMS_IN_TYPE_RETURN'"
-          label="来源单号"
-          prop="inSourceNumber"
-        >
-          <dc-select-dialog
-            v-model="formData.inSourceNumber"
-            objectName="outboundOrder"
-            type="input"
-            :multiple="false"
-            :multiple-limit="1"
-            :clearable="true"
-            disabled="show"
-            :params="{
-              outStockStatus: 'DC_WMS_OUT_STATUS_BORROW',
-            }"
-            @change="row => handleWarehouseChange(row, 'outboundOrder')"
-          />
-        </el-form-item>
-
-        <el-form-item class="form-itme-width_50" v-else label="来源单号" prop="inSourceNumber">
-          <el-input
-            v-model="formData.inSourceNumber"
-            placeholder="请输入来源单号点击查询"
-            clearable
-            disabled
-          >
-            <template #append>
-              <el-button :icon="Search" @click="handleSerch" disabled />
-            </template>
-          </el-input>
-        </el-form-item>
-        <el-form-item class="form-itme-width_50" label="申请人" prop="applicantId">
-          <dc-select-user
-            v-model="formData.applicantId"
-            placeholder="请选择"
-            :multipleLimit="1"
-            disabled
-          />
-        </el-form-item>
-        <el-form-item class="form-itme-width_50" label="处理人" prop="processingPersonnel">
-          <dc-select-user
-            v-model="formData.processingPersonnel"
-            placeholder="请选择"
-            :multipleLimit="1"
-            disabled
-          />
-        </el-form-item>
-      </div>
+          </template>
+        </van-field>
+        <van-field label="来源单号">
+          <template #input>
+            <van-field v-model="formData.inSourceNumber" readonly />
+          </template>
+        </van-field>
+        <van-field label="申请人">
+          <template #input>
+            <dc-select-user
+              v-model="formData.applicantId"
+              placeholder="请选择"
+              :multiple-limit="1"
+              disabled
+            />
+          </template>
+        </van-field>
+        <van-field label="处理人">
+          <template #input>
+            <dc-select-user
+              v-model="formData.processingPersonnel"
+              placeholder="请选择"
+              :multiple-limit="1"
+              disabled
+            />
+          </template>
+        </van-field>
+      </van-cell-group>
       <div class="form-group-title">入库明细</div>
-      <el-form-item class="form-itme-width_100 tabel-border">
-        <el-button class="mb-5" type="primary" @click="addRow" v-if="btnOpen">新增</el-button>
-        <el-table :data="formData.detailList" :height="300">
-          <el-table-column type="index" label="序号" align="center" width="60" />
-          <el-table-column prop="productCode" label="物料编号" align="center" min-width="150" />
-          <el-table-column prop="productName" label="物料名称" align="center" min-width="150" />
-          <el-table-column
-            prop="productSpec"
-            label="规格型号"
-            align="center"
-            min-width="150"
-            show-overflow-tooltip
-          />
-          <el-table-column prop="productQty" label="数量" align="center" min-width="150" />
-          <el-table-column prop="productUnit" label="单位" align="center" min-width="150" />
-          <el-table-column prop="locationId" label="仓位编号" align="center" min-width="150">
-            <template #default="scoped">
-              <dc-view
-                v-model="scoped.row.locationId"
-                objectName="warehouseLocation"
-                showKey="locationName"
-              />
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-form-item>
-      <el-form-item class="form-itme-width_100">
-        <div class="form-itme-btn">
-          <el-button @click="cancelSubmit">返回</el-button>
-        </div>
-      </el-form-item>
-    </el-form>
+      <van-cell-group inset class="tabel-border">
+        <van-cell
+          v-for="(item, index) in formData.detailList"
+          :key="index"
+          :title="item.productName"
+          :label="`编码：${item.productCode || '-'}`"
+        >
+          <template #value>
+            <div class="detail-values">
+              <div>规格：{{ item.productSpec || '-' }}</div>
+              <div>数量：{{ item.productQty ?? '-' }}</div>
+              <div>单位：{{ item.productUnit || '-' }}</div>
+              <div>
+                仓位：
+                <dc-view
+                  v-model="item.locationId"
+                  object-name="warehouseLocation"
+                  show-key="locationName"
+                />
+              </div>
+            </div>
+          </template>
+        </van-cell>
+      </van-cell-group>
+      <div class="form-itme-btn">
+        <van-button block @click="cancelSubmit">返回</van-button>
+      </div>
+    </van-form>
   </div>
 </template>
 
 <script setup name="customerSubmit">
-import { reactive, toRefs, getCurrentInstance, onMounted, watch } from 'vue';
-import Api from '@/api';
-import { useRouter, useRoute } from 'vue-router';
-import { Search } from '@element-plus/icons-vue';
+import { reactive, toRefs, getCurrentInstance, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
 
 const { proxy } = getCurrentInstance();
 const router = useRouter();
-const route = useRoute();
 // 子组件调用父组件方法
 const emit = defineEmits(['detail']);
 const detail = () => {
@@ -147,15 +96,24 @@ const props = defineProps({
   },
 });
 const pageData = reactive({
+  loading: false,
+  rules: {},
   formData: {},
+  show: true,
+  btnOpen: false,
 });
 
-const { formData } = toRefs(pageData);
+const { loading, rules, formData, show, btnOpen } = toRefs(pageData);
+const inTypeLabel = computed(() => {
+  const list = DC_WMS_IN_TYPE_WMS?.value || [];
+  const hit = list.find((item) => item.dictKey === formData.value.inType);
+  return hit?.dictValue || '';
+});
+
 onMounted(() => {
   formData.value = props.info;
 });
 
-// 取消
 const cancelSubmit = () => {
   router.push({
     path: '/wms/warehouseRecord/warehousingEntry',
@@ -166,5 +124,14 @@ const cancelSubmit = () => {
 <style lang="scss" scoped>
 .tabel-border {
   border: 1px solid #edeae8;
+}
+.detail-values {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+.form-itme-btn {
+  margin-top: 16px;
 }
 </style>

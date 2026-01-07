@@ -1,22 +1,14 @@
 <template>
-  <div v-loading="loading" class="wrap-box">
+  <div class="wrap-box">
     <div class="wrap-left">
       <!-- <div class="step-new">
         <dc-steps v-bind="stepProps" :activeIndex="step"></dc-steps>
       </div> -->
-      <el-steps :active="step">
-        <el-step v-for="(item, index) in DC_WMS_IN_STATUS?.value" :key="index">
-          <template #icon>
-            <div class="step-item" :class="getCalss(index)">
-              <span class="step-num">
-                <span v-if="index >= step">{{ index + 1 }}</span>
-                <el-icon v-else><Check /></el-icon>
-              </span>
-              <span class="step-title">{{ item.dictValue }}</span>
-            </div>
-          </template>
-        </el-step>
-      </el-steps>
+      <van-steps :active="step">
+        <van-step v-for="(item, index) in DC_WMS_IN_STATUS?.value" :key="index">
+          {{ item.dictValue }}
+        </van-step>
+      </van-steps>
       <step1 v-if="steps2 === 0" :info="info" />
       <step2 v-if="steps2 === 1" :info="info" @detail="getDetail" />
       <step3 v-if="steps2 === 2" :info="info" @detail="getDetail" />
@@ -70,11 +62,6 @@ onBeforeMount(() => {
   if (route.params.id !== 'create') getDetail();
 });
 
-const getCalss = (index) => {
-  if (step.value === index) return 'step-item-process';
-  if (step.value < index) return 'step-item-wait';
-  if (step.value > index) return 'step-item-finish';
-};
 
 // const uesrIdMaps = {
 //   '1899335959778770945': 'createUserId',
