@@ -160,6 +160,12 @@ const loadDicts = async () => {
   outStatusDict.value = (await dictStore.get('DC_WMS_OUT_STATUS')) || [];
 };
 
+const resolveOutTypeLabel = (value) => {
+  const list = outTypeDict.value || [];
+  const hit = list.find((item) => item?.dictKey === value || item?.value === value);
+  return hit?.dictValue || hit?.label || value || '';
+};
+
 onMounted(() => {
   loadDicts();
 });
