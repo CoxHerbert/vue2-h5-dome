@@ -2,7 +2,14 @@
   <van-form ref="ruleFormRef">
     <div class="form-group-title">基本信息</div>
     <van-cell-group inset>
-      <van-field label="出库类型" :model-value="outStockTypeLabel" readonly />
+      <dc-selector
+        v-model="formData.outStockType"
+        label="出库类型"
+        placeholder="请点击选择出库类型"
+        title="出库类型"
+        :options="DC_WMS_OUT_TYPE_WMS"
+        disabled
+      />
       <dc-select-dialog
         v-model="formData.warehouseId"
         label="仓库名称"
@@ -90,7 +97,7 @@
 </template>
 
 <script setup name="customerSubmit">
-import { h, reactive, ref, toRefs, getCurrentInstance, onMounted, watch, computed } from 'vue';
+import { h, reactive, ref, toRefs, getCurrentInstance, onMounted, watch } from 'vue';
 import Api from '@/api';
 import { useRouter } from 'vue-router';
 import { Field, showConfirmDialog, showToast } from 'vant';
@@ -120,12 +127,6 @@ const pageData = reactive({
 
 const { loading, rules, formData, isShow } = toRefs(pageData);
 const rejectReason = ref('');
-const outStockTypeLabel = computed(() => {
-  const list = DC_WMS_OUT_TYPE_WMS?.value || [];
-  const hit = list.find((item) => item.dictKey === formData.value.outStockType);
-  return hit?.dictValue || '';
-});
-
 const validateForm = async () => {
   const formRef = proxy.$refs.ruleFormRef;
   if (formRef?.validate) {
