@@ -311,9 +311,7 @@ const removeEvaluate = async (row) => {
 
 // 取消
 const cancelSubmit = () => {
-  router.push({
-    path: '/apps/warehouse-record/out',
-  });
+  router.push({ name: 'appsWarehouseRecord' });
 };
 
 // 仓库监听事件

@@ -132,10 +132,7 @@ watch(
 );
 
 const cancelSubmit = () => {
-  router.push({
-    path: '/wms/warehouseRecord/outboundOrder',
-    params: {},
-  });
+  router.push({ name: 'appsWarehouseRecord' });
 };
 </script>
 
