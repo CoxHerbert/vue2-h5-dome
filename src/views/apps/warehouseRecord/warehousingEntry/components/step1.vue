@@ -587,13 +587,22 @@ const addExport = () => {
   border: 1px solid #edeae8;
 }
 .wrap-left-form {
-  padding: 12px;
-  background: #f7f8fa;
+  padding: 16px;
+  background: #f5f7fb;
 }
 .form-group-title {
   font-weight: 600;
   color: #303133;
-  margin: 12px 4px;
+  margin: 16px 4px 12px;
+  font-size: 15px;
+}
+.wrap-left-form :deep(.van-cell-group) {
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+.wrap-left-form :deep(.van-cell) {
+  padding-left: 12px;
+  padding-right: 12px;
 }
 .detail-values {
   display: flex;
