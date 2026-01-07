@@ -119,6 +119,22 @@ const getDetail = async () => {
   }
 };
 </script>
+
+<style lang="scss" scoped>
+.wrap-box {
+  background: #f5f7fb;
+  min-height: 100%;
+}
+.wrap-left {
+  padding: 12px;
+}
+:deep(.van-steps) {
+  margin-bottom: 12px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 8px;
+}
+</style>
 <style lang="scss">
 @media (max-width: 1360px) {
   .form-itme-width_50 {

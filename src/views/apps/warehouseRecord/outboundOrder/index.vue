@@ -23,21 +23,21 @@
         @out-stock-type-change="handleOutStockTypeChange"
         @detail="getDetail"
       ></step3>
-      <step4
+      <OutboundReadonlyStep
         v-if="steps2 === 3"
         :info="info"
         @out-stock-type-change="handleOutStockTypeChange"
-      ></step4>
-      <step5
+      ></OutboundReadonlyStep>
+      <OutboundReadonlyStep
         v-if="steps2 === 4"
         :info="info"
         @out-stock-type-change="handleOutStockTypeChange"
-      ></step5>
-      <step6
+      ></OutboundReadonlyStep>
+      <OutboundReadonlyStep
         v-if="steps2 === 5"
         :info="info"
         @out-stock-type-change="handleOutStockTypeChange"
-      ></step6>
+      ></OutboundReadonlyStep>
     </div>
   </div>
 </template>
@@ -47,9 +47,7 @@ import { reactive, toRefs, onBeforeMount, onMounted } from 'vue';
 import step1 from './components/step1.vue';
 import step2 from './components/step2.vue';
 import step3 from './components/step3.vue';
-import step4 from './components/step4.vue';
-import step5 from './components/step5.vue';
-import step6 from './components/step6.vue';
+import OutboundReadonlyStep from './components/OutboundReadonlyStep.vue';
 import { useRoute } from 'vue-router';
 import Api from '@/api/index';
 
@@ -156,6 +154,22 @@ const handleOutStockTypeChange = (newOutStockType) => {
   }
 };
 </script>
+
+<style lang="scss" scoped>
+.wrap-box {
+  background: #f5f7fb;
+  min-height: 100%;
+}
+.wrap-left {
+  padding: 12px;
+}
+:deep(.van-steps) {
+  margin-bottom: 12px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 8px;
+}
+</style>
 <style lang="scss">
 @media (max-width: 1360px) {
   .form-itme-width_50 {

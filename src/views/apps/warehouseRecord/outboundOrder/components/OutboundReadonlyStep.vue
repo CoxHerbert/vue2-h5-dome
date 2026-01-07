@@ -1,5 +1,5 @@
 <template>
-  <div class="wrap-left-form">
+  <div class="wrap-left-form readonly-step">
     <van-form>
       <div class="form-group-title">基本信息</div>
       <van-cell-group inset>
@@ -62,11 +62,7 @@
               <div>单位：{{ item.productUnit || '-' }}</div>
               <div>
                 仓位：
-                <dc-view
-                  v-model="item.locationId"
-                  objectName="warehouseLocation"
-                  showKey="locationName"
-                />
+                <dc-view v-model="item.locationId" objectName="warehouseLocation" showKey="locationName" />
               </div>
             </div>
           </template>
@@ -79,20 +75,18 @@
   </div>
 </template>
 
-<script setup name="customerSubmit">
+<script setup name="OutboundReadonlyStep">
 import { reactive, toRefs, getCurrentInstance, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const { proxy } = getCurrentInstance();
 const router = useRouter();
-// 子组件调用父组件方法
 const emit = defineEmits(['detail', 'out-stock-type-change']);
 const detail = () => {
   emit('detail');
 };
 const { DC_WMS_OUT_TYPE_WMS } = proxy.dicts(['DC_WMS_OUT_TYPE_WMS']);
 const props = defineProps({
-  // 详情
   info: {
     type: Object,
     default: {},
@@ -115,7 +109,6 @@ const outStockTypeLabel = computed(() => {
 onMounted(() => {
   formData.value = props.info;
 });
-// 监听出库类型变化
 watch(
   () => formData.value.outStockType,
   (newVal) => {
@@ -132,9 +125,19 @@ const cancelSubmit = () => {
   });
 };
 </script>
+
 <style lang="scss" scoped>
 .tabel-border {
   border: 1px solid #edeae8;
+}
+.wrap-left-form {
+  padding: 12px;
+  background: #f7f8fa;
+}
+.form-group-title {
+  font-weight: 600;
+  color: #303133;
+  margin: 12px 4px;
 }
 .detail-values {
   display: flex;
@@ -144,5 +147,8 @@ const cancelSubmit = () => {
 }
 .form-itme-btn {
   margin-top: 16px;
+}
+.readonly-step {
+  padding-bottom: 8px;
 }
 </style>

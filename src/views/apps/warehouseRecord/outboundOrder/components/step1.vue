@@ -474,6 +474,15 @@ const handleClickQueryDetail = () => {
 .tabel-border {
   border: 1px solid #edeae8;
 }
+.wrap-left-form {
+  padding: 12px;
+  background: #f7f8fa;
+}
+.form-group-title {
+  font-weight: 600;
+  color: #303133;
+  margin: 12px 4px;
+}
 .dialog-search-box {
   display: flex;
   flex-direction: column;
