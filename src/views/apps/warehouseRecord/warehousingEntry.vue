@@ -14,61 +14,39 @@
       @add="handleAdd"
     >
       <template #nav>
-        <van-nav-bar ref="navRef" title="装配工具借用" fixed left-arrow @click-left="goBack" />
-      </template>
-
-      <template #filters="{ apply }">
-        <van-cell-group inset class="filter-card">
-          <dc-selector
-            v-model="queryParams.inType"
-            label="入库类型"
-            :options="inTypeOptions"
-            placeholder="请选择入库类型"
-          />
-          <dc-select-dialog
-            v-model="selectedWarehouse"
-            label="仓库"
-            object-name="warehouse"
-            :multiple="false"
-            return-type="object"
-            placeholder="请选择仓库"
-          />
-          <van-button type="primary" block size="small" class="filter-card__action" @click="apply"
-            >筛选</van-button
-          >
-        </van-cell-group>
+        <van-nav-bar ref="navRef" title="装配工具归还" fixed left-arrow @click-left="goBack" />
       </template>
 
       <template #item="{ item }">
         <div class="card" @click="handleEdit(item)">
           <div class="card__header">
             <div class="title">入库单号：{{ item.inStockCode ?? '—' }}</div>
-            <van-tag plain round class="status-tag">
-              {{ resolveStatusLabel(item.inStockStatus) }}
-            </van-tag>
+            <dc-dict :value="item.inStockStatus" :options="inStatusDict" />
           </div>
 
           <div class="card__meta">
             <div class="row">
               <span class="label">入库类型</span>
-              <span class="value">{{ resolveInTypeLabel(item.inType) }}</span>
+              <span class="value">
+                <dc-dict :value="item.inType" :options="inTypeDict" />
+              </span>
             </div>
             <div class="row">
               <span class="label">仓库</span>
               <span class="value">
-                <dc-view :value="item.warehouseId" object-name="warehouse" />
+                <dc-view v-model="item.warehouseId" object-name="warehouse" />
               </span>
             </div>
             <div class="row">
               <span class="label">申请人</span>
               <span class="value">
-                <dc-view :value="item.applicantId" object-name="user" />
+                <dc-view v-model="item.applicantId" object-name="user" />
               </span>
             </div>
             <div class="row">
               <span class="label">处理人</span>
               <span class="value">
-                <dc-view :value="item.processingPersonnel" object-name="user" />
+                <dc-view v-model="item.processingPersonnel" object-name="user" />
               </span>
             </div>
             <div class="row">
@@ -139,10 +117,9 @@ const listRef = ref(null);
 const keyword = ref('');
 const activeStatus = ref(null);
 const queryParams = ref({
-  inType: null,
+  inType: 'DC_WMS_IN_TYPE_RETURN',
   warehouseId: null,
 });
-const selectedWarehouse = ref(null);
 
 const inTypeDict = ref([]);
 const inStatusDict = ref([]);
@@ -158,10 +135,13 @@ const inTypeOptions = computed(() =>
 
 const statusOptions = computed(() => {
   const list = inStatusDict.value || [];
-  return [{ label: '全部', value: null }, ...list.map((item) => ({
-    label: item.dictValue,
-    value: item.dictKey,
-  }))];
+  return [
+    { label: '全部', value: null },
+    ...list.map((item) => ({
+      label: item.dictValue,
+      value: item.dictKey,
+    })),
+  ];
 });
 
 const resolveNavEl = () => {
@@ -173,14 +153,6 @@ const resolveNavEl = () => {
   return null;
 };
 
-const resolveDictLabel = (list = [], value) => {
-  const hit = list.find((item) => item.dictKey === value);
-  return hit?.dictValue ?? value ?? '—';
-};
-
-const resolveInTypeLabel = (value) => resolveDictLabel(inTypeDict.value || [], value);
-const resolveStatusLabel = (value) => resolveDictLabel(inStatusDict.value || [], value);
-
 const loadDicts = async () => {
   inTypeDict.value = (await dictStore.get('DC_WMS_IN_TYPE_WMS')) || [];
   inStatusDict.value = (await dictStore.get('DC_WMS_IN_STATUS')) || [];
@@ -189,15 +161,6 @@ const loadDicts = async () => {
 onMounted(() => {
   loadDicts();
 });
-
-watch(
-  selectedWarehouse,
-  (val) => {
-    const row = val && typeof val === 'object' ? val : null;
-    queryParams.value.warehouseId = row?.id ?? row?.warehouseId ?? null;
-  },
-  { immediate: true }
-);
 
 async function fetcher({ pageNo, pageSize, keyword, status, inType, warehouseId }) {
   const params = {

@@ -17,27 +17,6 @@
         <van-nav-bar ref="navRef" title="装配工具借用" fixed left-arrow @click-left="goBack" />
       </template>
 
-      <template #filters="{ apply }">
-        <van-cell-group inset class="filter-card">
-          <van-field
-            label="出库类型"
-            readonly
-            :model-value="resolveOutTypeLabel(queryParams.outStockType)"
-          />
-          <dc-select-dialog
-            v-model="selectedWarehouse"
-            label="仓库"
-            object-name="warehouse"
-            :multiple="false"
-            return-type="object"
-            placeholder="请选择仓库"
-          />
-          <van-button type="primary" block size="small" class="filter-card__action" @click="apply"
-            >筛选</van-button
-          >
-        </van-cell-group>
-      </template>
-
       <template #item="{ item }">
         <div class="card" @click="handleEdit(item)">
           <div class="card__header">
@@ -120,7 +99,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import Api from '@/api';
@@ -136,17 +115,14 @@ const listRef = ref(null);
 const keyword = ref('');
 const activeStatus = ref(null);
 const queryParams = ref({
-  outStockType: '',
-  warehouseId: null,
+  outStockType: 'DC_WMS_OUT_TYPE_BORROW',
 });
-const selectedWarehouse = ref(null);
 
 const outTypeDict = ref([]);
 const outStatusDict = ref([]);
 
 const statusOptions = computed(() => {
   const list = outStatusDict.value || [];
-  console.log(list);
   return [{ label: '全部', value: null }, ...list];
 });
 
@@ -164,26 +140,11 @@ const loadDicts = async () => {
   outStatusDict.value = (await dictStore.get('DC_WMS_OUT_STATUS')) || [];
 };
 
-const resolveOutTypeLabel = (value) => {
-  const list = outTypeDict.value || [];
-  const hit = list.find((item) => item?.dictKey === value || item?.value === value);
-  return hit?.dictValue || hit?.label || value || '';
-};
-
 onMounted(() => {
   loadDicts();
 });
 
-watch(
-  selectedWarehouse,
-  (val) => {
-    const row = val && typeof val === 'object' ? val : null;
-    queryParams.value.warehouseId = row?.id ?? row?.warehouseId ?? null;
-  },
-  { immediate: true }
-);
-
-async function fetcher({ pageNo, pageSize, keyword, status, outStockType, warehouseId }) {
+async function fetcher({ pageNo, pageSize, keyword, status, outStockType }) {
   const params = {
     current: pageNo,
     size: pageSize,
@@ -192,7 +153,6 @@ async function fetcher({ pageNo, pageSize, keyword, status, outStockType, wareho
   if (trimmedKeyword) params.outStockCode = trimmedKeyword;
   if (status) params.outStockStatus = status;
   if (outStockType) params.outStockType = outStockType;
-  if (warehouseId) params.warehouseId = warehouseId;
 
   const res = await Api.application.outboundOrder.list(params);
   const { code, data, msg } = res?.data || {};
@@ -227,7 +187,7 @@ const handleDelete = async (row) => {
 };
 
 const goBack = () => {
-  goBackOrHome(router);
+  goBackOrHome(router, '/apps');
 };
 </script>
 

@@ -3,45 +3,37 @@
     <van-form ref="ruleFormRef">
       <div class="form-group-title">基本信息</div>
       <van-cell-group inset>
-        <van-field label="出库类型" label-align="top" :model-value="outStockTypeLabel" readonly />
-        <van-field label="仓库名称" label-align="top">
-          <template #input>
-            <dc-select-dialog
-              v-model="formData.warehouseId"
-              placeholder="请点击选择仓库"
-              objectName="warehouse"
-              type="input"
-              :multiple="false"
-              :multiple-limit="1"
-              :clearable="true"
-              :disabled="isShow"
-            />
-          </template>
-        </van-field>
-        <van-field label="申请人" label-align="top">
-          <template #input>
-            <dc-select-user
-              v-model="formData.applicantId"
-              placeholder="请选择"
-              :multipleLimit="1"
-              :disabled="isShow"
-            />
-          </template>
-        </van-field>
-        <van-field label="处理人" label-align="top">
-          <template #input>
-            <dc-select-user
-              v-model="formData.processingPersonnel"
-              placeholder="请选择"
-              :multipleLimit="1"
-              :disabled="isShow"
-            />
-          </template>
-        </van-field>
+        <van-field label="出库类型" :model-value="outStockTypeLabel" readonly />
+        <dc-select-dialog
+          v-model="formData.warehouseId"
+          label="仓库名称"
+          placeholder="请点击选择仓库"
+          object-name="warehouse"
+          type="input"
+          :multiple="false"
+          :multiple-limit="1"
+          :clearable="true"
+          :disabled="isShow"
+        />
+        <dc-select-dialog
+          v-model="formData.applicantId"
+          label="申请人"
+          placeholder="请选择"
+          object-name="user"
+          :multiple="false"
+          :disabled="isShow"
+        />
+        <dc-select-dialog
+          v-model="formData.processingPersonnel"
+          label="处理人"
+          placeholder="请选择"
+          object-name="user"
+          :multiple="false"
+          :disabled="isShow"
+        />
         <van-field
           v-model="formData.remark"
           label="备注"
-          label-align="top"
           type="textarea"
           rows="2"
           placeholder="请输入备注"
@@ -65,8 +57,8 @@
                 仓位：
                 <dc-view
                   v-model="item.locationId"
-                  objectName="warehouseLocation"
-                  showKey="locationName"
+                  object-name="warehouseLocation"
+                  show-key="locationName"
                 />
               </div>
             </div>
