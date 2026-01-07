@@ -4,64 +4,54 @@
       <div class="form-group-title">基本信息</div>
       <van-cell-group inset>
         <van-field label="入库类型" :model-value="inTypeLabel" readonly />
-        <van-field label="仓库名称">
-          <template #input>
-            <dc-select-dialog
-              v-model="formData.warehouseId"
-              placeholder="请点击选择仓库"
-              object-name="warehouse"
-              type="input"
-              :multiple="false"
-              :multiple-limit="1"
-              :clearable="true"
-              :disabled="show"
-            />
-          </template>
-        </van-field>
-        <van-field label="来源单号">
-          <template #input>
-            <dc-select-dialog
-              v-if="formData.inType === 'DC_WMS_IN_TYPE_RETURN'"
-              v-model="formData.inSourceNumber"
-              object-name="outboundOrder"
-              type="input"
-              :multiple="false"
-              :multiple-limit="1"
-              :clearable="true"
-              :disabled="show"
-              :params="{
-                outStockStatus: 'DC_WMS_OUT_STATUS_BORROW',
-              }"
-              @change="(row) => handleWarehouseChange(row, 'outboundOrder')"
-            />
-            <van-field
-              v-else
-              v-model="formData.inSourceNumber"
-              placeholder="请输入来源单号点击查询"
-              readonly
-            />
-          </template>
-        </van-field>
-        <van-field label="申请人">
-          <template #input>
-            <dc-select-user
-              v-model="formData.applicantId"
-              placeholder="请选择"
-              :multiple-limit="1"
-              disabled
-            />
-          </template>
-        </van-field>
-        <van-field label="处理人">
-          <template #input>
-            <dc-select-user
-              v-model="formData.processingPersonnel"
-              placeholder="请选择"
-              :multiple-limit="1"
-              disabled
-            />
-          </template>
-        </van-field>
+        <dc-select-dialog
+          v-model="formData.warehouseId"
+          label="仓库名称"
+          placeholder="请点击选择仓库"
+          object-name="warehouse"
+          type="input"
+          :multiple="false"
+          :multiple-limit="1"
+          :clearable="true"
+          :disabled="show"
+        />
+        <dc-select-dialog
+          v-if="formData.inType === 'DC_WMS_IN_TYPE_RETURN'"
+          v-model="formData.inSourceNumber"
+          label="来源单号"
+          object-name="outboundOrder"
+          type="input"
+          :multiple="false"
+          :multiple-limit="1"
+          :clearable="true"
+          :disabled="show"
+          :params="{
+            outStockStatus: 'DC_WMS_OUT_STATUS_BORROW',
+          }"
+          @change="(row) => handleWarehouseChange(row, 'outboundOrder')"
+        />
+        <van-field
+          v-else
+          v-model="formData.inSourceNumber"
+          placeholder="请输入来源单号点击查询"
+          readonly
+        />
+        <dc-select-dialog
+          v-model="formData.applicantId"
+          label="申请人"
+          placeholder="请选择"
+          object-name="user"
+          :multiple="false"
+          disabled
+        />
+        <dc-select-dialog
+          v-model="formData.processingPersonnel"
+          label="处理人"
+          placeholder="请选择"
+          object-name="user"
+          :multiple="false"
+          disabled
+        />
       </van-cell-group>
       <div class="form-group-title">入库明细</div>
       <van-cell-group inset class="tabel-border">
@@ -84,7 +74,7 @@
                   show-key="locationName"
                 />
               </div>
-              <div class="detail-actions" v-if="btnOpen">
+              <div v-if="btnOpen" class="detail-actions">
                 <van-button size="small" type="primary" plain @click="handleUpdate(item)">
                   编辑
                 </van-button>
@@ -174,9 +164,8 @@ const pageData = reactive({
   unitList: [],
 });
 
-const { loading, rules, formData, show, open, title, formDataTable, btnOpen, unitList } = toRefs(
-  pageData
-);
+const { loading, rules, formData, show, open, title, formDataTable, btnOpen, unitList } =
+  toRefs(pageData);
 const inTypeLabel = computed(() => {
   const list = DC_WMS_IN_TYPE_WMS?.value || [];
   const hit = list.find((item) => item.dictKey === formData.value.inType);

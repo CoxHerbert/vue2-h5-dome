@@ -3,10 +3,9 @@
     class="dc-select-dialog"
     :style="{ width, '--dc-select-dialog-footer-height': footerHeight }"
   >
-    <div v-if="$slots.default" class="dc-select-dialog__trigger" :class="{ disabled }">
-      <div class="dc-select-dialog__slot" @click="openPopup">
-        <slot></slot>
-      </div>
+    <div v-if="$slots.customize" @click="openPopup"><slot name="customize"></slot></div>
+    <div v-else-if="$slots.default" class="dc-select-dialog__trigger" :class="{ disabled }">
+      <div class="dc-select-dialog__slot" @click="openPopup"><slot></slot></div>
       <div class="dc-select-dialog__icons">
         <van-icon
           v-if="displayClearIcon"
@@ -75,7 +74,7 @@
       @close="handleClose"
     >
       <div class="dc-select-dialog__header">
-        <span class="dc-select-dialog__title">{{ popupTitle }}</span>
+        <span class="dc-select-dialog__title">{{ popupTitle }} </span>
       </div>
 
       <div v-loading="loading" class="dc-select-dialog__body">

@@ -17,17 +17,18 @@
             @cancel="showInTypePicker = false"
           />
         </van-popup>
-        <van-field label="仓库名称">
+        <van-field>
           <template #input>
             <dc-select-dialog
               v-model="formData.warehouseId"
+              label="仓库名称"
               :disabled="[null, '', undefined].includes(formData.inType)"
               :placeholder="
                 [null, '', undefined].includes(formData.inType)
                   ? '请先选择入库类型'
                   : '请点击选择仓库'
               "
-              objectName="warehouse"
+              object-name="warehouse"
               type="input"
               :multiple="false"
               :multiple-limit="1"
@@ -39,49 +40,46 @@
             />
           </template>
         </van-field>
-        <van-field
+        <dc-select-dialog
           v-if="formData.inType === 'DC_WMS_IN_TYPE_RETURN'"
+          v-model="formData.inSourceNumber"
           label="来源单号"
-        >
-          <template #input>
-            <dc-select-dialog
-              v-model="formData.inSourceNumber"
-              objectName="outboundOrder"
-              type="input"
-              :multiple="false"
-              :multiple-limit="1"
-              :clearable="true"
-              :params="{
-                outStockStatus: 'DC_WMS_OUT_STATUS_BORROW',
-              }"
-              @change="(row) => handleWarehouseChange(row, 'outboundOrder')"
-            />
-          </template>
-        </van-field>
+          object-name="outboundOrder"
+          type="input"
+          :multiple="false"
+          :multiple-limit="1"
+          :clearable="true"
+          :params="{
+            outStockStatus: 'DC_WMS_OUT_STATUS_BORROW',
+          }"
+          @change="(row) => handleWarehouseChange(row, 'outboundOrder')"
+        />
         <van-field v-else label="来源单号">
           <template #input>
             <van-field
               v-model="formData.inSourceNumber"
               placeholder="请输入选择来源单号"
-              @blur="handleSerch"
               :readonly="formData.inType === 'DC_WMS_IN_TYPE_OTHER'"
+              @blur="handleSerch"
             />
           </template>
         </van-field>
-        <van-field label="申请人">
-          <template #input>
-            <dc-select-user v-model="formData.applicantId" placeholder="请选择" :multipleLimit="1" />
-          </template>
-        </van-field>
-        <van-field label="处理人">
-          <template #input>
-            <dc-select-user
-              v-model="formData.processingPersonnel"
-              placeholder="请选择"
-              :multipleLimit="1"
-            />
-          </template>
-        </van-field>
+        <dc-select-dialog
+          v-model="formData.applicantId"
+          label="申请人"
+          placeholder="请选择"
+          object-name="user"
+          :multiple="false"
+          :disabled="isShow"
+        />
+        <dc-select-dialog
+          v-model="formData.processingPersonnel"
+          label="处理人"
+          placeholder="请选择"
+          object-name="user"
+          :multiple="false"
+          :disabled="isShow"
+        />
         <van-field
           v-if="formData.reject"
           v-model="formData.reject"
@@ -93,15 +91,12 @@
       </van-cell-group>
       <div class="form-group-title">入库明细</div>
       <van-button v-if="btnOpen" class="mb-5" type="primary" @click="addRow">新增</van-button>
-      <van-uploader
-        v-if="btnOpen"
-        :after-read="uploadFile"
-        accept=".xls,.xlsx"
-        class="ml-2 mr-2"
-      >
+      <van-uploader v-if="btnOpen" :after-read="uploadFile" accept=".xls,.xlsx" class="ml-2 mr-2">
         <van-button type="primary">导入</van-button>
       </van-uploader>
-      <van-button v-if="btnOpen" class="mb-5" type="primary" @click="addExport">下载模板</van-button>
+      <van-button v-if="btnOpen" class="mb-5" type="primary" @click="addExport"
+        >下载模板</van-button
+      >
       <van-cell-group inset class="tabel-border">
         <van-cell
           v-for="(item, index) in formData.detailList"
@@ -118,8 +113,8 @@
                 仓位：
                 <dc-view
                   v-model="item.locationId"
-                  objectName="warehouseLocation"
-                  showKey="locationName"
+                  object-name="warehouseLocation"
+                  show-key="locationName"
                 />
               </div>
               <div class="detail-actions">
@@ -181,7 +176,7 @@
               <dc-select-dialog
                 v-model="formDataTable.locationId"
                 placeholder="请点击仓位编号"
-                objectName="warehouseLocation"
+                object-name="warehouseLocation"
                 type="input"
                 :multiple="false"
                 :multiple-limit="1"

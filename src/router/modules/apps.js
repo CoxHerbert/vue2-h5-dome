@@ -143,7 +143,7 @@ export default {
       component: () => import('@/views/apps/OutsourcingQuotation.vue'),
     },
     {
-      path: 'warehouse-record',
+      path: 'warehouse-record/out',
       name: 'appsWarehouseRecord',
       meta: { title: '装配工具借用', requiresAuth: true },
       component: () => import('@/views/apps/warehouseRecord/outboundOrder.vue'),

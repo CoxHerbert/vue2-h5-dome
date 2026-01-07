@@ -3,9 +3,7 @@
     <div class="wrap-left">
       <!-- 移动端：顶部横向步骤条，减少占高 -->
       <van-steps :active="step" direction="horizontal">
-        <van-step v-for="(item, index) in dictData" :key="index">
-          {{ index + 1 }}
-        </van-step>
+        <van-step v-for="(d, index) in dictData" :key="index">{{ d.label }}</van-step>
       </van-steps>
 
       <!-- 当前步骤标题：让用户始终知道正在填什么 -->
@@ -62,7 +60,7 @@ const { DC_WMS_OUT_STATUS } = proxy.dicts(['DC_WMS_OUT_STATUS']);
 const dictOutStockStatus = (value) => {
   let dcWmsOutStatus = DC_WMS_OUT_STATUS.value;
   if (value === 'DC_WMS_OUT_TYPE_BORROW') {
-    dictData.value = dcWmsOutStatus.filter((item) => item.dictKey !== 'DC_WMS_OUT_STATUS_C');
+    dictData.value = dcWmsOutStatus.filter((item) => item.value !== 'DC_WMS_OUT_STATUS_C');
     console.log(dictData.value);
   } else {
     dictData.value = dcWmsOutStatus.slice(0, 4);
@@ -173,7 +171,6 @@ const handleOutStockTypeChange = (newOutStockType) => {
 /* 顶部步骤条：卡片样式 */
 :deep(.van-steps) {
   margin-bottom: 12px;
-  background: #fff;
   border-radius: 12px;
   padding: 12px 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
@@ -192,12 +189,6 @@ const handleOutStockTypeChange = (newOutStockType) => {
   line-height: 16px;
   word-break: break-all;
 }
-
-/* 横向步骤条：把标题隐藏掉，只保留圆点/序号逻辑 */
-:deep(.van-steps--horizontal .van-step__title) {
-  display: none;
-}
-
 
 /* 如果 step 组件内部是表单：强制单列更舒服 */
 :deep(.custom-form) {
