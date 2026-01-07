@@ -14,7 +14,7 @@
       @add="handleAdd"
     >
       <template #nav>
-        <van-nav-bar ref="navRef" title="装配工具借用" fixed left-arrow @click-left="goBack" />
+        <van-nav-bar ref="navRef" title="装配工具归还" fixed left-arrow @click-left="goBack" />
       </template>
 
       <template #filters="{ apply }">
