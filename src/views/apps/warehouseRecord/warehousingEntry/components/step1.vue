@@ -346,7 +346,7 @@ const submitForm = () => {
       const { code, msg } = res.data;
       loading.value = false;
       if (code === 200) {
-        proxy.$message({ type: 'success', message: '保存成功' });
+        showToast({ type: 'success', message: '保存成功' });
         router.push({
           path: '/wms/warehouseRecord/warehousingEntry',
           params: {},
@@ -410,7 +410,7 @@ const submitAudit = () => {
     const res = await Api.application.warehousingEntry.submitAudit(form);
     const { code, msg } = res.data;
     if (code === 200) {
-      proxy.$message({ type: 'success', message: '审核成功' });
+      showToast({ type: 'success', message: '审核成功' });
       loading.value = false;
       router.push({
         path: '/wms/warehouseRecord/warehousingEntry',

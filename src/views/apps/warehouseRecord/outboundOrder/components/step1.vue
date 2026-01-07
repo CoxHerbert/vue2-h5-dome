@@ -164,6 +164,7 @@
 import { reactive, toRefs, getCurrentInstance, watch, computed, onMounted } from 'vue';
 import Api from '@/api';
 import { useRouter, useRoute } from 'vue-router';
+import { showToast } from 'vant';
 
 const outStockTypeMap = {
   // 现场出库
@@ -262,7 +263,7 @@ const submitForm = async () => {
   const res = await Api.application.outboundOrder.submit(form);
   const { code } = res.data;
   if (code === 200) {
-    proxy.$message({ type: 'success', message: '保存成功' });
+    showToast({ type: 'success', message: '保存成功' });
     router.push({ name: 'appsWarehouseRecord' });
   }
 };
@@ -289,7 +290,7 @@ const submitAudit = () => {
     const res = await Api.application.outboundOrder.submitAudit(form);
     const { code } = res.data;
     if (code === 200) {
-      proxy.$message({ type: 'success', message: '审核成功' });
+      showToast({ type: 'success', message: '审核成功' });
       router.push({ name: 'appsWarehouseRecord' });
     }
   })();
