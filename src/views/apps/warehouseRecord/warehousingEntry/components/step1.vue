@@ -93,9 +93,7 @@
     <van-uploader v-if="btnOpen" :after-read="uploadFile" accept=".xls,.xlsx" class="ml-2 mr-2">
       <van-button type="primary">导入</van-button>
     </van-uploader>
-    <van-button v-if="btnOpen" class="mb-5" type="primary" @click="addExport"
-      >下载模板</van-button
-    >
+    <van-button v-if="btnOpen" class="mb-5" type="primary" @click="addExport">下载模板</van-button>
     <div v-for="(item, index) in formData.detailList || []" :key="index" class="card__meta">
       <div class="row">
         <span class="label">物料名称</span>
@@ -138,13 +136,7 @@
       </div>
       <div class="row detail-actions">
         <van-button size="mini" type="primary" plain @click="handleUpdate(item)">编辑</van-button>
-        <van-button
-          v-if="btnOpen"
-          size="mini"
-          type="danger"
-          plain
-          @click="removeEvaluate(item)"
-        >
+        <van-button v-if="btnOpen" size="mini" type="danger" plain @click="removeEvaluate(item)">
           删除
         </van-button>
       </div>
@@ -255,27 +247,6 @@ const inTypeOptions = computed(() =>
 
 const pageData = reactive({
   loading: false,
-  rules: {
-    warehouseId: [{ required: true, message: '请选择仓库', trigger: 'blur' }],
-    inType: [{ required: true, message: '请输入入库类型', trigger: 'blur' }],
-    applicantId: [{ required: true, message: '请选择申请人', trigger: 'blur' }],
-    processingPersonnel: [
-      {
-        required: true,
-        validator(_, value, callback) {
-          if ([null, '', undefined].includes(value)) {
-            callback(new Error('请选择处理人'));
-          }
-          if (value && value?.split?.(',')?.length > 1) {
-            callback(new Error('不允许有多个处理人'));
-          } else {
-            callback();
-          }
-        },
-        trigger: 'blur',
-      },
-    ],
-  },
   formData: {
     inType: 'DC_WMS_IN_TYPE_ON_SITE_STORAGE',
     detailList: [],
@@ -292,7 +263,6 @@ const pageData = reactive({
 
 const {
   loading,
-  rules,
   formData,
   formDataTable,
   open,

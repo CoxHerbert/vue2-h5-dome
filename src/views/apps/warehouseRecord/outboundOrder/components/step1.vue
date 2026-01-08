@@ -27,7 +27,6 @@
         disabled
         @change="handleWarehouseChange"
       />
-
       <dc-select-dialog
         v-model="formData.applicantId"
         label="申请人"
@@ -153,9 +152,9 @@
     </div>
 
     <div class="form-itme-btn">
-      <van-button type="primary" size="mini" block @click="submitForm">保存</van-button>
-      <van-button type="primary" size="mini" block @click="submitAudit">审核</van-button>
-      <van-button size="mini" block @click="cancelSubmit">取消</van-button>
+      <van-button size="mini" block @click="cancelSubmit">返回</van-button>
+      <van-button type="success" size="mini" block @click="submitForm">保存草稿</van-button>
+      <van-button type="primary" size="mini" block @click="submitAudit">发起</van-button>
     </div>
   </van-form>
 </template>
@@ -204,6 +203,7 @@ const pageData = reactive({
   formData: {
     outStockType: 'DC_WMS_OUT_TYPE_BORROW',
     detailList: [],
+    applicantId: null,
   },
   isDisabled: true,
   ids: null,
@@ -250,17 +250,7 @@ const submitForm = async () => {
     return;
   }
 
-  const warehouseId =
-    typeof formData.value.warehouseId === 'object'
-      ? formData.value.warehouseId?.id
-      : formData.value.warehouseId;
-
-  const form = {
-    ...formData.value,
-    warehouseId,
-  };
-
-  const res = await Api.application.outboundOrder.submit(form);
+  const res = await Api.application.outboundOrder.submit(formData.value);
   const { code } = res.data;
   if (code === 200) {
     showToast({ type: 'success', message: '保存成功' });
@@ -277,17 +267,8 @@ const submitAudit = () => {
       return;
     }
 
-    const warehouseId =
-      typeof formData.value.warehouseId === 'object'
-        ? formData.value.warehouseId?.id
-        : formData.value.warehouseId;
-
-    const form = {
-      ...formData.value,
-      warehouseId,
-    };
-
-    const res = await Api.application.outboundOrder.submitAudit(form);
+    console.log(formData.value);
+    const res = await Api.application.outboundOrder.submitAudit(formData.value);
     const { code } = res.data;
     if (code === 200) {
       showToast({ type: 'success', message: '审核成功' });
@@ -347,6 +328,10 @@ const handleSerchDetail = (row) => {
 :deep(.van-cell-group) {
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  margin: 0;
+}
+:deep(.van-cell-group--inset) {
+  margin: 0;
 }
 :deep(.van-cell) {
   padding-left: 12px;

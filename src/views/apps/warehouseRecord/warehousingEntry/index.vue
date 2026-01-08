@@ -1,9 +1,6 @@
 <template>
   <div class="wrap-box">
     <div class="wrap-left">
-      <!-- <div class="step-new">
-        <dc-steps v-bind="stepProps" :activeIndex="step"></dc-steps>
-      </div> -->
       <van-steps :active="step">
         <van-step v-for="(item, index) in DC_WMS_IN_STATUS?.value" :key="index">
           {{ item.dictValue }}
@@ -62,7 +59,6 @@ onBeforeMount(() => {
   pageId.value = route.params.id;
   if (route.params.id !== 'create') getDetail();
 });
-
 
 // const uesrIdMaps = {
 //   '1899335959778770945': 'createUserId',
