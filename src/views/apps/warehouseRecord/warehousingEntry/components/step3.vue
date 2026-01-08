@@ -123,10 +123,7 @@ onMounted(() => {
 });
 
 const cancelSubmit = () => {
-  router.push({
-    path: '/wms/warehouseRecord/warehousingEntry',
-    params: {},
-  });
+  router.push({ name: 'appsWarehousingEntry' });
 };
 </script>
 <style lang="scss" scoped>

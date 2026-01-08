@@ -161,11 +161,11 @@ async function fetcher({ pageNo, pageSize, keyword, status, inType, warehouseId 
 }
 
 const handleAdd = () => {
-  router.push({ name: '入库提交', params: { id: 'create' } });
+  router.push({ name: 'appsWarehousingEntrySubmit', params: { id: 'create' } });
 };
 
 const handleEdit = (row) => {
-  router.push({ name: '入库提交', params: { id: row.id } });
+  router.push({ name: 'appsWarehousingEntrySubmit', params: { id: row.id } });
 };
 
 const handleDelete = async (row) => {

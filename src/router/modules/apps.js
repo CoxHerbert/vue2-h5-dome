@@ -155,6 +155,12 @@ export default {
       component: () => import('@/views/apps/warehouseRecord/warehousingEntry.vue'),
     },
     {
+      path: 'warehouse-record/entry/:id',
+      name: 'appsWarehousingEntrySubmit',
+      meta: { title: '入库提交', requiresAuth: true },
+      component: () => import('@/views/apps/warehouseRecord/warehousingEntry/index.vue'),
+    },
+    {
       path: 'warehouse-record/outbound/:id',
       name: 'appsWarehouseRecordOutboundSubmit',
       meta: { title: '出库提交', requiresAuth: true },

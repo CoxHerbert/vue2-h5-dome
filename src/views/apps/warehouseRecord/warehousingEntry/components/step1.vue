@@ -317,10 +317,7 @@ const submitForm = () => {
       loading.value = false;
       if (code === 200) {
         showToast({ type: 'success', message: '保存成功' });
-        router.push({
-          path: '/wms/warehouseRecord/warehousingEntry',
-          params: {},
-        });
+        router.push({ name: 'appsWarehousingEntry' });
       }
     } catch (err) {
       loading.value = false;
@@ -382,10 +379,7 @@ const submitAudit = () => {
     if (code === 200) {
       showToast({ type: 'success', message: '审核成功' });
       loading.value = false;
-      router.push({
-        path: '/wms/warehouseRecord/warehousingEntry',
-        params: {},
-      });
+      router.push({ name: 'appsWarehousingEntry' });
     }
   })();
 };
@@ -434,10 +428,7 @@ const closeDrawer = () => {
 };
 // 取消
 const cancelSubmit = () => {
-  router.push({
-    path: '/wms/warehouseRecord/warehousingEntry',
-    params: {},
-  });
+  router.push({ name: 'appsWarehousingEntry' });
 };
 
 const handleSerch = async (row) => {

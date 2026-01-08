@@ -217,10 +217,7 @@ const submitAudit = () => {
     const { code, msg } = res.data;
     if (code === 200) {
       showToast({ type: 'success', message: '审核成功' });
-      router.push({
-        path: '/wms/warehouseRecord/warehousingEntry',
-        params: {},
-      });
+      router.push({ name: 'appsWarehousingEntry' });
     }
   })();
 };
@@ -261,10 +258,7 @@ const submitReject = async () => {
     const { code, msg } = res.data;
     if (code === 200) {
       showToast({ type: 'success', message: '驳回成功' });
-      router.push({
-        path: '/wms/warehouseRecord/warehousingEntry',
-        params: {},
-      });
+      router.push({ name: 'appsWarehousingEntry' });
     }
   } catch (error) {
     console.error('Reject cancelled or failed:', error);
@@ -272,10 +266,7 @@ const submitReject = async () => {
 };
 
 const cancelSubmit = () => {
-  router.push({
-    path: '/wms/warehouseRecord/warehousingEntry',
-    params: {},
-  });
+  router.push({ name: 'appsWarehousingEntry' });
 };
 
 const handleUpdate = (row) => {
