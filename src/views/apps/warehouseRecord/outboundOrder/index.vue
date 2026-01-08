@@ -48,6 +48,7 @@ import step3 from './components/step3.vue';
 import OutboundReadonlyStep from './components/OutboundReadonlyStep.vue';
 import { useRoute } from 'vue-router';
 import Api from '@/api/index';
+import { showToast } from 'vant';
 
 const route = useRoute();
 
@@ -128,10 +129,7 @@ const getDetail = async () => {
     if (code === 200) {
       info.value = data;
     } else {
-      proxy.$message({
-        type: 'warning',
-        message: msg,
-      });
+      showToast({ type: 'warning', message: msg });
     }
     loading.value = false;
   } catch (err) {
