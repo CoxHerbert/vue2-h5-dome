@@ -11,6 +11,7 @@
       :offset="200"
       :fetcher="fetcher"
       :get-nav-el="resolveNavEl"
+      :add-visible="true"
       @add="handleAdd"
     >
       <template #nav>
@@ -82,17 +83,6 @@
         <van-empty description="暂无借用记录">
           <van-button type="primary" round size="small" @click="handleAdd">新增记录</van-button>
         </van-empty>
-      </template>
-
-      <template #fab>
-        <button
-          v-permission="{ id: 'DC_OUTBOUNDORDER_ADD' }"
-          class="dc-fab-add"
-          aria-label="新增"
-          @click="handleAdd"
-        >
-          <van-icon name="plus" size="18" />
-        </button>
       </template>
     </dc-pagination>
   </div>

@@ -89,9 +89,9 @@
       </div>
     </div>
     <div class="form-itme-btn">
-      <van-button type="primary" size="mini" block @click="submitAudit">审核</van-button>
-      <van-button type="primary" size="mini" block @click="submitReject">驳回</van-button>
-      <van-button size="mini" block @click="cancelSubmit">取消</van-button>
+      <van-button size="mini" block @click="cancelSubmit">返回</van-button>
+      <van-button type="danger" size="mini" block @click="submitReject">驳回</van-button>
+      <van-button type="primary" size="mini" block @click="submitAudit">通过</van-button>
     </div>
   </van-form>
 </template>
@@ -106,9 +106,6 @@ const { proxy } = getCurrentInstance();
 const router = useRouter();
 // 子组件调用父组件方法
 const emit = defineEmits(['detail', 'out-stock-type-change']);
-const detail = () => {
-  emit('detail');
-};
 
 const { DC_WMS_OUT_TYPE_WMS } = proxy.dicts(['DC_WMS_OUT_TYPE_WMS']);
 const props = defineProps({
@@ -119,13 +116,11 @@ const props = defineProps({
   },
 });
 const pageData = reactive({
-  loading: false,
-  rules: {},
   formData: {},
   isShow: true,
 });
 
-const { loading, rules, formData, isShow } = toRefs(pageData);
+const { formData, isShow } = toRefs(pageData);
 const rejectReason = ref('');
 const validateForm = async () => {
   const formRef = proxy.$refs.ruleFormRef;
@@ -157,7 +152,7 @@ const submitAudit = () => {
     const res = await Api.application.outboundOrder.submitAudit({
       ...formData.value,
     });
-    const { code, msg } = res.data;
+    const { code } = res.data;
     if (code === 200) {
       showToast({ type: 'success', message: '审核成功' });
       router.push({ name: 'appsWarehouseRecord' });
@@ -198,7 +193,7 @@ const submitReject = async () => {
       ...formData.value,
       reject: reason,
     });
-    const { code, msg } = res.data;
+    const { code } = res.data;
     if (code === 200) {
       showToast({ type: 'success', message: '驳回成功' });
       router.push({ name: 'appsWarehouseRecord' });
@@ -222,6 +217,10 @@ const cancelSubmit = () => {
 :deep(.van-cell-group) {
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  margin: 0;
+}
+:deep(.van-cell-group--inset) {
+  margin: 0;
 }
 :deep(.van-cell) {
   padding-left: 12px;

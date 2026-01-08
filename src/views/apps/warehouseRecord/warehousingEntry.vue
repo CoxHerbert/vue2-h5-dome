@@ -11,6 +11,7 @@
       :offset="200"
       :fetcher="fetcher"
       :get-nav-el="resolveNavEl"
+      :add-visible="true"
       @add="handleAdd"
     >
       <template #nav>
@@ -85,23 +86,12 @@
           <van-button type="primary" round size="small" @click="handleAdd">新增记录</van-button>
         </van-empty>
       </template>
-
-      <template #fab>
-        <button
-          v-permission="{ id: 'DC_WAREHOUSING_ENTRY_ADD' }"
-          class="dc-fab-add"
-          aria-label="新增"
-          @click="handleAdd"
-        >
-          <van-icon name="plus" size="18" />
-        </button>
-      </template>
     </dc-pagination>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import Api from '@/api';
@@ -123,15 +113,6 @@ const queryParams = ref({
 
 const inTypeDict = ref([]);
 const inStatusDict = ref([]);
-
-const inTypeOptions = computed(() =>
-  (inTypeDict.value || []).map((item) => ({
-    label: item.dictValue,
-    text: item.dictValue,
-    value: item.dictKey,
-    raw: item,
-  }))
-);
 
 const statusOptions = computed(() => {
   const list = inStatusDict.value || [];
