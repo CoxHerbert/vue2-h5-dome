@@ -292,6 +292,10 @@ const closeDrawer = () => {
 :deep(.van-cell-group) {
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  margin: 0;
+}
+:deep(.van-cell-group--inset) {
+  margin: 0;
 }
 :deep(.van-cell) {
   padding-left: 12px;
@@ -324,9 +328,6 @@ const closeDrawer = () => {
 .card__meta .label {
   color: #888;
   min-width: 40px;
-}
-.detail-actions {
-  justify-content: flex-end;
 }
 .drawer-popup {
   width: 85%;

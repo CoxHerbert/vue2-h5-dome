@@ -563,10 +563,38 @@ const addExport = () => {
 :deep(.van-cell-group) {
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  margin: 0;
+}
+:deep(.van-cell-group--inset) {
+  margin: 0;
 }
 :deep(.van-cell) {
   padding-left: 12px;
   padding-right: 12px;
+}
+.dialog-search-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+}
+.detail-values {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+.qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
 }
 .form-itme-btn {
   position: fixed;
@@ -595,10 +623,6 @@ const addExport = () => {
 .card__meta .label {
   color: #888;
   min-width: 40px;
-}
-.detail-actions {
-  justify-content: flex-end;
-  gap: 8px;
 }
 .drawer-popup {
   width: 85%;
