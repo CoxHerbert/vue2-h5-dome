@@ -158,7 +158,9 @@
       ></wf-select-dialog> -->
 
       <span v-else-if="'wf-select-dialog' == column.component || 'wf-select-dialog' == column.type">
-        <!-- {{ column.params.objectName }} -->
+        <!-- {{ column.params.objectName }}
+        {{ column.params }} -->
+        {{ text }}
         <wf-select-dialog
           v-model="text"
           :column="column"
@@ -291,6 +293,7 @@ export default {
       return column?.children?.props?.url === '/blade-system/search/user';
     },
     handleLabelChange(val) {
+      // console.log(this.column.change);
       this.text = val;
       this.$emit('label-change', {
         prop: this.column.prop,

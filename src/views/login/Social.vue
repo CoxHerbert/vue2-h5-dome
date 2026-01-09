@@ -16,9 +16,34 @@
     <div class="card">
       <div class="body">
         <div class="wx-social-page">
-          <div class="card loading-box">
+          <!-- 正常 loading -->
+          <div v-if="pageState === 'loading'" class="card loading-box">
             <van-loading size="20px" style="margin-right: 8px" />
             <span>{{ t('login.social.loading') }}</span>
+          </div>
+
+          <!-- 失败兜底 -->
+          <div v-else class="fallback">
+            <div class="fallback-title">
+              {{ t('login.social.fallbackTitle') || '登录失败' }}
+            </div>
+            <div class="fallback-desc">
+              {{
+                errorText ||
+                t('login.social.fallbackDesc') ||
+                '无法完成第三方登录，你可以使用账号密码登录。'
+              }}
+            </div>
+
+            <div class="fallback-actions">
+              <van-button type="primary" block @click="goAccountLogin">
+                {{ t('login.social.goAccountLogin') || '前往账号密码登录' }}
+              </van-button>
+
+              <van-button plain block style="margin-top: 10px" @click="retry">
+                {{ t('login.social.retry') || '重试' }}
+              </van-button>
+            </div>
           </div>
         </div>
       </div>
@@ -27,7 +52,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { useUserStore } from '@/store/user';
@@ -42,18 +67,23 @@ const router = useRouter();
 const auth = useAuthStore();
 const user = useUserStore();
 const { t } = useI18n();
+
 const _env = {
   WECHAT_MP: 'wechat_open',
   WECHAT_ENTERPRISE: 'wechat_enterprise',
 };
-
-const env = _env[getLoginEnv()] || null; // WECHAT_MP / WECHAT_ENTERPRISE / 其它
+const env = _env[getLoginEnv()] || null; // wechat_open / wechat_enterprise / 其它
 
 /** 视觉用：logo 路径（兼容二级目录） */
 const logoUrl = `${import.meta.env.BASE_URL}images/logo.png`;
 
+/** 页面状态：loading / error */
+const pageState = ref('loading');
+const errorText = ref('');
 
 onMounted(async () => {
+  pageState.value = 'loading';
+  errorText.value = '';
   try {
     // 读取 code / state
     const sp = new URLSearchParams(window.location.search || '');
@@ -75,9 +105,21 @@ onMounted(async () => {
     }
   } catch (err) {
     console.error('[social] onMounted error:', err);
-    router.replace('/');
+    setFail(err);
   }
 });
+
+/** 设置失败态 + 展示提示 */
+function setFail(err) {
+  pageState.value = 'error';
+  const msg =
+    err?.message ||
+    err?.msg ||
+    err?.error_description ||
+    t('login.social.errors.generic') ||
+    '登录失败，请使用账号密码登录';
+  errorText.value = String(msg);
+}
 
 /** 从当前地址 query 中取 callbackUrl（优先原始 query，次之工具函数） */
 function readCallbackFromUrl() {
@@ -95,7 +137,9 @@ async function authorize() {
   const href = window.location.href;
 
   // 授权回跳地址：当前页 + callbackUrl=当前完整地址
-  const redirectUrl = `${origin}${import.meta.env.BASE_URL}login/social?callbackUrl=${encodeURIComponent(href)}`;
+  const redirectUrl = `${origin}${import.meta.env.BASE_URL}login/social?callbackUrl=${encodeURIComponent(
+    href
+  )}`;
 
   const res = await Api.auth.authorize({
     redirectUrl,
@@ -106,10 +150,10 @@ async function authorize() {
   const payload = res?.data ?? res;
   const url = payload?.data || payload?.url || payload;
 
-  if (typeof url === 'string') {
+  if (typeof url === 'string' && url) {
     window.location.href = url;
   } else {
-    throw new Error(t('login.social.errors.missingRedirect'));
+    throw new Error(t('login.social.errors.missingRedirect') || '未获取到授权跳转地址');
   }
 }
 
@@ -121,15 +165,18 @@ async function loginBySocial(data) {
 
   const accessToken =
     payload?.access_token || payload?.accessToken || payload?.token || payload?.data?.access_token;
+
   const refreshToken =
     payload?.refresh_token || payload?.refreshToken || payload?.data?.refresh_token;
 
   if (!accessToken) {
     const msg =
-      payload?.error_description || payload?.msg || t('login.social.errors.missingToken');
+      payload?.error_description ||
+      payload?.msg ||
+      t('login.social.errors.missingToken') ||
+      '未获取到登录凭证';
     console.error('[social] loginBySocial error:', msg, payload);
-    alert(msg);
-    return;
+    throw new Error(msg);
   }
 
   // 1) 写入 Token（Pinia）
@@ -139,7 +186,9 @@ async function loginBySocial(data) {
   const userId = String(payload?.user_id ?? '');
   const oauthId = payload?.oauth_id;
 
-  if ((userId === 'null' || userId === '') && env === 'WECHAT_MP' && oauthId) {
+  // 注意：这里原代码 env === 'WECHAT_MP' 永远不会成立（env 是 wechat_open/wechat_enterprise）
+  // 我保持你原意：对 wechat_open 做特例处理
+  if ((userId === 'null' || userId === '') && env === 'wechat_open' && oauthId) {
     user.mergeLoginInfo(loginInfo);
     await createUserThenRedirect(oauthId);
     return;
@@ -156,7 +205,7 @@ async function loginBySocial(data) {
 
   // 4) 回跳逻辑：先外层 redirect，再 callbackUrl 内层 redirect，最后兜底 /home
   const OUTER = new URL(window.location.href);
-  const outerRedirect = OUTER.searchParams.get('redirect') || ''; // 有些场景直接挂在外层
+  const outerRedirect = OUTER.searchParams.get('redirect') || '';
   const callbackUrlRaw = OUTER.searchParams.get('callbackUrl') || '';
 
   function sanitizeRedirect(p) {
@@ -185,12 +234,12 @@ async function loginBySocial(data) {
     // callbackUrl 里再解析一层 redirect
     let decoded = callbackUrlRaw;
     try {
-      decoded = decodeURIComponent(callbackUrlRaw); // 如果外层 encode 过，这里解一次
+      decoded = decodeURIComponent(callbackUrlRaw);
     } catch (err) {
       console.warn('[social] failed to decode callbackUrl:', callbackUrlRaw, err);
     }
     try {
-      const innerURL = new URL(decoded, window.location.origin); // 注意：加 base
+      const innerURL = new URL(decoded, window.location.origin);
       const innerRedirect = innerURL.searchParams.get('redirect') || '';
       redirect = sanitizeRedirect(innerRedirect);
     } catch (e) {
@@ -212,8 +261,7 @@ async function createUserThenRedirect(oauthId) {
 
   if (code !== 200) {
     console.error('[social] userCreate failed:', res);
-    alert(t('login.social.errors.initAccount'));
-    return;
+    throw new Error(t('login.social.errors.initAccount') || '初始化账号失败');
   }
 
   try {
@@ -221,12 +269,63 @@ async function createUserThenRedirect(oauthId) {
     if (id) {
       const next = { ...(user.userInfo || {}), id };
       user.setUserInfo(next);
-      // auth.logout();
-      // location.reload();
     }
   } catch (err) {
     console.warn('[social] failed to persist user info after init:', err);
   }
+
+  // 建档成功后，通常可以回到主页或走既定 redirect
+  // 这里沿用 loginBySocial 的跳转策略：简单回 /home
+  router.push({ path: '/home' });
+}
+
+/** 跳转账号密码登录（尽量保留 redirect） */
+function goAccountLogin() {
+  const OUTER = new URL(window.location.href);
+  const outerRedirect = OUTER.searchParams.get('redirect') || '';
+  const callbackUrlRaw = OUTER.searchParams.get('callbackUrl') || '';
+
+  function sanitizeRedirect(p) {
+    if (!p) return '';
+    if (/^https?:\/\//i.test(p)) {
+      try {
+        const u = new URL(p);
+        if (u.origin !== window.location.origin) return '';
+        p = u.pathname + u.search + u.hash;
+      } catch {
+        return '';
+      }
+    }
+    if (!p.startsWith('/')) return '';
+    // 禁止回到登录页（改为 /login/account）
+    if (p === '/login/account' || p.startsWith('/login/')) return '';
+    return p || '';
+  }
+
+  let redirect = sanitizeRedirect(outerRedirect);
+
+  if (!redirect && callbackUrlRaw) {
+    let decoded = callbackUrlRaw;
+    try {
+      decoded = decodeURIComponent(callbackUrlRaw);
+    } catch {}
+    try {
+      const innerURL = new URL(decoded, window.location.origin);
+      const innerRedirect = innerURL.searchParams.get('redirect') || '';
+      redirect = sanitizeRedirect(innerRedirect);
+    } catch {}
+  }
+
+  if (redirect) {
+    router.replace({ path: '/login/account', query: { redirect } });
+  } else {
+    router.replace({ path: '/login/account' });
+  }
+}
+
+/** 重试：重新走 mounted 流程（刷新当前页最稳） */
+function retry() {
+  window.location.reload();
 }
 </script>
 
@@ -304,5 +403,25 @@ async function createUserThenRedirect(oauthId) {
   box-shadow: none;
   border-radius: 8px;
   padding: 6px 8px;
+}
+
+/* ===== 失败兜底 UI ===== */
+.fallback {
+  width: min(420px, 92%);
+  text-align: center;
+}
+.fallback-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.fallback-desc {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.6;
+}
+.fallback-actions {
+  margin-top: 14px;
 }
 </style>

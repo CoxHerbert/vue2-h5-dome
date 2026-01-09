@@ -276,7 +276,11 @@ const processOptions = ref([]);
 
 const vendors = ref([]);
 const bubbleOffset = ref({ x: 0, y: 0 });
-
+// 交互
+const handleBack = () => {
+  if (history.length > 1) history.back();
+  else window.location.href = '/';
+};
 const initBubblePosition = () => {
   const width = window.innerWidth || document.documentElement.clientWidth || 375;
   const height = window.innerHeight || document.documentElement.clientHeight || 667;
@@ -451,6 +455,7 @@ const handleEditItem = (item) => {
 
     editingItem.value.processIds = String(editingItem.value.dcMesProcessesOrderItems[0].processId);
     editingItem.value.process = editingItem.value.dcMesProcessesOrderItems[0].processName;
+    getProcessOptions(item.erpId);
   } else {
     processOptions.value = [];
     getProcessOptions(item.erpId);

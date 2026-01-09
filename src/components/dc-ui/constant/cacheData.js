@@ -16,7 +16,7 @@ export default {
           params,
         })
           .then((res) => {
-            const { code, data } = res.data;
+            const { code } = res.data;
             if (code === 200) {
               res.data.data.records = res.data.data.records.map((row) => {
                 return {
@@ -2407,6 +2407,37 @@ export default {
       {
         label: '全称',
         prop: 'fullName',
+      },
+    ],
+  },
+
+  deptNew: {
+    url: '/blade-bip/DcStaffLoanDept/select-data',
+    defaultLabel: 'deptName',
+    defaultLabelName: '部门名称',
+    title: '部门选择',
+    placeholder: '请输入部门名称选择',
+    submitTitle: '部门',
+    dialogGet: (params) => {
+      return request({
+        url: '/blade-bip/DcStaffLoanDept/list',
+        method: 'get',
+        params,
+      });
+    },
+    column: [
+      {
+        label: '部门名称',
+        prop: 'deptName',
+      },
+
+      {
+        label: '部门审核人工号',
+        prop: 'deptAuditorNo',
+      },
+      {
+        label: '部门审核人名称',
+        prop: 'deptAuditorName',
       },
     ],
   },

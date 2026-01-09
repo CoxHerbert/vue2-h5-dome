@@ -68,6 +68,7 @@ export default {
         missingToken: 'Login failed: access token is missing',
         initAccount: 'Failed to initialize the account, please try again later',
       },
+      goAccountLogin: 'go account login',
     },
     ticketTransfer: {
       title: 'Preparing your workspace',
@@ -281,7 +282,8 @@ export default {
           leftCompany: 'You have left the company. Submit a new application to rejoin.',
         },
         stepDesc: {
-          entryDefault: 'An onsite second interview will be arranged after passing the preliminary review.',
+          entryDefault:
+            'An onsite second interview will be arranged after passing the preliminary review.',
           waitingPreliminary: 'Please wait patiently for the preliminary review result.',
           waitingSecond: 'Please wait for the second interview result.',
           waitingEntry: 'Keep your phone reachable for onboarding arrangements.',
@@ -304,7 +306,8 @@ export default {
       success: {
         title: 'Self Registration',
         heading: 'Registration Submitted',
-        description: 'Your interview pass has been generated. Please stay tuned for further notice.',
+        description:
+          'Your interview pass has been generated. Please stay tuned for further notice.',
         actions: {
           viewProgress: 'View Progress',
           backHome: 'Back to Home',
@@ -336,7 +339,7 @@ export default {
       leave: 'Leave Days (Monthly)',
       travel: 'Travel Days (Monthly)',
       overtime: 'Overtime Hours (Monthly)',
-      punch: 'Today\'s Punches',
+      punch: "Today's Punches",
       workTime: 'Work Time Lookup',
       punchRecord: 'Punch History',
     },
@@ -361,7 +364,7 @@ export default {
         overtime: 'Overtime this month (h)',
       },
       todayPunch: {
-        title: 'Today\'s Punches',
+        title: "Today's Punches",
         timeLabel: 'Punch Time',
         empty: 'No punches recorded today',
       },

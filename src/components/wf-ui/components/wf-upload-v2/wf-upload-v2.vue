@@ -45,7 +45,7 @@
         @click="previewAt(i)"
       >
         <template #icon>
-          <van-icon name="description" class="mr-6 file-icon" />
+          <van-icon name="description" class="mr-6" />
         </template>
 
         <template #right-icon>
@@ -57,7 +57,7 @@
               @click.stop="removeAt(i)"
             />
             <van-icon name="eye-o" class="op" @click.stop="previewAt(i)" />
-            <van-icon name="down" class="op" @click.stop="downloadAt(i)" />
+            <!-- <van-icon name="down" class="op" @click.stop="downloadAt(i)" /> -->
           </div>
         </template>
       </van-cell>
@@ -95,82 +95,77 @@
       lock-scroll
       @closed="cancelCrop"
     >
-      <div class="crop-header">
-        <div class="title">裁剪图片</div>
-        <van-icon name="cross" class="close" @click="cancelCrop" />
-      </div>
+      <div class="crop-popup-wrapper">
+        <div class="crop-header">
+          <div class="title">裁剪图片</div>
+          <van-icon name="cross" class="close" @click="cancelCrop" />
+        </div>
 
-      <div class="crop-container">
-        <div class="crop-main-area">
-          <div class="crop-wrapper">
-            <canvas ref="cropCanvas" class="crop-canvas"></canvas>
+        <div class="crop-content">
+          <div class="crop-container">
+            <div class="crop-main-area">
+              <div class="crop-wrapper">
+                <canvas ref="cropCanvas" class="crop-canvas"></canvas>
 
-            <div ref="cropOverlay" class="crop-overlay">
-              <div
-                ref="cropBox"
-                class="crop-box"
-                @mousedown="startDrag"
-                @touchstart.stop.prevent="startTouchDrag"
-              >
-                <div
-                  class="crop-handle nw"
-                  @mousedown.stop="startDrag"
-                  @touchstart.stop.prevent="startTouchDrag"
-                ></div>
-                <div
-                  class="crop-handle ne"
-                  @mousedown.stop="startDrag"
-                  @touchstart.stop.prevent="startTouchDrag"
-                ></div>
-                <div
-                  class="crop-handle sw"
-                  @mousedown.stop="startDrag"
-                  @touchstart.stop.prevent="startTouchDrag"
-                ></div>
-                <div
-                  class="crop-handle se"
-                  @mousedown.stop="startDrag"
-                  @touchstart.stop.prevent="startTouchDrag"
-                ></div>
+                <div ref="cropOverlay" class="crop-overlay">
+                  <div
+                    ref="cropBox"
+                    class="crop-box"
+                    @mousedown="startDrag"
+                    @touchstart.stop.prevent="startTouchDrag"
+                  >
+                    <div
+                      class="crop-handle nw"
+                      @mousedown.stop="startDrag"
+                      @touchstart.stop.prevent="startTouchDrag"
+                    ></div>
+                    <div
+                      class="crop-handle ne"
+                      @mousedown.stop="startDrag"
+                      @touchstart.stop.prevent="startTouchDrag"
+                    ></div>
+                    <div
+                      class="crop-handle sw"
+                      @mousedown.stop="startDrag"
+                      @touchstart.stop.prevent="startTouchDrag"
+                    ></div>
+                    <div
+                      class="crop-handle se"
+                      @mousedown.stop="startDrag"
+                      @touchstart.stop.prevent="startTouchDrag"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="crop-tips">
+                <van-icon name="info-o" size="14" />
+                <span>拖拽方框调整裁剪区域，双指缩放调整大小</span>
+              </div>
+            </div>
+
+            <div class="crop-sidebar">
+              <div class="preview-section">
+                <div class="preview-title">预览效果</div>
+                <div class="preview-box">
+                  <canvas ref="previewCanvas" width="180" height="180"></canvas>
+                </div>
+                <div class="preview-desc">1:1 正方形</div>
+              </div>
+
+              <div class="quick-actions">
+                <van-button size="small" plain type="primary" icon="replay" @click="resetCropBox">
+                  重置
+                </van-button>
               </div>
             </div>
           </div>
-
-          <div class="crop-tips">
-            <van-icon name="info-o" size="14" />
-            <span>拖拽方框调整裁剪区域，双指缩放调整大小</span>
-          </div>
         </div>
 
-        <div class="crop-sidebar">
-          <div class="preview-section">
-            <div class="preview-title">预览效果</div>
-            <div class="preview-box">
-              <canvas ref="previewCanvas" width="180" height="180"></canvas>
-            </div>
-            <div class="preview-desc">1:1 正方形</div>
-          </div>
-
-          <div class="quick-actions">
-            <van-button size="small" plain type="primary" icon="replay" @click="resetCropBox">
-              重置
-            </van-button>
-            <!-- <van-button 
-              size="small" 
-              plain 
-              type="info"
-              @click="rotateImage"
-              icon="refund-o"
-            >
-              旋转
-            </van-button> -->
-          </div>
+        <div class="crop-footer">
+          <van-button style="flex: 1" @click="cancelCrop">取消</van-button>
+          <van-button type="primary" style="flex: 1" @click="confirmCrop">确认裁剪</van-button>
         </div>
-      </div>
-
-      <div class="crop-footer">
-        <van-button style="flex: 1" @click="cancelCrop">取消</van-button>
-        <van-button type="primary" style="flex: 1" @click="confirmCrop">确认裁剪</van-button>
       </div>
     </van-popup>
   </div>
@@ -242,6 +237,8 @@ export default {
 
       // 触摸拖拽/缩放
       touchId: null,
+      touchAnimationFrame: null,
+      previewPending: false,
     };
   },
   computed: {
@@ -268,7 +265,7 @@ export default {
         ? this.accept
         : this.params.accept !== undefined
           ? this.params.accept
-          : ['*/*'];
+          : ['image/*'];
     },
     actualMaxSizeMB() {
       return this.maxSizeMB !== undefined
@@ -401,6 +398,7 @@ export default {
         const base64 = btoa(binaryString);
         return `${base}?url=${encodeURIComponent(base64)}`;
       } catch (e) {
+        console.error('base64编码失败:', e);
         // 编码失败就直接用原地址
         return abs;
       }
@@ -411,6 +409,7 @@ export default {
       immediate: true,
       handler() {
         // 只在初始化时同步，避免上传过程中覆盖
+        console.log(this.modelValue, 'modelValue');
         if (this.fileObjs.length === 0) {
           this.syncFromModel();
         }
@@ -558,6 +557,7 @@ export default {
           const attachId = this.getAttachIdFromAny(multi);
           simples = path ? [{ path, attachId }] : [];
         } catch (e) {
+          console.error('JSON解析失败:', e);
           const path = this.getPathFromAny(mv);
           simples = path ? [{ path, attachId: '' }] : [];
         }
@@ -763,7 +763,7 @@ export default {
       const obj = this.fileObjs[index];
       if (!obj) return;
 
-      const finalUrl = obj.link || obj.name;
+      const finalUrl = obj.link || '';
       if (!finalUrl) {
         showToast('暂无可下载地址');
         return;
@@ -798,6 +798,8 @@ export default {
     showCropDialog(file) {
       return new Promise((resolve, reject) => {
         this.cropVisible = true;
+        this.cropResolve = resolve;
+        this.cropReject = reject;
 
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -806,24 +808,29 @@ export default {
             const canvas = this.$refs.cropCanvas;
             const ctx = canvas.getContext('2d');
 
-            // 移动端画布更小一些
-            const maxWidth = Math.min(600, window.innerWidth - 40);
-            const maxHeight = Math.min(420, window.innerHeight * 0.45);
+            const maxSize = Math.min(600, window.innerWidth - 40, window.innerHeight * 0.45);
 
             let scale = 1;
-            if (img.width > maxWidth) scale = maxWidth / img.width;
-            if (img.height * scale > maxHeight) scale = maxHeight / img.height;
+            if (img.width > maxSize) scale = maxSize / img.width;
+            if (img.height > maxSize) scale = Math.min(scale, maxSize / img.height);
 
             const displayWidth = img.width * scale;
             const displayHeight = img.height * scale;
 
-            canvas.width = displayWidth;
-            canvas.height = displayHeight;
-            ctx.drawImage(img, 0, 0, displayWidth, displayHeight);
+            const canvasSize = Math.max(displayWidth, displayHeight);
+            canvas.width = canvasSize;
+            canvas.height = canvasSize;
+
+            const offsetX = (canvasSize - displayWidth) / 2;
+            const offsetY = (canvasSize - displayHeight) / 2;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvasSize, canvasSize);
+            ctx.drawImage(img, offsetX, offsetY, displayWidth, displayHeight);
 
             const size = Math.min(displayWidth, displayHeight);
-            const x = (displayWidth - size) / 2;
-            const y = (displayHeight - size) / 2;
+            const x = (canvasSize - size) / 2;
+            const y = (canvasSize - size) / 2;
 
             this.cropData = {
               x,
@@ -833,6 +840,10 @@ export default {
               scale,
               imageWidth: img.width,
               imageHeight: img.height,
+              offsetX,
+              offsetY,
+              displayWidth,
+              displayHeight,
               startX: x,
               startY: y,
               startWidth: size,
@@ -841,15 +852,19 @@ export default {
 
             this.updateCropBox();
             this.updatePreview();
-
-            resolve(true);
           };
 
-          img.onerror = () => reject(new Error('图片加载失败'));
+          img.onerror = () => {
+            this.cropVisible = false;
+            reject(new Error('图片加载失败'));
+          };
           img.src = e.target.result;
         };
 
-        reader.onerror = () => reject(new Error('文件读取失败'));
+        reader.onerror = () => {
+          this.cropVisible = false;
+          reject(new Error('文件读取失败'));
+        };
         reader.readAsDataURL(file);
       });
     },
@@ -858,32 +873,41 @@ export default {
       const box = this.$refs.cropBox;
       if (!box) return;
       const { x, y, width, height } = this.cropData;
-      box.style.left = `${x}px`;
-      box.style.top = `${y}px`;
+      box.style.transform = `translate(${x}px, ${y}px)`;
       box.style.width = `${width}px`;
       box.style.height = `${height}px`;
     },
 
     updatePreview() {
-      const previewCanvas = this.$refs.previewCanvas;
-      const cropCanvas = this.$refs.cropCanvas;
-      if (!previewCanvas || !cropCanvas) return;
+      if (this.previewPending) return;
+      this.previewPending = true;
 
-      const ctx = cropCanvas.getContext('2d');
-      const previewCtx = previewCanvas.getContext('2d');
+      requestAnimationFrame(() => {
+        const previewCanvas = this.$refs.previewCanvas;
+        const cropCanvas = this.$refs.cropCanvas;
+        if (!previewCanvas || !cropCanvas) {
+          this.previewPending = false;
+          return;
+        }
 
-      const { x, y, width, height } = this.cropData;
+        const ctx = cropCanvas.getContext('2d');
+        const previewCtx = previewCanvas.getContext('2d');
 
-      const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCanvas.width = width;
-      tempCanvas.height = height;
+        const { x, y, width, height } = this.cropData;
 
-      const imageData = ctx.getImageData(x, y, width, height);
-      tempCtx.putImageData(imageData, 0, 0);
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
 
-      previewCtx.clearRect(0, 0, 200, 200);
-      previewCtx.drawImage(tempCanvas, 0, 0, 200, 200);
+        const imageData = ctx.getImageData(x, y, width, height);
+        tempCtx.putImageData(imageData, 0, 0);
+
+        previewCtx.clearRect(0, 0, 200, 200);
+        previewCtx.drawImage(tempCanvas, 0, 0, 200, 200);
+
+        this.previewPending = false;
+      });
     },
 
     /* ============ PC Mouse 拖拽/缩放（保留） ============ */
@@ -933,7 +957,7 @@ export default {
       document.removeEventListener('mouseup', this.handleMouseUp);
     },
 
-    /* ============ Mobile Touch 拖拽/缩放（新增但不改变逻辑） ============ */
+    /* ============ Mobile Touch 拖拽/缩放（优化版） ============ */
     startTouchDrag(event) {
       const t = event.changedTouches[0];
       if (!t) return;
@@ -955,6 +979,9 @@ export default {
       this.cropData.startWidth = this.cropData.width;
       this.cropData.startHeight = this.cropData.height;
 
+      this.touchAnimationFrame = null;
+      this.lastTouchTime = Date.now();
+
       document.addEventListener('touchmove', this.handleTouchMove, { passive: false });
       document.addEventListener('touchend', this.handleTouchEnd, { passive: false });
       document.addEventListener('touchcancel', this.handleTouchEnd, { passive: false });
@@ -963,14 +990,27 @@ export default {
       const touch = Array.from(event.changedTouches).find((t) => t.identifier === this.touchId);
       if (!touch) return;
 
-      const deltaX = touch.clientX - this.dragStartX;
-      const deltaY = touch.clientY - this.dragStartY;
-      this.applyDragResize(deltaX, deltaY);
       event.preventDefault();
+
+      if (this.touchAnimationFrame) {
+        cancelAnimationFrame(this.touchAnimationFrame);
+      }
+
+      this.touchAnimationFrame = requestAnimationFrame(() => {
+        const deltaX = touch.clientX - this.dragStartX;
+        const deltaY = touch.clientY - this.dragStartY;
+        this.applyDragResize(deltaX, deltaY);
+        this.touchAnimationFrame = null;
+      });
     },
     handleTouchEnd(event) {
       const touch = Array.from(event.changedTouches).find((t) => t.identifier === this.touchId);
       if (!touch) return;
+
+      if (this.touchAnimationFrame) {
+        cancelAnimationFrame(this.touchAnimationFrame);
+        this.touchAnimationFrame = null;
+      }
 
       this.isDragging = false;
       this.isResizing = false;
@@ -980,7 +1020,6 @@ export default {
       document.removeEventListener('touchmove', this.handleTouchMove);
       document.removeEventListener('touchend', this.handleTouchEnd);
       document.removeEventListener('touchcancel', this.handleTouchEnd);
-      event.preventDefault();
     },
 
     /* ============ 拖拽/缩放：核心逻辑（与原版一致） ============ */
@@ -1057,7 +1096,6 @@ export default {
       try {
         const { x, y, width, height, scale } = this.cropData;
 
-        // 用原始图片重新绘制裁剪区域（与原版一致）
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
 
@@ -1069,65 +1107,92 @@ export default {
         tempCanvas.width = actualWidth;
         tempCanvas.height = actualHeight;
 
-        const img = new Image();
-        img.onload = () => {
-          tempCtx.drawImage(
-            img,
-            actualX,
-            actualY,
-            actualWidth,
-            actualHeight,
-            0,
-            0,
-            actualWidth,
-            actualHeight
-          );
+        await new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            tempCtx.drawImage(
+              img,
+              actualX,
+              actualY,
+              actualWidth,
+              actualHeight,
+              0,
+              0,
+              actualWidth,
+              actualHeight
+            );
 
-          tempCanvas.toBlob(
-            async (blob) => {
-              if (!blob) {
-                showToast('裁剪失败：无法生成图片数据');
-                return;
-              }
+            tempCanvas.toBlob(
+              async (blob) => {
+                if (!blob) {
+                  showToast('裁剪失败：无法生成图片数据');
+                  reject(new Error('裁剪失败：无法生成图片数据'));
+                  return;
+                }
 
-              const croppedFile = new File([blob], this.currentFile.name, {
-                type: this.currentFile.type || 'image/jpeg',
-                lastModified: Date.now(),
-              });
+                const croppedFile = new File([blob], this.currentFile.name, {
+                  type: this.currentFile.type || 'image/jpeg',
+                  lastModified: Date.now(),
+                });
 
-              this.cropVisible = false;
-              showToast('图片已裁剪为1:1比例');
+                this.cropVisible = false;
+                showToast('图片已裁剪为1:1比例');
 
-              // 继续走原上传逻辑（含压缩）
-              await this.processAndUpload(croppedFile);
-              this.currentFile = null;
-            },
-            this.currentFile.type || 'image/jpeg',
-            0.95
-          );
-        };
+                await this.processAndUpload(croppedFile);
+                this.currentFile = null;
+                resolve();
+              },
+              this.currentFile.type || 'image/jpeg',
+              0.95
+            );
+          };
 
-        const reader = new FileReader();
-        reader.onload = (e) => (img.src = e.target.result);
-        reader.readAsDataURL(this.currentFile);
+          img.onerror = () => {
+            showToast('图片加载失败');
+            reject(new Error('图片加载失败'));
+          };
+
+          const reader = new FileReader();
+          reader.onload = (e) => (img.src = e.target.result);
+          reader.onerror = () => {
+            showToast('文件读取失败');
+            reject(new Error('文件读取失败'));
+          };
+          reader.readAsDataURL(this.currentFile);
+        });
+
+        if (this.cropResolve) {
+          this.cropResolve(true);
+          this.cropResolve = null;
+        }
       } catch (err) {
         console.error('图片裁剪失败:', err);
         showToast('图片裁剪失败');
+        if (this.cropReject) {
+          this.cropReject(err);
+          this.cropReject = null;
+        }
       }
     },
 
     cancelCrop() {
       this.cropVisible = false;
       this.currentFile = null;
+      if (this.cropReject) {
+        this.cropReject(new Error('用户取消裁剪'));
+        this.cropReject = null;
+      }
+      this.cropResolve = null;
     },
     // 新增：重置裁剪框
     resetCropBox() {
       const canvas = this.$refs.cropCanvas;
       if (!canvas) return;
 
-      const size = Math.min(canvas.width, canvas.height);
-      const x = (canvas.width - size) / 2;
-      const y = (canvas.height - size) / 2;
+      const { offsetX, offsetY, displayWidth, displayHeight } = this.cropData;
+      const size = Math.min(displayWidth, displayHeight);
+      const x = offsetX + (displayWidth - size) / 2;
+      const y = offsetY + (displayHeight - size) / 2;
 
       this.cropData = {
         ...this.cropData,
@@ -1200,11 +1265,7 @@ export default {
 
 .list-card {
   overflow: hidden;
-  .file-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
+
   .ops {
     display: inline-flex;
     align-items: center;
@@ -1224,15 +1285,24 @@ export default {
   margin-right: 6px;
 }
 
-/* 预览 */
-.preview-header,
+/* 裁剪弹窗包装器 - 实现头部固定、内容可滑动、底部固定 */
+.crop-popup-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 裁剪头部 - 固定 */
 .crop-header {
+  flex: 0 0 auto;
   height: 44px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fff;
+  z-index: 10;
 
   .title {
     font-size: 16px;
@@ -1241,6 +1311,14 @@ export default {
   .close {
     font-size: 20px;
   }
+}
+
+/* 裁剪内容区域 - 可滑动 */
+.crop-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .preview-body {
@@ -1272,8 +1350,7 @@ export default {
   flex-direction: column;
   gap: 16px;
   background: #f7f8fa;
-  height: calc(85vh - 44px - 68px); /* 减去头部和底部高度 */
-  overflow-y: auto;
+  min-height: 100%;
 }
 
 /* 主裁剪区域 */
@@ -1281,7 +1358,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  flex: 1;
+  // flex: 1;
 }
 
 /* 图片区域 - 优化显示效果 */
@@ -1317,9 +1394,11 @@ export default {
   }
 }
 
-/* 裁剪框 - 优化视觉效果 */
+/* 裁剪框 - 优化视觉效果和拖动性能 */
 .crop-box {
   position: absolute;
+  left: 0;
+  top: 0;
   border: 2px solid #fff;
   box-shadow:
     0 0 0 9999px rgba(0, 0, 0, 0.6),
@@ -1330,7 +1409,7 @@ export default {
   touch-action: none;
   pointer-events: auto;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  will-change: transform, width, height;
 
   /* 中心参考线 - 优化显示 */
   &::before,
@@ -1360,22 +1439,23 @@ export default {
   }
 }
 
-/* 拖拽点 - 优化交互体验 */
+/* 拖拽点 - 优化交互体验和触摸区域 */
 .crop-handle {
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   background: #fff;
   border: 3px solid #1989fa;
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   pointer-events: auto;
   cursor: pointer;
-  transition: all 0.2s ease;
+  will-change: transform;
+  touch-action: none;
 }
 
-.crop-handle:hover {
-  transform: scale(1.1);
+.crop-handle:active {
+  transform: scale(1.15);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
@@ -1451,13 +1531,15 @@ export default {
   gap: 8px;
 }
 
-/* 底部按钮区 - 优化布局 */
+/* 底部按钮区 - 固定 */
 .crop-footer {
+  flex: 0 0 auto;
   padding: 16px;
   display: flex;
   gap: 12px;
   background: #fff;
   border-top: 1px solid #ebedf0;
+  z-index: 10;
 }
 
 /* 提示信息 */

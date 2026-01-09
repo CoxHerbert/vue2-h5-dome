@@ -316,9 +316,6 @@ const handleSerchDetail = (row) => {
 </script>
 
 <style lang="scss" scoped>
-.tabel-border {
-  border: 1px solid #edeae8;
-}
 .form-group-title {
   font-weight: 600;
   color: #303133;
@@ -337,30 +334,6 @@ const handleSerchDetail = (row) => {
   padding-left: 12px;
   padding-right: 12px;
 }
-.dialog-search-box {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px 0;
-}
-.detail-values {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: right;
-}
-.qty-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.detail-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
 .form-itme-btn {
   position: fixed;
   bottom: 0;
@@ -372,24 +345,6 @@ const handleSerchDetail = (row) => {
   gap: 8px;
   background-color: #fff;
 }
-.drawer-popup {
-  width: 85%;
-  max-width: 420px;
-}
-.drawer-content {
-  padding: 16px;
-}
-.drawer-title {
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-.drawer-footer {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .card__meta {
   margin-top: 8px;
   color: #666;

@@ -27,7 +27,7 @@
                 v-for="opt in pickerColumns"
                 :key="String(opt.value)"
                 clickable
-                @click="toggleValue(opt.value)"
+                @click="toggleValue(opt.value, $event)"
               >
                 <template #title>
                   {{ opt.text }}
@@ -197,7 +197,10 @@ export default defineComponent({
     },
 
     // -------- 多选交互 --------
-    toggleValue(value) {
+    toggleValue(value, event) {
+      if (event && event.target.closest('.van-checkbox')) {
+        return;
+      }
       const list = [...this.tempSelected];
       const idx = list.findIndex((v) => v === value);
 

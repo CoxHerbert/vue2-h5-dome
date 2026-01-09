@@ -287,9 +287,9 @@ export default {
   },
   created() {
     // 初始化 cacheStore
-    if (typeof useGlobalCacheStore !== 'undefined') {
-      this.cacheStore = useGlobalCacheStore();
-    }
+    // if (typeof useGlobalCacheStore !== 'undefined') {
+    //   this.cacheStore = useGlobalCacheStore();
+    // }
 
     // 初始化 column 事件
     if (this.column) {
@@ -369,7 +369,7 @@ export default {
 
       const clonedObj = {};
       for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
           clonedObj[key] = this.deepClone(obj[key]);
         }
       }
@@ -495,7 +495,7 @@ export default {
       } catch (error) {
         console.error('加载数据失败:', error);
         this.dataList = [];
-        uni.showToast({
+        showToast({
           title: '加载数据失败',
           icon: 'none',
         });

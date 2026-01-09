@@ -26,9 +26,9 @@ export default {
       if (target) {
         target[key] = prototypes[key];
       }
-      if (typeof uni !== 'undefined' && uni.$u) {
-        uni.$u[key] = prototypes[key];
-      }
+      // if (typeof uni !== 'undefined' && uni.$u) {
+      //   uni.$u[key] = prototypes[key];
+      // }
     });
   },
   author: 'SSC',

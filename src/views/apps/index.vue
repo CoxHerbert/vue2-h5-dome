@@ -72,8 +72,16 @@ const apps = [
   },
   // { label: '出货资料上传', icon: '/images/apps/出货资料上传.svg', routeName: 'appsShipmentUpload' },
   { label: '外协核价', icon: '/images/apps/外协核价.svg', routeName: 'appsOutsourcingQuotation' },
-  { label: '装配工具借用', icon: '/images/apps/测试.svg', routeName: 'appsWarehouseRecord' },
-  { label: '装配工具归还', icon: '/images/apps/测试.svg', routeName: 'appsWarehousingEntry' },
+  {
+    label: '装配工具借用',
+    icon: '/images/apps/装配工具借用.svg',
+    routeName: 'appsWarehouseRecord',
+  },
+  {
+    label: '装配工具归还',
+    icon: '/images/apps/装配工具归还.svg',
+    routeName: 'appsWarehousingEntry',
+  },
   { label: '自助出库', icon: '/images/apps/自助出库.svg', routeName: 'appsSelfOutbound' },
   { label: '铭牌绑定', icon: '/images/apps/名牌绑定.svg', routeName: 'appsNameplateBinding' },
 ];

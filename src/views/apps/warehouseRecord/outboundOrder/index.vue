@@ -1,42 +1,40 @@
 <template>
   <div class="wrap-box">
-    <div class="wrap-left">
-      <!-- 移动端：顶部横向步骤条，减少占高 -->
-      <van-steps :active="step" direction="horizontal">
-        <van-step v-for="(d, index) in dictData" :key="index">{{ d.label }}</van-step>
-      </van-steps>
+    <!-- 移动端：顶部横向步骤条，减少占高 -->
+    <van-steps :active="step" direction="horizontal">
+      <van-step v-for="(d, index) in dictData" :key="index">{{ d.label }}</van-step>
+    </van-steps>
 
-      <!-- 当前步骤标题：让用户始终知道正在填什么 -->
-      <div class="step-title">{{ dictData?.[step]?.dictValue || '' }}</div>
-      <step1 v-if="steps2 === 0" :info="info" @out-stock-type-change="handleOutStockTypeChange" />
-      <step2
-        v-if="steps2 === 1"
-        :info="info"
-        @out-stock-type-change="handleOutStockTypeChange"
-        @detail="getDetail"
-      />
-      <step3
-        v-if="steps2 === 2"
-        :info="info"
-        @out-stock-type-change="handleOutStockTypeChange"
-        @detail="getDetail"
-      />
-      <OutboundReadonlyStep
-        v-if="steps2 === 3"
-        :info="info"
-        @out-stock-type-change="handleOutStockTypeChange"
-      />
-      <OutboundReadonlyStep
-        v-if="steps2 === 4"
-        :info="info"
-        @out-stock-type-change="handleOutStockTypeChange"
-      />
-      <OutboundReadonlyStep
-        v-if="steps2 === 5"
-        :info="info"
-        @out-stock-type-change="handleOutStockTypeChange"
-      />
-    </div>
+    <!-- 当前步骤标题：让用户始终知道正在填什么 -->
+    <div class="step-title">{{ dictData?.[step]?.dictValue || '' }}</div>
+    <step1 v-if="steps2 === 0" :info="info" @out-stock-type-change="handleOutStockTypeChange" />
+    <step2
+      v-if="steps2 === 1"
+      :info="info"
+      @out-stock-type-change="handleOutStockTypeChange"
+      @detail="getDetail"
+    />
+    <step3
+      v-if="steps2 === 2"
+      :info="info"
+      @out-stock-type-change="handleOutStockTypeChange"
+      @detail="getDetail"
+    />
+    <OutboundReadonlyStep
+      v-if="steps2 === 3"
+      :info="info"
+      @out-stock-type-change="handleOutStockTypeChange"
+    />
+    <OutboundReadonlyStep
+      v-if="steps2 === 4"
+      :info="info"
+      @out-stock-type-change="handleOutStockTypeChange"
+    />
+    <OutboundReadonlyStep
+      v-if="steps2 === 5"
+      :info="info"
+      @out-stock-type-change="handleOutStockTypeChange"
+    />
   </div>
 </template>
 
@@ -62,7 +60,6 @@ const dictOutStockStatus = (value) => {
   let dcWmsOutStatus = DC_WMS_OUT_STATUS.value;
   if (value === 'DC_WMS_OUT_TYPE_BORROW') {
     dictData.value = dcWmsOutStatus.filter((item) => item.value !== 'DC_WMS_OUT_STATUS_C');
-    console.log(dictData.value);
   } else {
     dictData.value = dcWmsOutStatus.slice(0, 4);
   }
@@ -153,6 +150,7 @@ const handleOutStockTypeChange = (newOutStockType) => {
 
 <style lang="scss" scoped>
 .wrap-box {
+  padding: 16px;
   min-height: 100vh;
   background: #f5f7fb;
 }

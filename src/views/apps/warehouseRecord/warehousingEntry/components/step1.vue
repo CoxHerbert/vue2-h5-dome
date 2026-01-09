@@ -16,29 +16,23 @@
           @cancel="showInTypePicker = false"
         />
       </van-popup>
-      <van-field>
-        <template #input>
-          <dc-select-dialog
-            v-model="formData.warehouseId"
-            label="仓库名称"
-            :disabled="[null, '', undefined].includes(formData.inType)"
-            :placeholder="
-              [null, '', undefined].includes(formData.inType)
-                ? '请先选择入库类型'
-                : '请点击选择仓库'
-            "
-            object-name="warehouse"
-            type="input"
-            :multiple="false"
-            :multiple-limit="1"
-            :clearable="true"
-            :params="{
-              stockType: getStockType(formData.inType),
-            }"
-            @change="(row) => handleWarehouseChange(row, 'warehouse')"
-          />
-        </template>
-      </van-field>
+      <dc-select-dialog
+        v-model="formData.warehouseId"
+        label="仓库名称"
+        :disabled="[null, '', undefined].includes(formData.inType)"
+        :placeholder="
+          [null, '', undefined].includes(formData.inType) ? '请先选择入库类型' : '请点击选择仓库'
+        "
+        object-name="warehouse"
+        type="input"
+        :multiple="false"
+        :multiple-limit="1"
+        :clearable="true"
+        :params="{
+          stockType: getStockType(formData.inType),
+        }"
+        @change="(row) => handleWarehouseChange(row, 'warehouse')"
+      />
       <dc-select-dialog
         v-if="formData.inType === 'DC_WMS_IN_TYPE_RETURN'"
         v-model="formData.inSourceNumber"
@@ -149,59 +143,6 @@
       <van-button size="mini" block @click="cancelSubmit">取消</van-button>
     </div>
   </van-form>
-  <van-popup v-model:show="open" position="right" class="drawer-popup" @close="closeDrawer">
-    <div class="drawer-content">
-      <div class="drawer-title">{{ title }}</div>
-      <van-form ref="formRef">
-        <van-cell-group inset>
-          <van-field
-            v-model="formDataTable.productCode"
-            label="物料编号"
-            placeholder="产品编码"
-            :readonly="show"
-          />
-          <van-field
-            v-model="formDataTable.productName"
-            label="物料名称"
-            placeholder="产品名称"
-            :readonly="show"
-          />
-          <van-field
-            v-model="formDataTable.productSpec"
-            label="规格型号"
-            placeholder="规格型号"
-            :readonly="show"
-          />
-          <van-field label="数量">
-            <template #input>
-              <van-stepper v-model="formDataTable.productQty" :disabled="show" />
-            </template>
-          </van-field>
-          <van-field v-model="formDataTable.productUnit" label="单位" readonly />
-          <van-field label="仓位编号">
-            <template #input>
-              <dc-select-dialog
-                v-model="formDataTable.locationId"
-                placeholder="请点击仓位编号"
-                object-name="warehouseLocation"
-                type="input"
-                :multiple="false"
-                :multiple-limit="1"
-                :clearable="true"
-                :params="{
-                  warehouseId: props.info.warehouseId,
-                }"
-              />
-            </template>
-          </van-field>
-        </van-cell-group>
-      </van-form>
-      <div class="drawer-footer">
-        <van-button type="primary" block @click="submitFormTable">提交</van-button>
-        <van-button block @click="closeDrawer">取消</van-button>
-      </div>
-    </div>
-  </van-popup>
 </template>
 
 <script setup name="customerSubmit">
@@ -258,21 +199,10 @@ const pageData = reactive({
   show: true,
   btnOpen: false,
   unitList: [],
-  inStockNumberList: [],
 });
 
-const {
-  loading,
-  formData,
-  formDataTable,
-  open,
-  title,
-  editIndex,
-  show,
-  btnOpen,
-  unitList,
-  inStockNumberList,
-} = toRefs(pageData);
+const { loading, formData, formDataTable, open, title, editIndex, show, btnOpen, unitList } =
+  toRefs(pageData);
 
 const inTypeLabel = computed(() => {
   const list = DC_WMS_IN_TYPE_WMS?.value || [];
@@ -317,10 +247,7 @@ const submitForm = () => {
       loading.value = false;
       if (code === 200) {
         showToast({ type: 'success', message: '保存成功' });
-        router.push({
-          path: '/wms/warehouseRecord/warehousingEntry',
-          params: {},
-        });
+        router.push({ name: 'appsWarehousingEntry' });
       }
     } catch (err) {
       loading.value = false;
@@ -382,10 +309,7 @@ const submitAudit = () => {
     if (code === 200) {
       showToast({ type: 'success', message: '审核成功' });
       loading.value = false;
-      router.push({
-        path: '/wms/warehouseRecord/warehousingEntry',
-        params: {},
-      });
+      router.push({ name: 'appsWarehousingEntry' });
     }
   })();
 };
@@ -398,20 +322,6 @@ const handleUpdate = (row) => {
     open.value = true;
     formDataTable.value = { ...row }; // 创建一个新对象，避免直接修改引用
   }
-};
-
-// 提交修改
-const submitFormTable = async () => {
-  if (editIndex.value !== null && editIndex.value !== -1) {
-    // 编辑模式：更新原列表中的数据
-    formData.value.detailList[editIndex.value] = { ...formDataTable.value };
-    editIndex.value = null;
-  } else {
-    // 新增模式
-    formData.value.detailList.push({ ...formDataTable.value });
-  }
-  formDataTable.value = {}; // 清空表单
-  open.value = false; // 关闭抽屉
 };
 
 // 表格删除
@@ -427,17 +337,9 @@ const addRow = () => {
   open.value = true;
 };
 
-// 抽屉取消
-const closeDrawer = () => {
-  formDataTable.value = {};
-  open.value = false;
-};
 // 取消
 const cancelSubmit = () => {
-  router.push({
-    path: '/wms/warehouseRecord/warehousingEntry',
-    params: {},
-  });
+  router.push({ name: 'appsWarehousingEntry' });
 };
 
 const handleSerch = async (row) => {
@@ -502,29 +404,6 @@ const getOutboundDetail = async (id) => {
   }
 };
 
-// 获取来源单号下拉列表
-const getInStockNumberList = async (query) => {
-  const params = {
-    code: query || null,
-  };
-  const res = await Api.application.warehousingEntry.inStockNumberList(params);
-  const { code, data } = res.data;
-  if (code === 200) {
-    inStockNumberList.value = data;
-  }
-};
-
-// 搜索来源单号监听事件
-const remoteMethod = (query) => {
-  if (query.length > 3) {
-    loading.value = true;
-    setTimeout(() => {
-      loading.value = false;
-      getInStockNumberList(query);
-    }, 800);
-  }
-};
-
 const uploadFile = async (fileObj) => {
   const form = new FormData();
   form.append('file', fileObj.file);
@@ -572,10 +451,38 @@ const addExport = () => {
 :deep(.van-cell-group) {
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  margin: 0;
+}
+:deep(.van-cell-group--inset) {
+  margin: 0;
 }
 :deep(.van-cell) {
   padding-left: 12px;
   padding-right: 12px;
+}
+.dialog-search-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+}
+.detail-values {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+.qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
 }
 .form-itme-btn {
   position: fixed;
@@ -604,10 +511,6 @@ const addExport = () => {
 .card__meta .label {
   color: #888;
   min-width: 40px;
-}
-.detail-actions {
-  justify-content: flex-end;
-  gap: 8px;
 }
 .drawer-popup {
   width: 85%;

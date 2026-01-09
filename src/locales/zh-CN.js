@@ -68,6 +68,7 @@ export default {
         missingToken: '登录失败：未获取到 access_token',
         initAccount: '初始化账号失败，请稍后重试',
       },
+      goAccountLogin: '前往账号密码登录',
     },
     ticketTransfer: {
       title: '正在准备工作环境',

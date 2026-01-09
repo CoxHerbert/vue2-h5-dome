@@ -68,6 +68,7 @@ export default {
         missingToken: 'Đăng nhập thất bại: thiếu access_token',
         initAccount: 'Khởi tạo tài khoản thất bại, vui lòng thử lại sau',
       },
+      goAccountLogin: 'go account login',
     },
     ticketTransfer: {
       title: 'Đang chuẩn bị môi trường làm việc',
