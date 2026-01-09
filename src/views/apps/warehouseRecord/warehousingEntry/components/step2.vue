@@ -94,13 +94,13 @@
         /></span>
       </div>
       <div v-if="btnOpen" class="row detail-actions">
-        <van-button size="mini" type="primary" plain @click="handleUpdate(item)">编辑</van-button>
+        <van-button size="small" type="primary" plain @click="handleUpdate(item)">编辑</van-button>
       </div>
     </div>
     <div class="form-itme-btn">
-      <van-button type="primary" size="mini" block @click="submitAudit">通过</van-button>
-      <van-button type="primary" size="mini" block @click="submitReject">驳回</van-button>
-      <van-button size="mini" block @click="cancelSubmit">取消</van-button>
+      <van-button type="primary" size="small" block @click="submitAudit">通过</van-button>
+      <van-button type="primary" size="small" block @click="submitReject">驳回</van-button>
+      <van-button size="small" block @click="cancelSubmit">取消</van-button>
     </div>
   </van-form>
 

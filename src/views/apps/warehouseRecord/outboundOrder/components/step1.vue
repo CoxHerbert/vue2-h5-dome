@@ -75,7 +75,7 @@
       @change="handleSerchDetail"
     >
       <template #customize>
-        <van-button class="mb-5" type="primary" size="mini">查询明细</van-button>
+        <van-button class="mb-5" type="primary" size="small">查询明细</van-button>
       </template>
 
       <template #search-items="{ queryParams, currentObject }">
@@ -145,16 +145,16 @@
         /></span>
       </div>
       <div class="row">
-        <van-button size="mini" type="danger" plain @click="removeEvaluate(item)">
+        <van-button size="small" type="danger" plain @click="removeEvaluate(item)">
           删除
         </van-button>
       </div>
     </div>
 
     <div class="form-itme-btn">
-      <van-button size="mini" block @click="cancelSubmit">返回</van-button>
-      <van-button type="success" size="mini" block @click="submitForm">保存草稿</van-button>
-      <van-button type="primary" size="mini" block @click="submitAudit">发起</van-button>
+      <van-button size="small" block @click="cancelSubmit">返回</van-button>
+      <van-button type="success" size="small" block @click="submitForm">保存草稿</van-button>
+      <van-button type="primary" size="small" block @click="submitAudit">发起</van-button>
     </div>
   </van-form>
 </template>

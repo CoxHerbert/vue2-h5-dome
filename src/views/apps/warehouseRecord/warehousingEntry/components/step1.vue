@@ -1,38 +1,34 @@
 <template>
   <van-form ref="ruleFormRef">
     <div class="form-group-title">基本信息</div>
+
     <van-cell-group inset>
-      <van-field
+      <dc-selector
+        v-model="formData.inType"
         label="入库类型"
-        :model-value="inTypeLabel"
-        readonly
-        is-link
-        @click="showInTypePicker = true"
+        placeholder="请点击选择入库类型"
+        title="入库类型"
+        :options="DC_WMS_IN_TYPE_WMS"
+        disabled
+        @change="hangleInTypeChange"
       />
-      <van-popup v-model:show="showInTypePicker" position="bottom" round>
-        <van-picker
-          :columns="inTypeOptions"
-          @confirm="handleInTypeConfirm"
-          @cancel="showInTypePicker = false"
-        />
-      </van-popup>
+
       <dc-select-dialog
         v-model="formData.warehouseId"
         label="仓库名称"
-        :disabled="[null, '', undefined].includes(formData.inType)"
-        :placeholder="
-          [null, '', undefined].includes(formData.inType) ? '请先选择入库类型' : '请点击选择仓库'
-        "
+        :placeholder="warehousePlaceholder"
         object-name="warehouse"
         type="input"
         :multiple="false"
         :multiple-limit="1"
         :clearable="true"
-        :params="{
-          stockType: getStockType(formData.inType),
-        }"
+        :params="{ stockType: getStockType(formData.inType) }"
+        disabled
+        return-type="string"
         @change="(row) => handleWarehouseChange(row, 'warehouse')"
       />
+
+      <!-- 退库：用选择弹窗 -->
       <dc-select-dialog
         v-if="formData.inType === 'DC_WMS_IN_TYPE_RETURN'"
         v-model="formData.inSourceNumber"
@@ -42,21 +38,22 @@
         :multiple="false"
         :multiple-limit="1"
         :clearable="true"
-        :params="{
-          outStockStatus: 'DC_WMS_OUT_STATUS_BORROW',
-        }"
+        :params="{ outStockStatus: 'DC_WMS_OUT_STATUS_BORROW' }"
+        return-type="string"
         @change="(row) => handleWarehouseChange(row, 'outboundOrder')"
       />
-      <van-field v-else label="来源单号">
-        <template #input>
-          <van-field
-            v-model="formData.inSourceNumber"
-            placeholder="请输入选择来源单号"
-            :readonly="formData.inType === 'DC_WMS_IN_TYPE_OTHER'"
-            @blur="handleSerch"
-          />
-        </template>
-      </van-field>
+
+      <!-- 其他：输入框 -->
+      <van-field
+        v-else
+        v-model="formData.inSourceNumber"
+        label="来源单号"
+        :placeholder="formData.inType === 'DC_WMS_IN_TYPE_OTHER' ? '无需填写' : '请输入来源单号'"
+        :readonly="formData.inType === 'DC_WMS_IN_TYPE_OTHER'"
+        clearable
+        @blur="handleSerch(formData.inSourceNumber)"
+      />
+
       <dc-select-dialog
         v-model="formData.applicantId"
         label="申请人"
@@ -64,7 +61,9 @@
         object-name="user"
         :multiple="false"
         :disabled="isShow"
+        return-type="string"
       />
+
       <dc-select-dialog
         v-model="formData.processingPersonnel"
         label="处理人"
@@ -72,7 +71,9 @@
         object-name="user"
         :multiple="false"
         :disabled="isShow"
+        return-type="string"
       />
+
       <van-field
         v-if="formData.reject"
         v-model="formData.reject"
@@ -82,365 +83,400 @@
         readonly
       />
     </van-cell-group>
+
     <div class="form-group-title">入库明细</div>
-    <van-button v-if="btnOpen" class="mb-5" type="primary" @click="addRow">新增</van-button>
-    <van-uploader v-if="btnOpen" :after-read="uploadFile" accept=".xls,.xlsx" class="ml-2 mr-2">
-      <van-button type="primary">导入</van-button>
-    </van-uploader>
-    <van-button v-if="btnOpen" class="mb-5" type="primary" @click="addExport">下载模板</van-button>
-    <div v-for="(item, index) in formData.detailList || []" :key="index" class="card__meta">
-      <div class="row">
-        <span class="label">物料名称</span>
-        <span class="value">
-          {{ item.productName || '-' }}
-        </span>
+
+    <div v-if="btnOpen" class="actions-row">
+      <van-button type="primary" size="small" @click="addRow">新增</van-button>
+
+      <van-uploader :after-read="uploadFile" accept=".xls,.xlsx">
+        <van-button type="primary" size="small">导入</van-button>
+      </van-uploader>
+
+      <van-button type="primary" size="small" @click="addExport">下载模板</van-button>
+    </div>
+
+    <div v-for="(item, index) in formData.detailList || []" :key="index" class="detail-card">
+      <div class="kv">
+        <span class="k">物料名称</span><span class="v">{{ item.productName || '-' }}</span>
       </div>
-      <div class="row">
-        <span class="label">物料编码</span>
-        <span class="value">
-          {{ item.productCode || '-' }}
-        </span>
+      <div class="kv">
+        <span class="k">物料编码</span><span class="v">{{ item.productCode || '-' }}</span>
       </div>
-      <div class="row">
-        <span class="label">规格型号</span>
-        <span class="value">
-          {{ item.productSpec || '-' }}
-        </span>
+      <div class="kv">
+        <span class="k">规格型号</span><span class="v">{{ item.productSpec || '-' }}</span>
       </div>
-      <div class="row">
-        <span class="label">数量</span>
-        <span class="value">
-          {{ item.productQty ?? '-' }}
-        </span>
+
+      <!-- 借出数量：来源单带出，只读 -->
+      <div class="kv">
+        <span class="k">借出数量</span>
+        <span class="v">{{ item.borrowQty ?? '-' }}</span>
       </div>
-      <div class="row">
-        <span class="label">单位</span>
-        <span class="value">
-          {{ item.productUnit || '-' }}
-        </span>
+
+      <!-- 归还数量：行内编辑（提交给接口时写入 productQty） -->
+      <div class="kv kv-stepper">
+        <span class="k">归还数量</span>
+        <div class="v">
+          <van-stepper
+            v-model="item.returnQty"
+            integer
+            min="0"
+            :max="getMaxReturnQty(item)"
+            theme="round"
+            button-size="22"
+            input-width="70"
+            @change="() => normalizeReturnQty(item)"
+          />
+        </div>
       </div>
-      <div class="row">
-        <span class="label">仓位编号</span>
-        <span class="value"
-          ><dc-view
+
+      <div class="kv">
+        <span class="k">单位</span><span class="v">{{ item.productUnit || '-' }}</span>
+      </div>
+
+      <div class="kv kv-control">
+        <span class="k">仓位编号</span>
+        <div class="v">
+          <dc-view
             v-model="item.locationId"
             object-name="warehouseLocation"
             show-key="locationName"
-        /></span>
+          />
+        </div>
       </div>
-      <div class="row detail-actions">
-        <van-button size="mini" type="primary" plain @click="handleUpdate(item)">编辑</van-button>
-        <van-button v-if="btnOpen" size="mini" type="danger" plain @click="removeEvaluate(item)">
+
+      <!-- 不需要编辑按钮 -->
+      <div class="btns">
+        <van-button v-if="btnOpen" size="small" type="danger" plain @click="removeEvaluate(item)">
           删除
         </van-button>
       </div>
     </div>
-    <div class="form-itme-btn">
-      <van-button type="primary" size="mini" block @click="submitForm">保存</van-button>
-      <van-button type="primary" size="mini" block :loading="loading" @click="submitAudit">
+
+    <div class="bottom-bar van-safe-area-bottom">
+      <van-button type="primary" size="small" block :loading="loading" @click="submitForm">
+        保存
+      </van-button>
+      <van-button type="primary" size="small" block :loading="loading" @click="submitAudit">
         审核
       </van-button>
-      <van-button size="mini" block @click="cancelSubmit">取消</van-button>
+      <van-button size="small" block :disabled="loading" @click="cancelSubmit">取消</van-button>
     </div>
+
+    <div class="bottom-spacer"></div>
   </van-form>
 </template>
 
 <script setup name="customerSubmit">
-import { reactive, toRefs, getCurrentInstance, onMounted, ref, computed } from 'vue';
+import { reactive, toRefs, getCurrentInstance, onMounted, computed, watch } from 'vue';
 import Api from '@/api';
 import { useRouter, useRoute } from 'vue-router';
 import { showToast } from 'vant';
 import axios from 'axios';
 
 const inTypeMap = {
-  // 现场仓库
   DC_WMS_IN_TYPE_ON_SITE_STORAGE: 'DC_WMS_STOCK_TYPE_SCENE',
-  // 线边仓入库
   DC_WMS_IN_TYPE_LEW: 'DC_WMS_STOCK_TYPE_LINE_EDGE',
-  // 其他入库
   DC_WMS_IN_TYPE_OTHER: '',
 };
 
-// 获取入库类型
-const getStockType = (inType) => {
-  return inType && inTypeMap[inType] ? inTypeMap[inType] : undefined;
-};
+const getStockType = (inType) => (inType && inTypeMap[inType] ? inTypeMap[inType] : undefined);
 
 const router = useRouter();
-const { proxy } = getCurrentInstance();
 const route = useRoute();
+const { proxy } = getCurrentInstance();
+
 const userinfo = computed(() => proxy.$store.getters.userInfo);
+
 const props = defineProps({
-  // 详情
-  info: {
-    type: Object,
-    default: {},
-  },
+  info: { type: Object, default: () => ({}) },
 });
+
 const { DC_WMS_IN_TYPE_WMS } = proxy.dicts(['DC_WMS_IN_TYPE_WMS']);
-const showInTypePicker = ref(false);
-const inTypeOptions = computed(() =>
-  (DC_WMS_IN_TYPE_WMS?.value || []).map((item) => ({
-    text: item.dictValue,
-    value: item.dictKey,
-  }))
-);
 
 const pageData = reactive({
   loading: false,
   formData: {
-    inType: 'DC_WMS_IN_TYPE_ON_SITE_STORAGE',
+    inType: 'DC_WMS_IN_TYPE_RETURN',
+    warehouseId: '2008344171069898753',
     detailList: [],
   },
-  formDataTable: {},
-  open: false,
-  title: '',
-  editIndex: null,
   show: true,
   btnOpen: false,
   unitList: [],
 });
 
-const { loading, formData, formDataTable, open, title, editIndex, show, btnOpen, unitList } =
-  toRefs(pageData);
+const { loading, formData, show, btnOpen, unitList } = toRefs(pageData);
 
-const inTypeLabel = computed(() => {
-  const list = DC_WMS_IN_TYPE_WMS?.value || [];
-  const hit = list.find((item) => item.dictKey === formData.value.inType);
-  return hit?.dictValue || '';
+const isShow = computed(() => show.value);
+
+const warehouseIdValue = computed(() => {
+  const wid = formData.value.warehouseId;
+  return typeof wid === 'object' ? wid?.id : wid;
 });
+
+const warehousePlaceholder = computed(() =>
+  [null, '', undefined].includes(formData.value.inType) ? '请先选择入库类型' : '请点击选择仓库'
+);
 
 const validateForm = async () => {
   const formRef = proxy.$refs.ruleFormRef;
-  if (formRef?.validate) {
-    await formRef.validate();
-  }
+  if (formRef?.validate) await formRef.validate();
 };
 
-const handleInTypeConfirm = (value) => {
-  const selected = Array.isArray(value) ? value[0] : value;
-  formData.value.inType = selected?.value ?? selected;
-  showInTypePicker.value = false;
-  hangleInTypeChange();
+// ============ 明细字段标准化（关键） ============
+// 借出数量：borrowQty（来源单带出）
+// 归还数量：returnQty（行内编辑）
+// 提交时：productQty = returnQty（接口要求）
+const normalizeDetailItem = (it) => {
+  // 借出数量优先从接口字段取；找不到则兜底到可能存在的字段
+  const borrow = it.productQty ?? 0;
+
+  // 归还数量：优先使用 returnQty；如果详情回显里只有 productQty（历史数据），则从 productQty 回填到 returnQty
+  const ret = it.productQty ?? 0;
+
+  return {
+    ...it,
+    borrowQty: Number(borrow) || 0,
+    returnQty: Number(ret) || 0,
+  };
 };
 
-// 确认创建
-const submitForm = () => {
-  (async () => {
-    try {
-      await validateForm();
-    } catch {
-      return;
-    }
-    loading.value = true;
-    try {
-      const warehouseId =
-        typeof formData.value.warehouseId === 'object'
-          ? formData.value.warehouseId?.id
-          : formData.value.warehouseId;
-      const parmas = {
-        ...formData.value,
-        warehouseId: warehouseId,
+const normalizeDetailList = (list) => (Array.isArray(list) ? list.map(normalizeDetailItem) : []);
+
+// 最大归还数默认=借出数量（你如果允许超出，改这里）
+const getMaxReturnQty = (item) => {
+  const max = Number(item.borrowQty ?? 0) || 0;
+  return max < 0 ? 0 : max;
+};
+
+const normalizeReturnQty = (item) => {
+  const max = getMaxReturnQty(item);
+  let val = Number(item.returnQty ?? 0) || 0;
+  if (val < 0) val = 0;
+  if (val > max) val = max;
+  item.returnQty = val;
+};
+
+// 将 returnQty 写入 productQty（接口提交字段）
+const applyReturnQtyToProductQty = (list) =>
+  (Array.isArray(list) ? list : []).map((it) => ({
+    ...it,
+    productQty: Number(it.returnQty ?? 0) || 0, // ✅ 归还数量提交使用 productQty
+  }));
+
+// 初始化/回显
+watch(
+  () => props.info,
+  (val) => {
+    if (route.params.id !== 'create' && val && Object.keys(val).length) {
+      formData.value = {
+        ...val,
+        detailList: normalizeDetailList(val.detailList),
       };
-      const res = await Api.application.warehousingEntry.submit(parmas);
-      const { code, msg } = res.data;
-      loading.value = false;
-      if (code === 200) {
-        showToast({ type: 'success', message: '保存成功' });
-        router.push({ name: 'appsWarehousingEntry' });
-      }
-    } catch (err) {
-      loading.value = false;
+      btnOpen.value = formData.value.inType === 'DC_WMS_IN_TYPE_OTHER';
+      show.value = !btnOpen.value;
     }
-  })();
-};
+  },
+  { immediate: true, deep: true }
+);
 
 onMounted(() => {
-  if (route.params.id != 'create') {
-    loading.value = true;
-    const timer = setTimeout(() => {
-      formData.value = props.info;
-      loading.value = false;
-      if (formData.value.inType == 'DC_WMS_IN_TYPE_OTHER') {
-        btnOpen.value = true;
-      }
-      clearTimeout(timer);
-    }, 300);
-  }
   formData.value.applicantId = userinfo.value.user_id;
   getUnitData();
 });
 
-// 获取单位下拉列表
 const getUnitData = async () => {
   const res = await Api.application.warehousingEntry.unitList();
   const { code, data } = res.data;
-  if (code === 200) {
-    unitList.value = data;
+  if (code === 200) unitList.value = data;
+};
+
+// 保存
+const submitForm = async () => {
+  try {
+    await validateForm();
+  } catch {
+    return;
+  }
+
+  // 先规整 & 限制归还数量
+  formData.value.detailList = normalizeDetailList(formData.value.detailList);
+  (formData.value.detailList || []).forEach(normalizeReturnQty);
+
+  loading.value = true;
+  try {
+    const params = {
+      ...formData.value,
+      warehouseId: warehouseIdValue.value,
+      // ✅ 接口提交：归还数量写入 productQty
+      detailList: applyReturnQtyToProductQty(formData.value.detailList),
+    };
+
+    const res = await Api.application.warehousingEntry.submit(params);
+    const { code } = res.data;
+    if (code === 200) {
+      showToast({ type: 'success', message: '保存成功' });
+      router.push({ name: 'appsWarehousingEntry' });
+    }
+  } finally {
+    loading.value = false;
   }
 };
 
 // 审核
-const submitAudit = () => {
-  (async () => {
-    try {
-      await validateForm();
-    } catch {
-      return;
-    }
-    loading.value = true;
-    const warehouseId =
-      typeof formData.value.warehouseId === 'object'
-        ? formData.value.warehouseId?.id
-        : formData.value.warehouseId;
+const submitAudit = async () => {
+  try {
+    await validateForm();
+  } catch {
+    return;
+  }
 
-    const dataList = formData.value.detailList.map((item) => ({
-      ...item,
-      warehouseId: warehouseId,
+  // 先规整 & 限制归还数量
+  formData.value.detailList = normalizeDetailList(formData.value.detailList);
+  (formData.value.detailList || []).forEach(normalizeReturnQty);
+
+  loading.value = true;
+  try {
+    const wid = warehouseIdValue.value;
+
+    const detailList = applyReturnQtyToProductQty(formData.value.detailList).map((it) => ({
+      ...it,
+      warehouseId: wid,
     }));
-    const form = {
+
+    const payload = {
       ...formData.value,
-      warehouseId: warehouseId,
-      detailList: dataList,
+      warehouseId: wid,
+      detailList,
     };
 
-    const res = await Api.application.warehousingEntry.submitAudit(form);
-    const { code, msg } = res.data;
+    const res = await Api.application.warehousingEntry.submitAudit(payload);
+    const { code } = res.data;
     if (code === 200) {
       showToast({ type: 'success', message: '审核成功' });
-      loading.value = false;
       router.push({ name: 'appsWarehousingEntry' });
     }
-  })();
-};
-
-// 表格编辑
-const handleUpdate = (row) => {
-  show.value = true;
-  editIndex.value = formData.value.detailList.findIndex((item) => item === row);
-  if (editIndex.value !== -1) {
-    open.value = true;
-    formDataTable.value = { ...row }; // 创建一个新对象，避免直接修改引用
+  } finally {
+    loading.value = false;
   }
 };
 
-// 表格删除
-const removeEvaluate = async (row) => {
-  const index = formData.value.detailList.findIndex((item) => item === row);
-  if (index !== -1) {
-    formData.value.detailList.splice(index, 1);
-  }
+// 删除
+const removeEvaluate = (row) => {
+  const idx = (formData.value.detailList || []).findIndex((item) => item === row);
+  if (idx !== -1) formData.value.detailList.splice(idx, 1);
 };
 
 const addRow = () => {
-  title.value = '新增';
-  open.value = true;
+  // 行内新增：默认 borrowQty=0，returnQty=0
+  formData.value.detailList = [
+    ...(formData.value.detailList || []),
+    normalizeDetailItem({
+      productName: '',
+      productCode: '',
+      productSpec: '',
+      productUnit: '',
+      borrowQty: 0,
+      returnQty: 0,
+      locationId: null,
+    }),
+  ];
 };
 
-// 取消
-const cancelSubmit = () => {
-  router.push({ name: 'appsWarehousingEntry' });
-};
+const cancelSubmit = () => router.push({ name: 'appsWarehousingEntry' });
 
-const handleSerch = async (row) => {
-  if (row) {
-    try {
-      loading.value = true;
-      const params = {
-        type: formData.value.inType,
-        sourceId: formData.value.inSourceNumber,
-      };
-      const res = await Api.application.warehousingEntry.detailList(params);
-      const { code, data } = res.data;
-      if (code === 200) {
-        formData.value.detailList = data;
-      }
-      loading.value = false;
-    } catch (err) {
-      loading.value = false;
-    }
-  } else {
+// 来源单号查询明细（输入框 blur）
+const handleSerch = async (sourceNo) => {
+  if (!sourceNo) {
     formData.value.detailList = [];
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const params = { type: formData.value.inType, sourceId: sourceNo };
+    const res = await Api.application.warehousingEntry.detailList(params);
+    const { code, data } = res.data;
+    if (code === 200) {
+      // 来源单带出借出数量 => borrowQty
+      formData.value.detailList = normalizeDetailList(data);
+    }
+  } finally {
+    loading.value = false;
   }
 };
 
-// 选中入库类型监听事件
+// 入库类型改变
 const hangleInTypeChange = () => {
   formData.value.inSourceNumber = null;
-  if (formData.value.inType == 'DC_WMS_IN_TYPE_OTHER') {
-    formData.value.inSourceNumber = null;
-    show.value = false;
-    btnOpen.value = true;
-    formData.value.detailList = [];
-  } else {
-    formData.value.inSourceNumber = null;
-    show.value = true;
-    btnOpen.value = false;
-    formData.value.detailList = [];
-  }
+  formData.value.detailList = [];
+
+  const isOther = formData.value.inType === 'DC_WMS_IN_TYPE_OTHER';
+  btnOpen.value = isOther;
+  show.value = !isOther;
 };
 
-// 仓库监听事件
+// 仓库/来源单监听
 const handleWarehouseChange = (row, type) => {
-  if (type == 'warehouse') {
+  if (type === 'warehouse') {
     formData.value.processingPersonnel = row.warehouseSupervisor;
-  } else if (type == 'outboundOrder') {
+  } else if (type === 'outboundOrder') {
     formData.value.processingPersonnel = row.id;
     getOutboundDetail(row.id);
   }
 };
 
-// 入库明细
+// 来源单弹窗选中后取明细
 const getOutboundDetail = async (id) => {
-  if (id) {
-    const params = {
-      id: id,
-    };
-    const res = await Api.application.warehousingEntry.outboundDetail(params);
-    const { code, data } = res.data;
-    if (code === 200) {
-      formData.value.detailList = data.detailList;
-    }
+  if (!id) return;
+  const res = await Api.application.warehousingEntry.outboundDetail({ id });
+  const { code, data } = res.data;
+  if (code === 200) {
+    // ✅ 注意：来源单详情通常会带 productQty（借出数量），但我们不直接用 productQty 当 borrowQty
+    // 你需要按真实字段改 normalizeDetailItem 的 borrow 映射（建议你返回字段名固定后我帮你对齐）
+    formData.value.detailList = normalizeDetailList(data.detailList);
   }
 };
 
+// 导入
 const uploadFile = async (fileObj) => {
   const form = new FormData();
   form.append('file', fileObj.file);
-  const param =
-    typeof formData.value.warehouseId === 'object'
-      ? formData.value.warehouseId?.id
-      : formData.value.warehouseId;
-  const url = `/blade-bip/dc-wms-in-stock/import-excel?warehouseId=${param}`;
+
+  const url = `/blade-bip/dc-wms-in-stock/import-excel?warehouseId=${warehouseIdValue.value}`;
   loading.value = true;
+
   try {
     const response = await axios.post(url, form);
     if (response.data.code === 200) {
-      loading.value = false;
       showToast({ type: 'success', message: '导入成功！' });
-      formData.value.detailList = response.data.data;
+      formData.value.detailList = normalizeDetailList(response.data.data);
     } else {
       showToast({ type: 'fail', message: response.data.message || '导入失败' });
     }
   } catch (error) {
-    loading.value = false;
     console.error('导入失败', error);
     showToast({ type: 'fail', message: '导入失败，请稍后重试' });
+  } finally {
+    loading.value = false;
   }
 };
 
+// 下载模板
 const addExport = () => {
   const excelUrl =
     'https://static.eastwinbip.com/static/%E7%8E%B0%E5%9C%BA%E4%BB%93%E5%85%B6%E4%BB%96%E5%85%A5%E5%BA%93%E6%98%8E%E7%BB%86.xlsx?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=dc-minio%2F20250320%2F%2Fs3%2Faws4_request&X-Amz-Date=20250320T054333Z&X-Amz-Expires=432000&X-Amz-SignedHeaders=host&X-Amz-Signature=212ade78cb1367e391b29ff742d6187320255943cdc26a1a273c543cb41bbe30';
 
   const link = document.createElement('a');
   link.href = excelUrl;
-  link.download = 'example.xlsx';
+  link.download = '现场仓其他入库明细.xlsx';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 };
 </script>
+
 <style lang="scss" scoped>
 .form-group-title {
   font-weight: 600;
@@ -448,6 +484,7 @@ const addExport = () => {
   margin: 16px 4px 12px;
   font-size: 15px;
 }
+
 :deep(.van-cell-group) {
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
@@ -460,73 +497,73 @@ const addExport = () => {
   padding-left: 12px;
   padding-right: 12px;
 }
-.dialog-search-box {
+
+.actions-row {
   display: flex;
-  flex-direction: column;
   gap: 8px;
-  padding: 16px 0;
+  padding: 0 12px;
+  margin-bottom: 8px;
 }
-.detail-values {
+
+.detail-card {
+  margin: 8px 12px 0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  font-size: 13px;
+  color: #666;
+}
+
+.kv {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.k {
+  color: #888;
+  min-width: 64px;
+}
+.v {
   text-align: right;
+  flex: 1;
+  word-break: break-all;
 }
-.qty-row {
+
+.kv-control .v {
   display: flex;
-  align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  align-items: center;
 }
-.detail-actions {
+
+.kv-stepper .v {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.btns {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 8px;
 }
-.form-itme-btn {
+
+.bottom-bar {
   position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #fff;
-}
-.card__meta {
-  margin-top: 8px;
-  color: #666;
-  font-size: 13px;
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 10px;
-}
-.card__meta .row {
+  bottom: 0;
+  padding: 8px 10px;
+  background: #fff;
   display: flex;
   gap: 8px;
-  margin-top: 4px;
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.06);
 }
-.card__meta .label {
-  color: #888;
-  min-width: 40px;
-}
-.drawer-popup {
-  width: 85%;
-  max-width: 420px;
-}
-.drawer-content {
-  padding: 16px;
-}
-.drawer-title {
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-.drawer-footer {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+
+.bottom-spacer {
+  height: 72px;
 }
 </style>

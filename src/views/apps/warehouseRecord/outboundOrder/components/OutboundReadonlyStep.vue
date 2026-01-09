@@ -89,7 +89,7 @@
       </div>
     </div>
     <div class="form-itme-btn">
-      <van-button size="mini" block @click="cancelSubmit">返回</van-button>
+      <van-button size="small" block @click="cancelSubmit">返回</van-button>
     </div>
   </van-form>
 </template>

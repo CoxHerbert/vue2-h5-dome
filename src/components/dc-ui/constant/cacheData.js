@@ -1,6 +1,43 @@
 import request from '@/axios';
 
 export default {
+  outboundOrder: {
+    url: '/blade-bip/dc-wms-out-stock/select-data',
+    defaultLabel: 'outStockCode',
+    defaultLabelName: '出库单号',
+    title: '出库单选择',
+    placeholder: '请输入出库单号选择',
+    submitTitle: '出库单',
+    dialogGet: (params) => {
+      return request({
+        url: '/blade-bip/dc-wms-out-stock/list',
+        method: 'get',
+        params,
+      });
+    },
+    column: [
+      {
+        label: '出库单号',
+        prop: 'outStockCode',
+      },
+      {
+        label: '单据状态',
+        prop: 'outStockStatus',
+        dictData: 'DC_WMS_OUT_STATUS',
+        component: 'dc-dict',
+      },
+      {
+        label: '出库类型',
+        prop: 'outStockType',
+        dictData: 'DC_WMS_OUT_TYPE_WMS',
+        component: 'dc-dict',
+      },
+      // {
+      //   label: '仓库',
+      //   prop: 'warehouseName',
+      // },
+    ],
+  },
   processModel: {
     // url: '/blade-bip/CrmCustomerArea/select-data',
     defaultLabel: 'modelKey',

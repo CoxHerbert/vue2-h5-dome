@@ -89,9 +89,9 @@
       </div>
     </div>
     <div class="form-itme-btn">
-      <van-button size="mini" block @click="cancelSubmit">返回</van-button>
-      <van-button type="danger" size="mini" block @click="submitReject">驳回</van-button>
-      <van-button type="primary" size="mini" block @click="submitAudit">通过</van-button>
+      <van-button size="small" block @click="cancelSubmit">返回</van-button>
+      <van-button type="danger" size="small" block @click="submitReject">驳回</van-button>
+      <van-button type="primary" size="small" block @click="submitAudit">通过</van-button>
     </div>
   </van-form>
 </template>
