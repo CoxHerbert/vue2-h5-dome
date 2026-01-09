@@ -153,14 +153,14 @@
       </div>
     </div>
 
-    <div class="bottom-bar van-safe-area-bottom">
-      <van-button type="primary" size="small" block :loading="loading" @click="submitForm">
+    <div class="form-itme-btn van-safe-area-bottom">
+      <van-button size="small" block :disabled="loading" @click="cancelSubmit">取消</van-button>
+      <van-button type="success" size="small" block :loading="loading" @click="submitForm">
         保存
       </van-button>
       <van-button type="primary" size="small" block :loading="loading" @click="submitAudit">
         审核
       </van-button>
-      <van-button size="small" block :disabled="loading" @click="cancelSubmit">取消</van-button>
     </div>
 
     <div class="bottom-spacer"></div>
@@ -551,16 +551,16 @@ const addExport = () => {
   margin-top: 8px;
 }
 
-.bottom-bar {
+.form-itme-btn {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 8px 10px;
+  padding: 8px;
   background: #fff;
   display: flex;
+  align-items: center;
   gap: 8px;
-  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.06);
 }
 
 .bottom-spacer {
