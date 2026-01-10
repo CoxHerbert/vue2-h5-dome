@@ -168,6 +168,12 @@ import Api from '@/api';
 import { useRouter, useRoute } from 'vue-router';
 import { showToast } from 'vant';
 import axios from 'axios';
+import {
+  formatDateLabel,
+  buildMessageUrl,
+  fetchUserJobNum,
+  sendWechatTextCard,
+} from '@/utils/message-notification';
 
 const inTypeMap = {
   DC_WMS_IN_TYPE_ON_SITE_STORAGE: 'DC_WMS_STOCK_TYPE_SCENE',
@@ -345,8 +351,27 @@ const submitAudit = async () => {
     };
 
     const res = await Api.application.warehousingEntry.submitAudit(payload);
-    const { code } = res.data;
+    const { code, data } = res.data;
     if (code === 200) {
+      const messageId = data?.id || formData.value.id;
+      const receiverId = formData.value.processingPersonnel;
+      if (messageId && receiverId) {
+        try {
+          const jobNum = await fetchUserJobNum(receiverId);
+          if (jobNum) {
+            const applicantName =
+              userinfo.value?.realName || userinfo.value?.name || userinfo.value?.userName || '-';
+            await sendWechatTextCard({
+              jobNums: [jobNum],
+              title: '装配工具归还待审核',
+              description: `<div class="gray">${formatDateLabel()}</div><div class="normal">申请人：${applicantName} 发起装配工具归还申请</div><div class="highlight">请及时处理</div>`,
+              url: buildMessageUrl(`/apps/warehouse-record/entry/${messageId}`),
+            });
+          }
+        } catch (error) {
+          console.error('发送归还审核通知失败', error);
+        }
+      }
       showToast({ type: 'success', message: '审核成功' });
       router.push({ name: 'appsWarehousingEntry' });
     }

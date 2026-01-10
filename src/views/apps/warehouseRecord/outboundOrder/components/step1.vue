@@ -167,6 +167,12 @@ import { reactive, toRefs, getCurrentInstance, watch, computed, onMounted } from
 import Api from '@/api';
 import { useRouter, useRoute } from 'vue-router';
 import { showToast } from 'vant';
+import {
+  formatDateLabel,
+  buildMessageUrl,
+  fetchUserJobNum,
+  sendWechatTextCard,
+} from '@/utils/message-notification';
 
 const outStockTypeMap = {
   // 现场出库
@@ -278,22 +284,38 @@ const submitForm = async () => {
 };
 
 // 审核
-const submitAudit = () => {
-  (async () => {
-    try {
-      await validateForm();
-    } catch {
-      return;
-    }
+const submitAudit = async () => {
+  try {
+    await validateForm();
+  } catch {
+    return;
+  }
 
-    console.log(formData.value);
-    const res = await Api.application.outboundOrder.submitAudit(formData.value);
-    const { code } = res.data;
-    if (code === 200) {
-      showToast({ type: 'success', message: '审核成功' });
-      router.push({ name: 'appsWarehouseRecord' });
+  const res = await Api.application.outboundOrder.submitAudit(formData.value);
+  const { code, data } = res.data;
+  if (code === 200) {
+    const messageId = data?.id || formData.value.id;
+    const receiverId = formData.value.processingPersonnel;
+    if (messageId && receiverId) {
+      try {
+        const jobNum = await fetchUserJobNum(receiverId);
+        if (jobNum) {
+          const applicantName =
+            userinfo.value?.realName || userinfo.value?.name || userinfo.value?.userName || '-';
+          await sendWechatTextCard({
+            jobNums: [jobNum],
+            title: '装配工具借用待审核',
+            description: `<div class="gray">${formatDateLabel()}</div><div class="normal">申请人：${applicantName} 发起装配工具借用申请</div><div class="highlight">请及时处理</div>`,
+            url: buildMessageUrl(`/apps/warehouse-record/outbound/${messageId}`),
+          });
+        }
+      } catch (error) {
+        console.error('发送借用审核通知失败', error);
+      }
     }
-  })();
+    showToast({ type: 'success', message: '审核成功' });
+    router.push({ name: 'appsWarehouseRecord' });
+  }
 };
 
 // 删除明细
