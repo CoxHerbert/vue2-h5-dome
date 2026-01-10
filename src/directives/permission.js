@@ -2,16 +2,14 @@
 /**
  * 按钮权限控制指令  v-permission="{ id: '按钮id', ...ortherProps }"
  */
-import { usePermissionStore } from '@/store/permission';
 import { useUserStore } from '@/store/user';
 
 const getPermissionState = () => {
-  const permissionStore = usePermissionStore();
   const userStore = useUserStore();
   return {
-    permission: permissionStore.permission || {},
-    btnPermission: permissionStore.btnPermission || {},
-    deptInfo: permissionStore.deptInfo || {},
+    permission: userStore.permission || {},
+    btnPermission: userStore.btnPermission || {},
+    deptInfo: userStore.deptInfo || {},
     userInfo: userStore.userInfo || {},
   };
 };
