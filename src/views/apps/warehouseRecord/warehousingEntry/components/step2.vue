@@ -156,6 +156,12 @@ import { h, reactive, ref, toRefs, getCurrentInstance, onMounted, computed } fro
 import Api from '@/api';
 import { useRouter } from 'vue-router';
 import { Field, showConfirmDialog, showToast } from 'vant';
+import {
+  formatDateLabel,
+  buildMessageUrl,
+  fetchUserJobNum,
+  sendWechatTextCard,
+} from '@/utils/message-notification';
 const { proxy } = getCurrentInstance();
 const router = useRouter();
 const { DC_WMS_IN_TYPE_WMS } = proxy.dicts(['DC_WMS_IN_TYPE_WMS']);
@@ -201,22 +207,37 @@ const handleWarehouseChange = (row, type) => {
   }
 };
 
-const submitAudit = () => {
-  (async () => {
-    try {
-      await validateForm();
-    } catch {
-      return;
+const submitAudit = async () => {
+  try {
+    await validateForm();
+  } catch {
+    return;
+  }
+  const res = await Api.application.warehousingEntry.submitAudit({
+    ...formData.value,
+  });
+  const { code, data } = res.data;
+  if (code === 200) {
+    const messageId = data?.id || formData.value.id;
+    const applicantId = formData.value.applicantId;
+    if (messageId && applicantId) {
+      try {
+        const jobNum = await fetchUserJobNum(applicantId);
+        if (jobNum) {
+          await sendWechatTextCard({
+            jobNums: [jobNum],
+            title: '装配工具归还审核通过',
+            description: `<div class="gray">${formatDateLabel()}</div><div class="normal">您的装配工具归还申请已审核通过</div><div class="highlight">点击查看详情</div>`,
+            url: buildMessageUrl(`/apps/warehouse-record/entry/${messageId}`),
+          });
+        }
+      } catch (error) {
+        console.error('发送归还通过通知失败', error);
+      }
     }
-    const res = await Api.application.warehousingEntry.submitAudit({
-      ...formData.value,
-    });
-    const { code, msg } = res.data;
-    if (code === 200) {
-      showToast({ type: 'success', message: '审核成功' });
-      router.push({ name: 'appsWarehousingEntry' });
-    }
-  })();
+    showToast({ type: 'success', message: '审核成功' });
+    router.push({ name: 'appsWarehousingEntry' });
+  }
 };
 
 const promptRejectReason = async () => {
@@ -253,8 +274,25 @@ const submitReject = async () => {
       ...formData.value,
       reject: reason,
     });
-    const { code, msg } = res.data;
+    const { code, data } = res.data;
     if (code === 200) {
+      const messageId = data?.id || formData.value.id;
+      const applicantId = formData.value.applicantId;
+      if (messageId && applicantId) {
+        try {
+          const jobNum = await fetchUserJobNum(applicantId);
+          if (jobNum) {
+            await sendWechatTextCard({
+              jobNums: [jobNum],
+              title: '装配工具归还审核驳回',
+              description: `<div class="gray">${formatDateLabel()}</div><div class="normal">您的装配工具归还申请已被驳回</div><div class="highlight">原因：${reason}</div>`,
+              url: buildMessageUrl(`/apps/warehouse-record/entry/${messageId}`),
+            });
+          }
+        } catch (error) {
+          console.error('发送归还驳回通知失败', error);
+        }
+      }
       showToast({ type: 'success', message: '驳回成功' });
       router.push({ name: 'appsWarehousingEntry' });
     }
