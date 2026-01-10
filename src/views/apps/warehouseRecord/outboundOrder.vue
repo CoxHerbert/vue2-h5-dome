@@ -56,6 +56,10 @@
               <span class="label">登记时间</span>
               <span class="value">{{ item.createTime ?? '-' }}</span>
             </div>
+            <div class="row">
+              <span class="label">更新时间</span>
+              <span class="value">{{ item.updateTime ?? '-' }}</span>
+            </div>
           </div>
 
           <div class="card__footer">

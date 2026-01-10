@@ -37,7 +37,7 @@
 </template>
 
 <script setup name="CustomerSubmit">
-import { reactive, toRefs, onBeforeMount, onMounted, computed, ref, getCurrentInstance } from 'vue';
+import { reactive, toRefs, onBeforeMount, computed, ref, getCurrentInstance } from 'vue';
 import step1 from './components/step1.vue';
 import step2 from './components/step2.vue';
 import step3 from './components/step3.vue';

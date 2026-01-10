@@ -55,6 +55,10 @@
               <span class="value">{{ item.createTime ?? '-' }}</span>
             </div>
             <div class="row">
+              <span class="label">更新时间</span>
+              <span class="value">{{ item.updateTime ?? '-' }}</span>
+            </div>
+            <div class="row">
               <span class="label">备注</span>
               <span class="value">{{ item.remark ?? '-' }}</span>
             </div>
