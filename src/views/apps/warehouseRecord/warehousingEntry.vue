@@ -20,10 +20,7 @@
       </template>
 
       <template #notice>
-        <van-notice-bar
-          left-icon="volume-o"
-          text="无论我们能活多久，我们能够享受的只有无法分割的此刻，此外别无其他。"
-        />
+        <van-notice-bar left-icon="volume-o" text="归还人 发起 > 仓管 通过或者驳回 > 完成" />
       </template>
 
       <template #search-extra>
@@ -138,19 +135,13 @@ const inTypeDict = ref([]);
 const inStatusDict = ref([]);
 
 const statusOptions = computed(() => {
-  const list = inStatusDict.value || [];
-  return [
-    { label: '全部', value: null },
-    ...list.map((item) => ({
-      label: item.label,
-      value: item.value,
-    })),
-  ];
+  const list = inStatusDict.value.map((d) => ({ text: d.label, value: d.value })) || [];
+  return [{ text: '全部', value: null }, ...list];
 });
 
 const typeOptions = computed(() => {
-  const list = inTypeDict.value || [];
-  return [{ label: '全部', value: null }, ...list];
+  const list = inTypeDict.value.map((d) => ({ text: d.label, value: d.value })) || [];
+  return [{ text: '全部', value: null }, ...list];
 });
 
 const resolveNavEl = () => {

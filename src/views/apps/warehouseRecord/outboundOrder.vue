@@ -22,7 +22,7 @@
       <template #notice>
         <van-notice-bar
           left-icon="volume-o"
-          text="无论我们能活多久，我们能够享受的只有无法分割的此刻，此外别无其他。"
+          text="领料人 发起 > 仓管 通过或者驳回 > 领料人 通过或者驳回 > 领料完成"
         />
       </template>
 
@@ -133,14 +133,16 @@ const outTypeDict = ref([]);
 const outStatusDict = ref([]);
 
 const statusOptions = computed(() => {
-  const list = outStatusDict.value.filter((item) => item.value !== 'DC_WMS_OUT_STATUS_C') || [];
-  console.log(list);
-  return [{ label: '全部', value: null }, ...list];
+  const list =
+    outStatusDict.value
+      .filter((item) => item.value !== 'DC_WMS_OUT_STATUS_C')
+      .map((d) => ({ text: d.label, value: d.value })) || [];
+  return [{ text: '全部', value: null }, ...list];
 });
 
 const typeOptions = computed(() => {
-  const list = outTypeDict.value || [];
-  return [{ label: '全部', value: null }, ...list];
+  const list = outTypeDict.value.map((d) => ({ text: d.label, value: d.value })) || [];
+  return [{ text: '全部', value: null }, ...list];
 });
 
 const resolveNavEl = () => {

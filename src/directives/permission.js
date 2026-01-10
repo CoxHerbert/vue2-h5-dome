@@ -49,7 +49,6 @@ const isDeptDeepMode = (permissionObj) => {
 
 /** 判断是否有权限 */
 export const hasPermissionCommon = (id, dataRow) => {
-  console.log(id, dataRow);
   const { permission, btnPermission, userInfo, deptInfo } = getPermissionState();
   const permissionObj = btnPermission?.[id];
   if (!permissionObj) {
@@ -118,6 +117,7 @@ const checkBtnAuth = (el, binding = {}) => {
   //   deptInfo
   // );
   const permissionObj = btnPermission?.[value?.id];
+  console.log(btnPermission, 'btnPermission');
   // 非按钮级数据权限
   if (!permissionObj) {
     // 看当前角色是否有权限，没有就隐藏了
@@ -171,6 +171,7 @@ const checkBtnAuth = (el, binding = {}) => {
 
 const permissionDirective /*: Directive */ = {
   mounted(el, binding = {}) {
+    console.log(el, binding);
     checkBtnAuth(el, binding);
   },
 

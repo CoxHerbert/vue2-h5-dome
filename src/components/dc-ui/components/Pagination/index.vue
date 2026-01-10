@@ -187,7 +187,7 @@ const props = defineProps({
     type: Array,
     default: () => [{ label: '全部', value: null, type: 'success' }],
   },
-  defaultStatus: { type: [String, Number], default: 'all' },
+  defaultStatus: { type: [String, Number], default: null },
   keyword: { type: String, default: '' },
   activeStatus: { type: [String, Number], default: null },
   query: { type: Object, default: () => ({}) }, // 新增：多条件对象
