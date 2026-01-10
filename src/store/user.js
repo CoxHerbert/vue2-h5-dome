@@ -7,6 +7,34 @@ import { normalizeUser } from '@/utils/normalize-user';
 
 const isObject = (val) => val && typeof val === 'object' && !Array.isArray(val);
 
+const transformBtnAuths = (data = {}) => {
+  const result = {};
+  Object.keys(data).forEach((key) => {
+    const item = data[key] || {};
+    result[key] = {
+      name: item.name,
+      btnType: item.btnType,
+      dataPromissionType: item.dataPromissionType,
+      dataPromissionDeptType: item.dataPromissionDeptType,
+    };
+  });
+  return result;
+};
+
+const flattenPermissionCodes = (list = [], result = []) => {
+  list.forEach((item) => {
+    if (typeof item !== 'object' || item === null) return;
+    const children = item.children;
+    const code = item.code;
+    if (Array.isArray(children) && children.length > 0) {
+      flattenPermissionCodes(children, result);
+    } else if (code) {
+      result.push(code);
+    }
+  });
+  return result;
+};
+
 function readLoginInfo() {
   if (typeof window === 'undefined' || !window?.localStorage) return null;
   try {
@@ -22,6 +50,9 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     userInfo: secureStorage.get(KEYS.USER_INFO, null),
     loginInfo: readLoginInfo(),
+    permission: secureStorage.get(KEYS.PERMISSION, {}),
+    btnPermission: {},
+    deptInfo: secureStorage.get(KEYS.DEPT_INFO, null),
   }),
 
   actions: {
@@ -79,9 +110,37 @@ export const useUserStore = defineStore('user', {
       this.setUserInfo(mergedUser);
     },
 
+    setBtnPermission(permission) {
+      this.btnPermission = permission || {};
+    },
+
+    setPermission(permission) {
+      const codes = flattenPermissionCodes(permission || []);
+      const map = {};
+      codes.forEach((code) => {
+        map[code] = true;
+      });
+      this.permission = map;
+      secureStorage.set(KEYS.PERMISSION, this.permission);
+    },
+
+    setDeptInfo(deptInfo) {
+      this.deptInfo = deptInfo || null;
+      if (this.deptInfo) {
+        secureStorage.set(KEYS.DEPT_INFO, this.deptInfo);
+      } else {
+        secureStorage.remove(KEYS.DEPT_INFO);
+      }
+    },
+
     reset() {
       this.setUserInfo(null);
       this.setLoginInfo(null);
+      this.permission = {};
+      this.btnPermission = {};
+      this.deptInfo = null;
+      secureStorage.remove(KEYS.PERMISSION);
+      secureStorage.remove(KEYS.DEPT_INFO);
     },
 
     // 拉取接口：你的返回是 { code, success, data, msg }
@@ -90,6 +149,7 @@ export const useUserStore = defineStore('user', {
       const raw = res?.data?.data || res?.data || {};
       const normalized = normalizeUser(raw || {});
       this.setUserInfo(normalized);
+      await this.refreshPermissionData();
       return normalized;
     },
 
@@ -100,6 +160,27 @@ export const useUserStore = defineStore('user', {
       };
 
       await Api.user.updatePassword(params);
+    },
+
+    async fetchBtnPermissions() {
+      try {
+        const res = await Api.user.getDataPermissionButtons();
+        if (res.data?.code === 200) {
+          this.setBtnPermission(transformBtnAuths(res.data?.data?.menu || {}));
+        }
+      } catch (error) {
+        console.error('获取数据级，按钮权限 数据失败', error);
+      }
+    },
+
+    async fetchButtons() {
+      const res = await Api.user.getButtons();
+      const data = res.data?.data || [];
+      this.setPermission(data);
+    },
+
+    async refreshPermissionData() {
+      await Promise.allSettled([this.fetchButtons(), this.fetchBtnPermissions()]);
     },
   },
 });

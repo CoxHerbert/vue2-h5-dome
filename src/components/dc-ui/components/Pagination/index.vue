@@ -21,6 +21,17 @@
         :show-search="showSearch"
         :show-tabs="showTabs"
       >
+        <div class="dc-notice-bar">
+          <slot
+            name="notice"
+            :query="qry"
+            :set-query="setQuery"
+            :set-query-field="setQueryField"
+            :clear-query="clearQuery"
+            :apply="doResetAndLoad"
+          ></slot>
+        </div>
+
         <div v-if="showSearch" class="dc-search-bar">
           <DcSearchBar
             v-model="kw"
@@ -32,6 +43,20 @@
             @clear="handleSearchClear"
           />
         </div>
+
+        <slot
+          name="search-extra"
+          :keyword="kw"
+          :set-keyword="(v) => (kw = v)"
+          :active-status="act"
+          :set-active-status="(v) => (act = v)"
+          :status-options="statusOptions"
+          :query="qry"
+          :set-query="setQuery"
+          :set-query-field="setQueryField"
+          :clear-query="clearQuery"
+          :apply="doResetAndLoad"
+        ></slot>
 
         <!-- 可选：多条件过滤区域（完全由父组件插槽自定义） -->
         <div class="dc-filters">
@@ -162,7 +187,7 @@ const props = defineProps({
     type: Array,
     default: () => [{ label: '全部', value: null, type: 'success' }],
   },
-  defaultStatus: { type: [String, Number], default: 'all' },
+  defaultStatus: { type: [String, Number], default: null },
   keyword: { type: String, default: '' },
   activeStatus: { type: [String, Number], default: null },
   query: { type: Object, default: () => ({}) }, // 新增：多条件对象
@@ -431,6 +456,10 @@ defineExpose({
       :deep(.dc-search-panel) {
         width: 100%;
       }
+    }
+
+    .dc-notice-bar {
+      padding-top: 8px;
     }
 
     :deep(.van-tabs__wrap) {

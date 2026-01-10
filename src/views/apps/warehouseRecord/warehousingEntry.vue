@@ -12,10 +12,22 @@
       :fetcher="fetcher"
       :get-nav-el="resolveNavEl"
       :add-visible="true"
+      :tabs-visible="false"
       @add="handleAdd"
     >
       <template #nav>
         <van-nav-bar ref="navRef" title="装配工具归还" fixed left-arrow @click-left="goBack" />
+      </template>
+
+      <template #notice>
+        <van-notice-bar left-icon="volume-o" text="归还人 发起 > 仓管 通过或者驳回 > 完成" />
+      </template>
+
+      <template #search-extra>
+        <van-dropdown-menu class="filter-menu">
+          <van-dropdown-item v-model="filterType" :options="typeOptions" />
+          <van-dropdown-item v-model="filterStatus" :options="statusOptions" />
+        </van-dropdown-menu>
       </template>
 
       <template #item="{ item }">
@@ -95,7 +107,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, getCurrentInstance } from 'vue';
+import { computed, onMounted, ref, getCurrentInstance, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import Api from '@/api';
@@ -116,19 +128,20 @@ const queryParams = ref({
   inType: 'DC_WMS_IN_TYPE_RETURN',
   warehouseId: null,
 });
+const filterType = ref('DC_WMS_IN_TYPE_RETURN');
+const filterStatus = ref(null);
 
 const inTypeDict = ref([]);
 const inStatusDict = ref([]);
 
 const statusOptions = computed(() => {
-  const list = inStatusDict.value || [];
-  return [
-    { label: '全部', value: null },
-    ...list.map((item) => ({
-      label: item.label,
-      value: item.value,
-    })),
-  ];
+  const list = inStatusDict.value.map((d) => ({ text: d.label, value: d.value })) || [];
+  return [{ text: '全部', value: null }, ...list];
+});
+
+const typeOptions = computed(() => {
+  const list = inTypeDict.value.map((d) => ({ text: d.label, value: d.value })) || [];
+  return [{ text: '全部', value: null }, ...list];
 });
 
 const resolveNavEl = () => {
@@ -147,6 +160,19 @@ const loadDicts = async () => {
 
 onMounted(() => {
   loadDicts();
+});
+
+watch(filterType, (value) => {
+  queryParams.value = {
+    ...queryParams.value,
+    inType: value || null,
+  };
+  listRef.value?.resetAndLoad?.();
+});
+
+watch(filterStatus, (value) => {
+  activeStatus.value = value ?? null;
+  listRef.value?.resetAndLoad?.();
 });
 
 async function fetcher({ pageNo, pageSize, keyword, status, inType, warehouseId }) {
@@ -212,6 +238,10 @@ const goBack = () => {
   &__action {
     margin: 12px 0 4px;
   }
+}
+
+.filter-menu {
+  margin-bottom: 8px;
 }
 
 .card {
