@@ -32,6 +32,18 @@ export default {
         dictData: 'DC_WMS_OUT_TYPE_WMS',
         component: 'dc-dict',
       },
+      {
+        label: '申请人',
+        prop: 'applicantId',
+        component: 'dc-view',
+        objectName: 'user',
+      },
+      {
+        label: '负责人',
+        prop: 'processingPersonnel',
+        component: 'dc-view',
+        objectName: 'user',
+      },
       // {
       //   label: '仓库',
       //   prop: 'warehouseName',

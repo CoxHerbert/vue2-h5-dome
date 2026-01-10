@@ -22,7 +22,7 @@
         :multiple="false"
         :multiple-limit="1"
         :clearable="true"
-        :params="{ stockType: getStockType(formData.inType) }"
+        :query="{ stockType: getStockType(formData.inType) }"
         disabled
         return-type="string"
         @change="(row) => handleWarehouseChange(row, 'warehouse')"
@@ -38,7 +38,7 @@
         :multiple="false"
         :multiple-limit="1"
         :clearable="true"
-        :params="{ outStockStatus: 'DC_WMS_OUT_STATUS_BORROW' }"
+        :query="{ outStockStatus: 'DC_WMS_OUT_STATUS_BORROW' }"
         return-type="string"
         @change="(row) => handleWarehouseChange(row, 'outboundOrder')"
       />
@@ -63,7 +63,6 @@
         :disabled="isShow"
         return-type="string"
       />
-
       <dc-select-dialog
         v-model="formData.processingPersonnel"
         label="处理人"
@@ -154,13 +153,9 @@
     </div>
 
     <div class="bottom-bar van-safe-area-bottom">
-      <van-button type="primary" size="small" block :loading="loading" @click="submitForm">
-        保存
-      </van-button>
-      <van-button type="primary" size="small" block :loading="loading" @click="submitAudit">
-        审核
-      </van-button>
-      <van-button size="small" block :disabled="loading" @click="cancelSubmit">取消</van-button>
+      <van-button size="small" block @click="cancelSubmit">返回</van-button>
+      <van-button type="success" size="small" block @click="submitForm">保存草稿</van-button>
+      <van-button type="primary" size="small" block @click="submitAudit">发起</van-button>
     </div>
 
     <div class="bottom-spacer"></div>
@@ -198,7 +193,8 @@ const pageData = reactive({
   loading: false,
   formData: {
     inType: 'DC_WMS_IN_TYPE_RETURN',
-    warehouseId: '2008344171069898753',
+    // warehouseId: '2008344171069898753', // 正式环境仓库ID
+    warehouseId: '1900489394659852289', // 测试环境仓库ID
     detailList: [],
   },
   show: true,
@@ -225,9 +221,6 @@ const validateForm = async () => {
 };
 
 // ============ 明细字段标准化（关键） ============
-// 借出数量：borrowQty（来源单带出）
-// 归还数量：returnQty（行内编辑）
-// 提交时：productQty = returnQty（接口要求）
 const normalizeDetailItem = (it) => {
   // 借出数量优先从接口字段取；找不到则兜底到可能存在的字段
   const borrow = it.productQty ?? 0;
@@ -419,10 +412,11 @@ const hangleInTypeChange = () => {
 
 // 仓库/来源单监听
 const handleWarehouseChange = (row, type) => {
+  console.log(row, type);
   if (type === 'warehouse') {
     formData.value.processingPersonnel = row.warehouseSupervisor;
   } else if (type === 'outboundOrder') {
-    formData.value.processingPersonnel = row.id;
+    formData.value.processingPersonnel = row.processingPersonnel;
     getOutboundDetail(row.id);
   }
 };
@@ -506,7 +500,7 @@ const addExport = () => {
 }
 
 .detail-card {
-  margin: 8px 12px 0;
+  margin: 8px 0;
   background: #fff;
   border-radius: 10px;
   padding: 10px 12px;

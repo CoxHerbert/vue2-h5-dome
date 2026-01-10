@@ -2,7 +2,14 @@
   <van-form ref="ruleFormRef">
     <div class="form-group-title">基本信息</div>
     <van-cell-group inset>
-      <van-field label="入库类型" :model-value="inTypeLabel" readonly />
+      <dc-selector
+        v-model="formData.inType"
+        label="入库类型"
+        placeholder="请点击选择入库类型"
+        title="入库类型"
+        :options="DC_WMS_IN_TYPE_WMS"
+        disabled
+      />
       <dc-select-dialog
         v-model="formData.warehouseId"
         label="仓库名称"
@@ -24,7 +31,7 @@
         :multiple-limit="1"
         :clearable="true"
         :disabled="show"
-        :params="{
+        :query="{
           outStockStatus: 'DC_WMS_OUT_STATUS_BORROW',
         }"
         @change="(row) => handleWarehouseChange(row, 'outboundOrder')"
@@ -98,9 +105,9 @@
       </div>
     </div>
     <div class="form-itme-btn">
+      <van-button size="small" block @click="cancelSubmit">返回</van-button>
+      <van-button type="danger" size="small" block @click="submitReject">驳回</van-button>
       <van-button type="primary" size="small" block @click="submitAudit">通过</van-button>
-      <van-button type="primary" size="small" block @click="submitReject">驳回</van-button>
-      <van-button size="small" block @click="cancelSubmit">取消</van-button>
     </div>
   </van-form>
 
@@ -128,7 +135,7 @@
                 :multiple="false"
                 :multiple-limit="1"
                 :clearable="true"
-                :params="{
+                :query="{
                   warehouseId: props.info.warehouseId,
                 }"
               />
@@ -145,18 +152,12 @@
 </template>
 
 <script setup name="customerSubmit">
-import { h, reactive, ref, toRefs, getCurrentInstance, onMounted, watch, computed } from 'vue';
+import { h, reactive, ref, toRefs, getCurrentInstance, onMounted, computed } from 'vue';
 import Api from '@/api';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { Field, showConfirmDialog, showToast } from 'vant';
 const { proxy } = getCurrentInstance();
 const router = useRouter();
-const route = useRoute();
-// 子组件调用父组件方法
-const emit = defineEmits(['detail']);
-const detail = () => {
-  emit('detail');
-};
 const { DC_WMS_IN_TYPE_WMS } = proxy.dicts(['DC_WMS_IN_TYPE_WMS']);
 const props = defineProps({
   // 详情
@@ -166,19 +167,15 @@ const props = defineProps({
   },
 });
 const pageData = reactive({
-  loading: false,
-  rules: {},
   formData: {},
   show: true,
   open: false,
   title: '',
   formDataTable: {},
   btnOpen: false,
-  unitList: [],
 });
 
-const { loading, rules, formData, show, open, title, formDataTable, btnOpen, unitList } =
-  toRefs(pageData);
+const { formData, show, open, title, formDataTable, btnOpen } = toRefs(pageData);
 const inTypeLabel = computed(() => {
   const list = DC_WMS_IN_TYPE_WMS?.value || [];
   const hit = list.find((item) => item.dictKey === formData.value.inType);
@@ -251,7 +248,8 @@ const promptRejectReason = async () => {
 const submitReject = async () => {
   try {
     const reason = await promptRejectReason();
-    const res = await Api.application.warehousingEntry.submitReject({
+    console.log(reason);
+    const res = await Api.application.warehousingEntry.reject({
       ...formData.value,
       reject: reason,
     });

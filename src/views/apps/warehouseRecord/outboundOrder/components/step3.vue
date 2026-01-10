@@ -189,7 +189,7 @@ const promptRejectReason = async () => {
 const submitReject = async () => {
   try {
     const reason = await promptRejectReason();
-    const res = await Api.application.outboundOrder.submitReject({
+    const res = await Api.application.outboundOrder.reject({
       ...formData.value,
       reject: reason,
     });

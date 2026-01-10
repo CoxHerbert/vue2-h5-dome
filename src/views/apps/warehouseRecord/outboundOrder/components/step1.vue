@@ -21,11 +21,12 @@
         :multiple="false"
         :multiple-limit="1"
         :clearable="true"
-        :params="{
+        :query="{
           stockType: getStockType(formData.outStockType),
         }"
         disabled
-        @change="handleWarehouseChange"
+        @change="(val) => handleWarehouseChange(val)"
+        @init="(val) => handleWarehouseChange(val)"
       />
       <dc-select-dialog
         v-model="formData.applicantId"
@@ -43,6 +44,7 @@
         object-name="user"
         :multiple="false"
         return-type="string"
+        disabled
       />
 
       <van-field
@@ -63,37 +65,38 @@
       />
     </van-cell-group>
 
-    <div class="form-group-title">出库明细</div>
+    <div class="form-group-title">
+      出库明细
+      <dc-select-dialog
+        v-if="formData.warehouseId"
+        object-name="warehouseCount"
+        :multiple="true"
+        :multiple-limit="0"
+        :clearable="true"
+        :query="{ warehouseId: formData.warehouseId }"
+        @change="handleSerchDetail"
+      >
+        <template #customize>
+          <van-button class="mb-5" type="primary" size="small">查询明细</van-button>
+        </template>
 
-    <dc-select-dialog
-      v-if="formData.warehouseId"
-      object-name="warehouseCount"
-      :multiple="true"
-      :multiple-limit="0"
-      :clearable="true"
-      :params="{ warehouseId: ids }"
-      @change="handleSerchDetail"
-    >
-      <template #customize>
-        <van-button class="mb-5" type="primary" size="small">查询明细</van-button>
-      </template>
-
-      <template #search-items="{ queryParams, currentObject }">
-        <div class="dialog-search-box">
-          <van-field
-            v-model="queryParams.mtoNo"
-            label="计划跟踪号"
-            placeholder="请输入计划跟踪号"
-          />
-          <van-field
-            v-model="queryParams[currentObject?.defaultLabel]"
-            :placeholder="currentObject?.placeholder"
-            label="物料名称"
-            clearable
-          />
-        </div>
-      </template>
-    </dc-select-dialog>
+        <template #search-items="{ queryParams, currentObject }">
+          <div class="dialog-search-box">
+            <van-field
+              v-model="queryParams.mtoNo"
+              label="计划跟踪号"
+              placeholder="请输入计划跟踪号"
+            />
+            <van-field
+              v-model="queryParams[currentObject?.defaultLabel]"
+              :placeholder="currentObject?.placeholder"
+              label="物料名称"
+              clearable
+            />
+          </div>
+        </template>
+      </dc-select-dialog>
+    </div>
 
     <!-- 出库明细：一行一项（每条明细一行展示：名称/数量/仓位/删除） -->
     <div v-for="(item, index) in formData.detailList" :key="index" class="card__meta">
@@ -197,19 +200,36 @@ const props = defineProps({
   },
 });
 
+watch(
+  () => props.info,
+  (newVal) => {
+    if (newVal) {
+      const timer = setTimeout(() => {
+        if (route.params.id !== 'create') {
+          formData.value = {
+            ...props.info,
+            // 保底，避免 detailList 为空时报错
+            detailList: props.info?.detailList || [],
+          };
+        }
+        clearTimeout(timer);
+      });
+    }
+  }
+);
+
 const { DC_WMS_OUT_TYPE_WMS } = proxy.dicts(['DC_WMS_OUT_TYPE_WMS']);
 
 const pageData = reactive({
   formData: {
-    outStockType: 'DC_WMS_OUT_TYPE_BORROW',
+    outStockType: '',
     detailList: [],
     applicantId: null,
   },
   isDisabled: true,
-  ids: null,
 });
 
-const { formData, isDisabled, ids } = toRefs(pageData);
+const { formData, isDisabled } = toRefs(pageData);
 
 const validateForm = async () => {
   const formRef = proxy.$refs.ruleFormRef;
@@ -219,19 +239,18 @@ const validateForm = async () => {
 };
 
 onMounted(() => {
-  formData.value.applicantId = userinfo.value.user_id;
-  formData.value.warehouseId = '2008344171069898753';
-
-  if (route.params.id !== 'create') {
-    const timer = setTimeout(() => {
+  const timer = setTimeout(() => {
+    if (route.params.id === 'create') {
       formData.value = {
-        ...props.info,
-        // 保底，避免 detailList 为空时报错
-        detailList: props.info?.detailList || [],
+        applicantId: userinfo.value.user_id,
+        outStockType: 'DC_WMS_OUT_TYPE_BORROW',
+        detailList: [],
+        // warehouseId: '2008344171069898753', // 正式环境仓库ID
+        warehouseId: '1900489394659852289', // 测试环境仓库ID
       };
-      clearTimeout(timer);
-    }, 300);
-  }
+    }
+    clearTimeout(timer);
+  }, 300);
 });
 
 // 监听出库类型变化
@@ -292,9 +311,10 @@ const cancelSubmit = () => {
 
 // 仓库监听事件
 const handleWarehouseChange = async (row) => {
-  formData.value.processingPersonnel = row.warehouseSupervisor;
+  const selected = row?.[0] || row;
+  console.log(selected);
+  formData.value.processingPersonnel = selected.warehouseSupervisor;
   isDisabled.value = false;
-  ids.value = row.id;
 };
 
 // 查询明细（把接口返回映射成 detailList）
@@ -317,10 +337,14 @@ const handleSerchDetail = (row) => {
 
 <style lang="scss" scoped>
 .form-group-title {
+  width: 100%;
   font-weight: 600;
   color: #303133;
   margin: 16px 4px 12px;
   font-size: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 :deep(.van-cell-group) {
   border-radius: 12px;
@@ -361,5 +385,9 @@ const handleSerchDetail = (row) => {
 .card__meta .label {
   color: #888;
   min-width: 40px;
+}
+:deep(.dc-select-dialog) {
+  display: inline;
+  width: auto !important;
 }
 </style>

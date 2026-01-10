@@ -112,7 +112,8 @@ const outTypeDict = ref([]);
 const outStatusDict = ref([]);
 
 const statusOptions = computed(() => {
-  const list = outStatusDict.value || [];
+  const list = outStatusDict.value.filter((item) => item.value !== 'DC_WMS_OUT_STATUS_C') || [];
+  console.log(list);
   return [{ label: '全部', value: null }, ...list];
 });
 

@@ -5,8 +5,6 @@
       <van-step v-for="(d, index) in dictData" :key="index">{{ d.label }}</van-step>
     </van-steps>
 
-    <!-- 当前步骤标题：让用户始终知道正在填什么 -->
-    <div class="step-title">{{ dictData?.[step]?.dictValue || '' }}</div>
     <step1 v-if="steps2 === 0" :info="info" @out-stock-type-change="handleOutStockTypeChange" />
     <step2
       v-if="steps2 === 1"
@@ -58,8 +56,9 @@ const { DC_WMS_OUT_STATUS } = proxy.dicts(['DC_WMS_OUT_STATUS']);
 
 const dictOutStockStatus = (value) => {
   let dcWmsOutStatus = DC_WMS_OUT_STATUS.value;
+  console.log(dcWmsOutStatus);
   if (value === 'DC_WMS_OUT_TYPE_BORROW') {
-    dictData.value = dcWmsOutStatus.filter((item) => item.value !== 'DC_WMS_OUT_STATUS_C');
+    dictData.value = dcWmsOutStatus.filter((item) => item.value !== 'DC_WMS_OUT_STATUS_RETURN');
   } else {
     dictData.value = dcWmsOutStatus.slice(0, 4);
   }
@@ -110,14 +109,6 @@ onBeforeMount(() => {
   if (route.params.id !== 'create') getDetail();
 });
 
-onMounted(() => {
-  if (route.params.id === 'create') {
-    setTimeout(() => {
-      dictOutStockStatus('DC_WMS_OUT_TYPE_OTHER');
-    }, 1000);
-  }
-});
-
 const getDetail = async () => {
   try {
     loading.value = true;
@@ -136,12 +127,10 @@ const getDetail = async () => {
 
 // 处理出库类型变化
 const handleOutStockTypeChange = (newOutStockType) => {
+  console.log(newOutStockType);
   if (route.params.id === 'create') {
     info.value.outStockType = newOutStockType;
-    console.log('出库类型已变更:', newOutStockType);
     dictOutStockStatus(newOutStockType);
-    // 重置步骤，确保步骤条正确显示
-    // step.value = 0;
   } else {
     dictOutStockStatus(newOutStockType);
   }
@@ -155,15 +144,6 @@ const handleOutStockTypeChange = (newOutStockType) => {
   background: #f5f7fb;
 }
 
-.wrap-left {
-  padding: 12px;
-  /* 预留底部空间：防止移动端按钮/系统底栏遮挡 */
-  padding-bottom: 72px;
-  min-height: 100vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
 /* 顶部步骤条：卡片样式 */
 :deep(.van-steps) {
   margin-bottom: 12px;
@@ -172,36 +152,11 @@ const handleOutStockTypeChange = (newOutStockType) => {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
-.step-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-  margin: 10px 4px 12px;
-}
-
 /* 步骤标题更适合小屏 */
 :deep(.van-step__title) {
   font-size: 12px;
   line-height: 16px;
   word-break: break-all;
-}
-
-/* 如果 step 组件内部是表单：强制单列更舒服 */
-:deep(.custom-form) {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-:deep(.form-itme-width_50),
-:deep(.form-itme-width_100) {
-  width: 100% !important;
-  margin-right: 0 !important;
-}
-
-/* 你原来有 form-item-value 的边框，这里保留但更柔和一点 */
-:deep(.form-item-value) {
-  border-radius: 8px;
 }
 
 /* 可选：让步骤条吸顶（体验更好） */

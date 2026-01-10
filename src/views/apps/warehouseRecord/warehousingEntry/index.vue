@@ -58,43 +58,6 @@ onBeforeMount(() => {
   if (route.params.id !== 'create') getDetail();
 });
 
-// const uesrIdMaps = {
-//   '1899335959778770945': 'createUserId',
-//   '1899336056260345857': 'auditUserId',
-//   '1899336133913690113': 'tpmHeaderOperatorId',
-// };
-// const AuditTimeMaps = {
-//   '1899335959778770945': 'createTime',
-//   '1899336056260345857': 'auditTime',
-//   '1899336133913690113': 'operationOperatorDate',
-// };
-
-// const getUserId = item => {
-//   return info.value?.[uesrIdMaps[item.id]];
-// };
-
-// const getTime = item => {
-//   console.log('item======>', item);
-//   return info.value?.[AuditTimeMaps[item.id]];
-// };
-
-// const stepProps = computed(() => {
-//   return {
-//     options: DC_WMS_IN_STATUS.value?.map(item => {
-//       return {
-//         ...item,
-//         userId: getUserId(item),
-//         time: getTime(item),
-//       };
-//     }),
-//     activeIndex: steps2,
-//     labelKey: 'dictValue',
-//     timeKey: 'time',
-//     nameKey: 'userId',
-//     nameType: 'userId',
-//   };
-// });
-
 const getDetail = async () => {
   try {
     loading.value = true;

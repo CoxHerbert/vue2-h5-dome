@@ -3,7 +3,10 @@
     class="dc-select-dialog"
     :style="{ width, '--dc-select-dialog-footer-height': footerHeight }"
   >
-    <div v-if="$slots.default" class="dc-select-dialog__trigger" :class="{ disabled }">
+    <span v-if="$slots.customize" :class="{ disabled }" @click="openPopup">
+      <slot name="customize"></slot>
+    </span>
+    <div v-else-if="$slots.default" class="dc-select-dialog__trigger" :class="{ disabled }">
       <div class="dc-select-dialog__slot" @click="openPopup">
         <slot></slot>
       </div>
@@ -78,7 +81,7 @@
         <span class="dc-select-dialog__title">{{ popupTitle }}</span>
       </div>
 
-      <div v-loading="loading" class="dc-select-dialog__body">
+      <div class="dc-select-dialog__body">
         <div class="dc-select-dialog__list">
           <DcPagination
             ref="pagerRef"
@@ -245,10 +248,8 @@
 
       <div class="dc-select-dialog__footer">
         <div class="dc-select-dialog__footer-actions">
-          <van-button size="mini" type="default" plain @click="cancelSelection">取消</van-button>
-          <van-button size="mini" type="primary" @click="confirmSelection">{{
-            confirmText
-          }}</van-button>
+          <van-button size="mini" type="default" plain @click="cancelSelection">关闭</van-button>
+          <van-button size="mini" type="primary" @click="confirmSelection">确认</van-button>
         </div>
       </div>
     </van-popup>
@@ -289,7 +290,7 @@ const props = defineProps({
   tagTextColor: { type: String, default: '#1989fa' },
 });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(['update:modelValue', 'change', 'init']);
 
 const instance = getCurrentInstance();
 if (instance?.type) {
@@ -425,6 +426,23 @@ const dictCodes = computed(() => {
   return Array.from(codes);
 });
 
+/** ✅ 新增：init 事件只触发一次（当回显/初始化完成时） */
+const initEmitted = ref(false);
+
+function emitInitPayload() {
+  if (initEmitted.value) return;
+
+  let payload;
+  if (multiple.value) {
+    payload = selectedRows.value.map((item) => ({ ...item }));
+  } else {
+    const row = selectedRows.value.length ? selectedRows.value[0] : null;
+    payload = row;
+  }
+  initEmitted.value = true;
+  emit('init', payload);
+}
+
 watch(
   dictCodes,
   async (codes) => {
@@ -447,6 +465,8 @@ watch(
 watch(
   () => props.objectName,
   (name) => {
+    initEmitted.value = false; // ✅ 新增：切换 objectName 重新允许触发 init
+
     model.value = cacheData?.[name] || null;
     if (model.value?.rowKey) {
       rowKeyRef.value = model.value.rowKey;
@@ -480,18 +500,34 @@ function parseIds(val) {
 watch(
   [() => props.modelValue, () => props.objectName],
   async ([newVal]) => {
-    if (!props.showValue) {
-      if (!newVal || (Array.isArray(newVal) && !newVal.length) || newVal === '') {
-        selectedRows.value = [];
-      }
+    // ✅ 只有 modelValue 有值才允许触发 init
+    const shouldInit = hasAnyValue(newVal);
+
+    // modelValue 为空：清空，但不触发 init
+    if (!shouldInit) {
+      selectedRows.value = [];
       return;
     }
+
+    // showValue=false：你本来就不回显对象，这里仍然可以触发 init
+    // （payload 会按当前 selectedRows 逻辑算出来；但此时 selectedRows 可能为空）
+    // 更合理：直接把 newVal 当作初始化结果返回（建议这样）
+    if (!props.showValue) {
+      initEmitted.value = true;
+      emit('init', newVal);
+      return;
+    }
+
     await nextTick();
     const ids = parseIds(newVal);
+
+    // model/url 不具备：也不触发 init（因为无法回显你期望的对象）
+    // 如果你想“只要有值就触发init（即使拿不到对象）”，我下面也给你可选版本
     if (!ids.length || !model.value?.url) {
       selectedRows.value = [];
       return;
     }
+
     try {
       await cacheRequest.getView({
         url: model.value.url,
@@ -500,34 +536,37 @@ watch(
       });
     } catch (error) {
       console.error('Failed to fetch cache data:', error);
+      // 继续兜底
     }
+
     const bucket = cacheStore.globalData[model.value.url] || {};
     const rows = Array.isArray(bucket) ? bucket : Object.values(bucket);
     const key = keyField.value;
     const valueMap = new Map();
+
     if (Array.isArray(newVal)) {
       newVal.forEach((item) => {
         if (item && typeof item === 'object') {
           const itemKey = item?.[key];
-          if (itemKey != null) {
-            valueMap.set(`${itemKey}`, { ...item });
-          }
+          if (itemKey != null) valueMap.set(`${itemKey}`, { ...item });
         }
       });
     } else if (newVal && typeof newVal === 'object') {
       const itemKey = newVal?.[key];
-      if (itemKey != null) {
-        valueMap.set(`${itemKey}`, { ...newVal });
-      }
+      if (itemKey != null) valueMap.set(`${itemKey}`, { ...newVal });
     }
+
     selectedRows.value = ids.map((id) => {
       const idKey = `${id}`;
-      if (valueMap.has(idKey)) {
-        return valueMap.get(idKey);
-      }
+      if (valueMap.has(idKey)) return valueMap.get(idKey);
       const hit = rows.find((item) => `${item?.[key]}` === idKey);
       return hit ? { ...hit } : { [key]: id };
     });
+
+    await nextTick();
+
+    // ✅ 有值时才触发 init（并且只触发一次）
+    emitInitPayload();
   },
   { immediate: true, deep: true }
 );
@@ -550,6 +589,16 @@ watch(
   },
   { immediate: true }
 );
+
+function hasAnyValue(val) {
+  if (val === undefined || val === null) return false;
+  if (Array.isArray(val)) return val.length > 0;
+  if (typeof val === 'string') return val.trim() !== '';
+  if (typeof val === 'number') return true; // 0 也算有值
+  if (typeof val === 'boolean') return true;
+  if (typeof val === 'object') return Object.keys(val).length > 0;
+  return false;
+}
 
 function openPopup() {
   if (props.disabled) return;

@@ -51,6 +51,7 @@ const isDeptDeepMode = (permissionObj) => {
 
 /** 判断是否有权限 */
 export const hasPermissionCommon = (id, dataRow) => {
+  console.log(id, dataRow);
   const { permission, btnPermission, userInfo, deptInfo } = getPermissionState();
   const permissionObj = btnPermission?.[id];
   if (!permissionObj) {
@@ -97,7 +98,6 @@ export const hasPermissionCommon = (id, dataRow) => {
         );
       }
     }
-
     return !!(isSelf || isCurrentDeptRow || isParenDeptRow);
   }
 };

@@ -2,7 +2,14 @@
   <van-form>
     <div class="form-group-title">基本信息</div>
     <van-cell-group inset>
-      <van-field label="入库类型" :model-value="inTypeLabel" readonly />
+      <dc-selector
+        v-model="formData.inType"
+        label="入库类型"
+        placeholder="请点击选择入库类型"
+        title="入库类型"
+        :options="DC_WMS_IN_TYPE_WMS"
+        disabled
+      />
       <dc-select-dialog
         v-model="formData.warehouseId"
         label="仓库名称"
@@ -14,11 +21,27 @@
         :clearable="true"
         :disabled="show"
       />
-      <van-field label="来源单号">
-        <template #input>
-          <van-field v-model="formData.inSourceNumber" readonly />
-        </template>
-      </van-field>
+      <dc-select-dialog
+        v-if="formData.inType === 'DC_WMS_IN_TYPE_RETURN'"
+        v-model="formData.inSourceNumber"
+        label="来源单号"
+        object-name="outboundOrder"
+        type="input"
+        :multiple="false"
+        :multiple-limit="1"
+        :clearable="true"
+        :disabled="show"
+        :query="{
+          outStockStatus: 'DC_WMS_OUT_STATUS_BORROW',
+        }"
+        @change="(row) => handleWarehouseChange(row, 'outboundOrder')"
+      />
+      <van-field
+        v-else
+        v-model="formData.inSourceNumber"
+        placeholder="请输入来源单号点击查询"
+        readonly
+      />
       <dc-select-dialog
         v-model="formData.applicantId"
         label="申请人"
@@ -90,11 +113,6 @@ import { useRouter } from 'vue-router';
 
 const { proxy } = getCurrentInstance();
 const router = useRouter();
-// 子组件调用父组件方法
-const emit = defineEmits(['detail']);
-const detail = () => {
-  emit('detail');
-};
 const { DC_WMS_IN_TYPE_WMS } = proxy.dicts(['DC_WMS_IN_TYPE_WMS']);
 const props = defineProps({
   // 详情

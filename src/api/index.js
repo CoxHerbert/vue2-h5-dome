@@ -10,6 +10,7 @@ import org from './modules/org/index';
 import material from './modules/material/index';
 import system from './modules/system/index';
 import outsourcing from './modules/outsourcing/index';
+import message from './modules/message';
 
 export default {
   recruit,
@@ -24,4 +25,5 @@ export default {
   material,
   system,
   outsourcing,
+  message,
 };

@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, getCurrentInstance } from 'vue';
 import { useRouter } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import Api from '@/api';
@@ -100,9 +100,11 @@ import { useDictStore } from '@/store/dict';
 
 const router = useRouter();
 const dictStore = useDictStore();
+const { proxy } = getCurrentInstance();
 
 const navRef = ref(null);
 const listRef = ref(null);
+const userinfo = computed(() => proxy.$store.getters.userInfo);
 
 const keyword = ref('');
 const activeStatus = ref(null);
@@ -119,8 +121,8 @@ const statusOptions = computed(() => {
   return [
     { label: '全部', value: null },
     ...list.map((item) => ({
-      label: item.dictValue,
-      value: item.dictKey,
+      label: item.label,
+      value: item.value,
     })),
   ];
 });
@@ -154,7 +156,10 @@ async function fetcher({ pageNo, pageSize, keyword, status, inType, warehouseId 
   if (inType) params.inType = inType;
   if (warehouseId) params.warehouseId = warehouseId;
 
-  const res = await Api.application.warehousingEntry.list(params);
+  const res = await Api.application.warehousingEntry.list({
+    ...params,
+    // applicantId: userinfo.value.user_id,
+  });
   const { code, data, msg } = res?.data || {};
   if (code !== 200 || !data) throw new Error(msg || '加载失败');
   return data;
@@ -187,7 +192,7 @@ const handleDelete = async (row) => {
 };
 
 const goBack = () => {
-  goBackOrHome(router);
+  goBackOrHome(router, '/apps');
 };
 </script>
 
