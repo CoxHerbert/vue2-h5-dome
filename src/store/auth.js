@@ -71,6 +71,10 @@ export const useAuthStore = defineStore('auth', {
       const accessToken = payload.access_token;
       const refreshToken = payload.refresh_token;
       this.setTokenPair({ accessToken, refreshToken });
+      try {
+        const { useUserStore } = require('./user');
+        await useUserStore().refreshPermissionData();
+      } catch {}
       return payload;
     },
 

@@ -35,6 +35,21 @@ const flattenPermissionCodes = (list = [], result = []) => {
   return result;
 };
 
+const collectDeptIds = (list = [], result = []) => {
+  list.forEach((item) => {
+    if (!item || typeof item !== 'object') return;
+    const id = item.id ?? item.deptId ?? item.value;
+    if (id !== undefined && id !== null) {
+      result.push(id);
+    }
+    const children = item.children || item.child || item.childrens || item.childList;
+    if (Array.isArray(children) && children.length > 0) {
+      collectDeptIds(children, result);
+    }
+  });
+  return result;
+};
+
 function readLoginInfo() {
   if (typeof window === 'undefined' || !window?.localStorage) return null;
   try {
@@ -149,6 +164,7 @@ export const useUserStore = defineStore('user', {
       const raw = res?.data?.data || res?.data || {};
       const normalized = normalizeUser(raw || {});
       this.setUserInfo(normalized);
+      await this.refreshPermissionData();
       return normalized;
     },
 
@@ -176,6 +192,52 @@ export const useUserStore = defineStore('user', {
       const res = await Api.user.getButtons();
       const data = res.data?.data || [];
       this.setPermission(data);
+    },
+
+    async fetchDeptInfo() {
+      const deptId = this.userInfo?.deptId;
+      if (!deptId) {
+        this.setDeptInfo(null);
+        return;
+      }
+      try {
+        const res = await Api.system?.dept?.getAllChildTree({ deptId });
+        const payload = res?.data?.data ?? res?.data ?? null;
+        if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+          const self = Array.isArray(payload.self) ? payload.self : null;
+          const parent = Array.isArray(payload.parent) ? payload.parent : null;
+          if (self || parent) {
+            this.setDeptInfo({
+              self: self || [],
+              parent: parent || [],
+            });
+            return;
+          }
+        }
+        const tree = Array.isArray(payload) ? payload : payload ? [payload] : [];
+        const ids = collectDeptIds(tree, []);
+        if (deptId && !ids.includes(deptId)) {
+          ids.unshift(deptId);
+        }
+        this.setDeptInfo({
+          self: ids,
+          parent: [],
+        });
+      } catch (error) {
+        console.error('获取部门权限数据失败', error);
+        this.setDeptInfo({
+          self: deptId ? [deptId] : [],
+          parent: [],
+        });
+      }
+    },
+
+    async refreshPermissionData() {
+      await Promise.allSettled([
+        this.fetchButtons(),
+        this.fetchBtnPermissions(),
+        this.fetchDeptInfo(),
+      ]);
     },
   },
 });
