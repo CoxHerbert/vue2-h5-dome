@@ -125,11 +125,12 @@
             v-model="item.productQty"
             integer
             min="0"
-            :max="999999999"
+            :max="item.maxQty"
             theme="round"
             button-size="22"
             input-width="70"
           />
+          最大{{ item.maxQty }}
         </span>
       </div>
       <div class="row">
@@ -251,8 +252,8 @@ onMounted(() => {
         applicantId: userinfo.value.user_id,
         outStockType: 'DC_WMS_OUT_TYPE_BORROW',
         detailList: [],
-        // warehouseId: '2008344171069898753', // 正式环境仓库ID
-        warehouseId: '1900489394659852289', // 测试环境仓库ID
+        warehouseId: '2008344171069898753', // 正式环境仓库ID
+        // warehouseId: '1900489394659852289', // 测试环境仓库ID
       };
     }
     clearTimeout(timer);
@@ -353,6 +354,7 @@ const handleSerchDetail = (row) => {
     locationId: item.locationId,
     productVersion: item.productVersion,
     mtoNo: item.mtoNo,
+    maxQty: item.number,
   }));
 };
 </script>

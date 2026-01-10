@@ -37,7 +37,7 @@
 </template>
 
 <script setup name="CustomerSubmit">
-import { reactive, toRefs, onBeforeMount, computed, ref, getCurrentInstance } from 'vue';
+import { reactive, toRefs, onBeforeMount, computed, getCurrentInstance } from 'vue';
 import step1 from './components/step1.vue';
 import step2 from './components/step2.vue';
 import step3 from './components/step3.vue';
@@ -49,20 +49,18 @@ import { showToast } from 'vant';
 const route = useRoute();
 
 const { proxy } = getCurrentInstance();
-const dictData = ref([]);
 
 // 数据字典
 const { DC_WMS_OUT_STATUS } = proxy.dicts(['DC_WMS_OUT_STATUS']);
 
-const dictOutStockStatus = (value) => {
+const dictData = computed(() => {
   let dcWmsOutStatus = DC_WMS_OUT_STATUS.value;
-  console.log(dcWmsOutStatus);
-  if (value === 'DC_WMS_OUT_TYPE_BORROW') {
-    dictData.value = dcWmsOutStatus.filter((item) => item.value !== 'DC_WMS_OUT_STATUS_RETURN');
+  if (info.value.outStockType === 'DC_WMS_OUT_TYPE_BORROW') {
+    return dcWmsOutStatus.filter((item) => item.value !== 'DC_WMS_OUT_STATUS_RETURN');
   } else {
-    dictData.value = dcWmsOutStatus.slice(0, 4);
+    return dcWmsOutStatus.slice(0, 4);
   }
-};
+});
 
 const pageData = reactive({
   loading: false,
@@ -127,13 +125,7 @@ const getDetail = async () => {
 
 // 处理出库类型变化
 const handleOutStockTypeChange = (newOutStockType) => {
-  console.log(newOutStockType);
-  if (route.params.id === 'create') {
-    info.value.outStockType = newOutStockType;
-    dictOutStockStatus(newOutStockType);
-  } else {
-    dictOutStockStatus(newOutStockType);
-  }
+  info.value.outStockType = newOutStockType;
 };
 </script>
 

@@ -199,16 +199,15 @@ const pageData = reactive({
   loading: false,
   formData: {
     inType: 'DC_WMS_IN_TYPE_RETURN',
-    // warehouseId: '2008344171069898753', // 正式环境仓库ID
-    warehouseId: '1900489394659852289', // 测试环境仓库ID
+    warehouseId: '2008344171069898753', // 正式环境仓库ID
+    // warehouseId: '1900489394659852289', // 测试环境仓库ID
     detailList: [],
   },
   show: true,
   btnOpen: false,
-  unitList: [],
 });
 
-const { loading, formData, show, btnOpen, unitList } = toRefs(pageData);
+const { loading, formData, show, btnOpen } = toRefs(pageData);
 
 const isShow = computed(() => show.value);
 
@@ -282,14 +281,7 @@ watch(
 
 onMounted(() => {
   formData.value.applicantId = userinfo.value.user_id;
-  getUnitData();
 });
-
-const getUnitData = async () => {
-  const res = await Api.application.warehousingEntry.unitList();
-  const { code, data } = res.data;
-  if (code === 200) unitList.value = data;
-};
 
 // 保存
 const submitForm = async () => {
