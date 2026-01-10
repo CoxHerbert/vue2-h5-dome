@@ -10,4 +10,6 @@ export const KEYS = {
   LOGIN_INFO: 'loginInfo',
   LOCALE_PREFERENCE: 'app-locale',
   SOP_API_TOKEN: 'SOP_API_TOKEN',
+  PERMISSION: 'PERMISSION',
+  DEPT_INFO: 'DEPT_INFO',
 };

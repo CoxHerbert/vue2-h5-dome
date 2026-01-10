@@ -101,6 +101,12 @@ import { h, reactive, ref, toRefs, getCurrentInstance, onMounted, watch } from '
 import Api from '@/api';
 import { useRouter } from 'vue-router';
 import { Field, showConfirmDialog, showToast } from 'vant';
+import {
+  formatDateLabel,
+  buildMessageUrl,
+  fetchUserJobNum,
+  sendWechatTextCard,
+} from '@/utils/message-notification';
 
 const { proxy } = getCurrentInstance();
 const router = useRouter();
@@ -142,22 +148,37 @@ watch(
   }
 );
 // 审核
-const submitAudit = () => {
-  (async () => {
-    try {
-      await validateForm();
-    } catch {
-      return;
+const submitAudit = async () => {
+  try {
+    await validateForm();
+  } catch {
+    return;
+  }
+  const res = await Api.application.outboundOrder.submitAudit({
+    ...formData.value,
+  });
+  const { code, data } = res.data;
+  if (code === 200) {
+    const messageId = data?.id || formData.value.id;
+    const applicantId = formData.value.applicantId;
+    if (messageId && applicantId) {
+      try {
+        const jobNum = await fetchUserJobNum(applicantId);
+        if (jobNum) {
+          await sendWechatTextCard({
+            jobNums: [jobNum],
+            title: '装配工具借用审核通过',
+            description: `<div class="gray">${formatDateLabel()}</div><div class="normal">您的装配工具借用申请已审核通过</div><div class="highlight">点击查看详情</div>`,
+            url: buildMessageUrl(`/apps/warehouse-record/outbound/${messageId}`),
+          });
+        }
+      } catch (error) {
+        console.error('发送借用通过通知失败', error);
+      }
     }
-    const res = await Api.application.outboundOrder.submitAudit({
-      ...formData.value,
-    });
-    const { code } = res.data;
-    if (code === 200) {
-      showToast({ type: 'success', message: '审核成功' });
-      router.push({ name: 'appsWarehouseRecord' });
-    }
-  })();
+    showToast({ type: 'success', message: '审核成功' });
+    router.push({ name: 'appsWarehouseRecord' });
+  }
 };
 
 const promptRejectReason = async () => {
@@ -193,8 +214,25 @@ const submitReject = async () => {
       ...formData.value,
       reject: reason,
     });
-    const { code } = res.data;
+    const { code, data } = res.data;
     if (code === 200) {
+      const messageId = data?.id || formData.value.id;
+      const applicantId = formData.value.applicantId;
+      if (messageId && applicantId) {
+        try {
+          const jobNum = await fetchUserJobNum(applicantId);
+          if (jobNum) {
+            await sendWechatTextCard({
+              jobNums: [jobNum],
+              title: '装配工具借用审核驳回',
+              description: `<div class="gray">${formatDateLabel()}</div><div class="normal">您的装配工具借用申请已被驳回</div><div class="highlight">原因：${reason}</div>`,
+              url: buildMessageUrl(`/apps/warehouse-record/outbound/${messageId}`),
+            });
+          }
+        } catch (error) {
+          console.error('发送借用驳回通知失败', error);
+        }
+      }
       showToast({ type: 'success', message: '驳回成功' });
       router.push({ name: 'appsWarehouseRecord' });
     }
