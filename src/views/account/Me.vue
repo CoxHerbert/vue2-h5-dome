@@ -378,7 +378,7 @@ $shadow-card: 0 12px 36px rgba(25, 81, 230, 0.08);
 
 .page.mine {
   position: relative;
-  margin: 0 auto;
+  margin: 0;
   max-width: 750px;
   padding: 0 0 120px;
   padding-bottom: calc(120px + constant(safe-area-inset-bottom));

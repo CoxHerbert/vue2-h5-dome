@@ -17,8 +17,8 @@
 import { defineComponent } from 'vue';
 import { Uploader } from 'vant';
 import { DIC_HTTP_PROPS } from '../../util/variable.js';
-import { getAsVal, deepClone } from '../../util/index.js';
-import { uploadFile } from '../../util/uploader.js';
+import { deepClone } from '../../util/index.js';
+import Api from '@/api';
 import Props from '../../mixins/props.js';
 
 export default defineComponent({
@@ -101,40 +101,50 @@ export default defineComponent({
     handleAfterRead(files) {
       const queue = Array.isArray(files) ? files : [files];
       queue.forEach((item) => {
-        const target = {
-          file: item.file || item,
-          status: 'uploading',
-          message: '上传中',
-          url: item.content || '',
-          name: item.file?.name || item.name,
-        };
-        this.fileList.push(target);
+        const target = this.fileList[this.fileList.length - 1];
+        if (!target) return;
+        target.status = 'uploading';
+        target.message = '上传中';
+        if (!target.file) {
+          target.file = item.file || item;
+        }
+        if (!target.name) {
+          target.name = item.file?.name || item.name || '文件';
+        }
         this.uploadSingle(target);
       });
     },
     async uploadSingle(target) {
       try {
-        const payload = await uploadFile({
-          action: this.action,
-          file: target.file,
-          headers: this.header,
-          data: this.formData,
-          fieldName: this.fileName,
+        const formData = new FormData();
+        Object.entries(this.formData || {}).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formData.append(key, value);
+          }
         });
-        const data = getAsVal(payload, this.propsHttp.res);
-        const url = getAsVal(data || payload, this.propsHttp.url) || target.url;
-        const name = getAsVal(data || payload, this.propsHttp.name) || target.name || url;
-        Object.assign(target, {
-          url,
-          name,
-          status: 'done',
-          message: '',
-        });
+        formData.append(this.fileName, target.file, target.file?.name || 'file');
+        const payload = await Api.common.upload.postFile(formData, {}, this.action);
+        const url = payload?.data?.data?.link || target.url;
+        const name = payload?.data?.data?.originalName || target.name || url;
+        const index = this.fileList.findIndex((item) => item === target);
+        if (index !== -1) {
+          this.fileList[index] = {
+            ...target,
+            url,
+            name,
+            status: 'done',
+            message: '',
+          };
+        }
       } catch (error) {
-        Object.assign(target, {
-          status: 'failed',
-          message: error.message || '上传失败',
-        });
+        const index = this.fileList.findIndex((item) => item === target);
+        if (index !== -1) {
+          this.fileList[index] = {
+            ...target,
+            status: 'failed',
+            message: error.message || '上传失败',
+          };
+        }
       }
     },
     handleBeforeDelete(file, detail) {

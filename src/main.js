@@ -24,7 +24,7 @@ import { attachNProgress } from '@/router/nprogress';
 import { useDebugStore } from '@/store/debug';
 import request from '@/axios/workflow';
 import NfCustomFields from '@/views/plugin/workflow/components/custom-fileds/index';
-
+import { showToast } from 'vant';
 // —— 启动函数（推荐异步引导）——
 async function bootstrap() {
   const app = createApp(App);
@@ -67,6 +67,15 @@ async function bootstrap() {
   app.config.globalProperties.api = Api;
   app.config.globalProperties.$axios = request;
   app.config.globalProperties.$dayjs = dayjs;
+  app.config.globalProperties.$message = {
+    success: (message) => showToast.success(message),
+    error: (message) => showToast({ type: 'fail', message }),
+    warning: (message) => showToast({ type: 'fail', message }),
+    info: (message) => showToast(message),
+    fail: (message) => showToast({ type: 'fail', message }),
+    loading: (message) => showToast.loading(message),
+    clear: () => showToast.clear(),
+  };
 
   app.config.globalProperties.$http = {
     request,

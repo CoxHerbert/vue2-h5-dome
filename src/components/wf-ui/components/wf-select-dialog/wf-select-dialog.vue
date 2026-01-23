@@ -6,7 +6,11 @@
       :disabled="disabled"
       readonly
       @blur="openPopup"
-    />
+    >
+      <template #right-icon>
+        <van-icon v-if="multiple && label" name="clear" @click.stop="handleClear" />
+      </template>
+    </van-field>
     <van-popup
       v-model:show="open"
       :round="10"
@@ -32,12 +36,30 @@
           </van-search>
         </div>
         <div style="height: 60px"></div>
+        <!-- {{ multiple }}
+        {{ column }} -->
 
-        <van-radio-group v-model="radioValue">
+        <van-checkbox-group v-if="multiple" v-model="checkboxValue">
+          <div
+            v-for="item in dataList"
+            :key="item.id"
+            :class="['radio-item', { selected: checkboxValue.includes(item.id) }]"
+          >
+            <van-checkbox :name="item.id">
+              <div class="radioIndexClass">
+                <div v-for="(col, index) in columns" :key="index" class="radio-column">
+                  {{ item[col.prop] }}
+                </div>
+              </div>
+            </van-checkbox>
+          </div>
+        </van-checkbox-group>
+        <van-radio-group v-else v-model="radioValue">
           <div
             v-for="item in dataList"
             :key="item.id"
             :class="['radio-item', { selected: radioValue === item.id }]"
+            @click="handleRowClick(item)"
           >
             <van-radio :name="item.id">
               <div class="radioIndexClass">
@@ -68,7 +90,7 @@
             type="primary"
             size="small"
             style="flex: 1"
-            :disabled="!radioValue"
+            :disabled="multiple ? !checkboxValue.length : !radioValue"
             @click="doAction('confirm')"
           >
             确认
@@ -117,7 +139,7 @@ export default {
     showKey: { type: String, default: '' },
     inputProps: { type: Object, default: () => ({}) },
   },
-  emits: ['update:modelValue', 'change'],
+  emits: ['input', 'change'],
   data() {
     return {
       // Props mixin 中的数据
@@ -135,6 +157,7 @@ export default {
       loading: false,
       model: null,
       radioValue: '',
+      checkboxValue: [],
       paginationProps: {},
       dataList: [],
       inputValue: [],
@@ -178,6 +201,7 @@ export default {
         .map((item) => item[this.showKey || this.model?.defaultLabel] || item.id)
         .join(',');
 
+      console.log('label computed:', labelValue);
       return labelValue;
     },
 
@@ -215,6 +239,7 @@ export default {
     // Props mixin 中的监听器
     text: {
       handler(val) {
+        console.log('wf-select-dialog text changed:', val);
         if (typeof this.initValue === 'function') {
           this.initValue();
         }
@@ -224,12 +249,12 @@ export default {
         ) {
           this.initTextLabel();
         }
-        this.handleChange(val);
       },
     },
 
     modelValue: {
       handler(newVal) {
+        console.log('wf-select-dialog value changed:', newVal, 'objectName:', this.objectName);
         this.$nextTick(() => {
           let ids = [];
 
@@ -242,9 +267,13 @@ export default {
             ids = [newVal.id];
           }
 
+          console.log('ids:', ids);
+
           if (!ids.length) {
             this.inputValue = [];
             this.selected = [];
+            this.checkboxValue = [];
+            this.radioValue = null;
             return;
           }
 
@@ -253,14 +282,18 @@ export default {
             return;
           }
 
+          console.log('url:', this.model.url);
+
           cacheApi.cache
             .getView({
               url: this.model.url,
               data: ids,
             })
             .then((response) => {
+              console.log('response:', response);
               const data = response || [];
               this.inputValue = this.deepClone(data);
+              console.log('wf-select-dialog inputValue:', this.inputValue);
               this.selected = this.deepClone(data);
             })
             .catch((error) => {
@@ -279,6 +312,26 @@ export default {
           if (findItem) {
             this.selected = [findItem];
           }
+        }
+      },
+      immediate: true,
+      deep: true,
+    },
+
+    checkboxValue: {
+      handler(newVal) {
+        if (this.multiple && newVal) {
+          const currentDataListSelected =
+            this.dataList?.filter((item) => newVal.includes(item.id)) || [];
+
+          const otherSelected =
+            this.selected?.filter(
+              (item) =>
+                newVal.includes(item.id) &&
+                !currentDataListSelected.some((curr) => curr.id === item.id)
+            ) || [];
+
+          this.selected = [...otherSelected, ...currentDataListSelected];
         }
       },
       immediate: true,
@@ -307,6 +360,8 @@ export default {
       column: [],
       query: {},
     };
+
+    console.log('model:', this.model);
 
     // 初始化 columns
     this.columns = this.model.column || [];
@@ -402,6 +457,8 @@ export default {
       } else {
         this.text = '';
       }
+
+      console.log('initVal - text:', this.text, 'modelValue:', this.modelValue);
     },
     async initValue() {
       if (!this.modelValue) return;
@@ -432,35 +489,38 @@ export default {
       }
     },
 
-    handleChange(val) {
-      // 处理值变化，确保 text 和 modelValue 同步
+    handleChange(val, emitUpdate = true) {
       let result = val;
 
-      // 如果 val 是事件对象，获取目标值
       if (val?.target?.value !== undefined) {
         result = val.target.value;
       }
 
-      // 根据 stringMode 和类型处理结果
       const flag =
         this.isString || this.isNumber || this.stringMode || this.listType === 'picture-img';
       if (flag && Array.isArray(result)) {
         result = result.join(this.separator || ',');
       }
 
-      // 更新 text 值
-      if (result !== this.text && typeof result !== 'undefined') {
-        this.text = result;
+      if (typeof this.change === 'function') {
+        let changeValue = result;
+        if (
+          typeof result === 'string' &&
+          !this.multiple &&
+          this.selected &&
+          this.selected.length > 0
+        ) {
+          changeValue = this.selected[0];
+        }
+        this.change({ value: changeValue, column: this.column, index: this.dynamicIndex });
       }
 
-      // 触发 change 事件
-      if (typeof this.change === 'function' && this.column?.cell !== true) {
-        this.change({ value: result, column: this.column, index: this.dynamicIndex });
-      }
-
-      // 触发 Vue 事件
-      this.$emit('update:modelValue', result);
+      this.$emit('input', result);
       this.$emit('change', result);
+
+      if (emitUpdate) {
+        this.$emit('update:modelValue', result);
+      }
     },
 
     async loadData() {
@@ -521,8 +581,14 @@ export default {
       this.searchKeyword = '';
       this.open = true;
       this.dataList = [];
-      this.selected = [];
-      this.radioValue = null;
+
+      if (this.multiple) {
+        this.checkboxValue = this.inputValue?.map((item) => item.id) || [];
+        this.selected = this.deepClone(this.inputValue) || [];
+      } else {
+        this.radioValue = this.inputValue?.[0]?.id || null;
+        this.selected = this.deepClone(this.inputValue) || [];
+      }
     },
 
     closePopup() {
@@ -545,52 +611,66 @@ export default {
     },
 
     handleRowClick(row) {
-      const index = this.selected.findIndex((item) => item.id === row.id);
-      if (index >= 0) {
-        this.selected.splice(index, 1);
+      if (this.multiple) {
+        const index = this.checkboxValue.indexOf(row.id);
+        if (index >= 0) {
+          this.checkboxValue.splice(index, 1);
+        } else {
+          this.checkboxValue.push(row.id);
+        }
       } else {
-        this.selected.push(row);
+        this.radioValue = row.id;
       }
     },
 
     handleConfirm() {
+      if (!this.selected || this.selected.length === 0) {
+        this.handleClose();
+        return;
+      }
+
+      this.inputValue = this.selected;
+
       let changeValue;
-
-      // 确保 cacheStore 已初始化
-      if (!this.cacheStore) {
-        console.warn('cacheStore 未初始化，使用模拟数据');
-      }
-
-      if (!this.model?.url) {
-        console.warn('model.url 未定义，使用模拟数据');
-      }
+      let modelValue;
 
       if (this.multiple) {
-        // 多选模式
         if (this.returnType === 'array') {
           changeValue = this.selected;
+          modelValue = this.selected.map((item) => item.id).join(',');
         } else {
-          changeValue = this.selected.map((item) => item.id).join(',');
+          changeValue = this.selected;
+          modelValue = this.selected.map((item) => item.id).join(',');
         }
       } else {
-        // 单选模式
-        changeValue = this.selected[0]?.id;
+        changeValue = this.selected[0];
+        modelValue = this.selected[0].id;
       }
 
+      this.text = modelValue;
+      this.$emit('update:modelValue', modelValue);
+      this.$emit('input', modelValue);
       this.$emit('change', changeValue);
-      this.$emit('update:modelValue', changeValue);
-      this.handleClose();
 
-      // 在DOM更新后触发handleChange进行联动
-      this.$nextTick(() => {
-        this.handleChange(changeValue);
-      });
+      if (typeof this.change === 'function') {
+        this.change({ value: changeValue, column: this.column, index: this.dynamicIndex });
+      }
+
+      this.handleClose();
     },
 
     handleClear() {
       this.radioValue = null;
+      this.checkboxValue = [];
       this.selected = [];
-      this.handleConfirm();
+      this.inputValue = [];
+      this.text = '';
+      this.$emit('update:modelValue', '');
+      this.$emit('input', '');
+      this.$emit('change', null);
+      if (typeof this.change === 'function') {
+        this.change({ value: null, column: this.column, index: this.dynamicIndex });
+      }
     },
 
     handleClose() {

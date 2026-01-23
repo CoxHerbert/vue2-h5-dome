@@ -103,8 +103,8 @@ export const useUserStore = defineStore('user', {
       const mergedUser = {
         ...(this.userInfo || {}),
         ...loginInfo,
-        dept_name: this.userInfo?.deptName.toString() || '',
-        post_name: this.userInfo?.postNames.toString() || '',
+        dept_name: this.userInfo?.deptName ? this.userInfo?.deptName.toString() : '',
+        post_name: this.userInfo?.postNames ? this.userInfo?.postNames.toString() : '',
       };
 
       this.setUserInfo(mergedUser);
@@ -144,12 +144,12 @@ export const useUserStore = defineStore('user', {
     },
 
     // 拉取接口：你的返回是 { code, success, data, msg }
-    async fetchUserInfo() {
+    async fetchUserInfo({ type }) {
       const res = await Api.user.getUserInfo();
       const raw = res?.data?.data || res?.data || {};
       const normalized = normalizeUser(raw || {});
       this.setUserInfo(normalized);
-      await this.refreshPermissionData();
+      await this.refreshPermissionData(type);
       return normalized;
     },
 
@@ -180,7 +180,11 @@ export const useUserStore = defineStore('user', {
     },
 
     async refreshPermissionData() {
-      await Promise.allSettled([this.fetchButtons(), this.fetchBtnPermissions()]);
+      if (type === 'social') {
+        await Promise.allSettled([this.fetchButtons()]);
+      } else {
+        await Promise.allSettled([this.fetchButtons(), this.fetchBtnPermissions()]);
+      }
     },
   },
 });

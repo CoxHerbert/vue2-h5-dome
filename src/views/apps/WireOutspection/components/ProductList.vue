@@ -1,44 +1,35 @@
 <template>
   <div class="self-outbound-product-list">
     <van-cell-group inset>
-      <div
-        v-for="(item, index) in list"
-        :key="item.locationId || item.productCode || index"
-        class="self-outbound-product-list__card"
-      >
+      <div v-for="(item, index) in list" :key="item.locationId || item.productCode || index"
+        class="self-outbound-product-list__card">
         <div class="self-outbound-product-list__header">
           <span class="self-outbound-product-list__title">{{ item.itemMaterialName || '-' }}</span>
-          <van-icon
-            name="cross"
-            class="self-outbound-product-list__remove"
-            @click="emitRemove(index)"
-          />
+          <van-icon name="cross" class="self-outbound-product-list__remove" @click="emitRemove(index)" />
         </div>
+
         <div class="self-outbound-product-list__content">
           <div class="self-outbound-product-list__row">
             <span class="self-outbound-product-list__label">料品编码</span>
-            <span class="self-outbound-product-list__value">{{
-              item.itemMaterialNumber || '-'
-            }}</span>
+            <span class="self-outbound-product-list__value">{{ item.itemMaterialNumber || '-' }}</span>
           </div>
+
           <div class="self-outbound-product-list__row">
-            <span class="self-outbound-product-list__label">入库数量</span>
-            <van-stepper
-              v-model="item.drawQty"
-              :min="0"
-              :max="parseInt(item.maxDrawQty) || 999"
-              integer
-              @change="(value) => emitQuantityChange(index, value)"
-            />
+            <span class="self-outbound-product-list__label">出库数量</span>
+            <van-stepper v-model="item.drawQty" :min="0" :max="resolveMaxDrawQty(item)" integer
+              @change="(value) => emitQuantityChange(index, value)" />
           </div>
+
           <div class="self-outbound-product-list__row">
             <span class="self-outbound-product-list__label">专案号</span>
             <span class="self-outbound-product-list__value">{{ item.mtoNo || '-' }}</span>
           </div>
+
           <div class="self-outbound-product-list__row">
             <span class="self-outbound-product-list__label">单位</span>
             <span class="self-outbound-product-list__value">{{ item.unit || '-' }}</span>
           </div>
+
           <div class="self-outbound-product-list__row">
             <span class="self-outbound-product-list__label">规格</span>
             <span class="self-outbound-product-list__value">{{ item.specification || '-' }}</span>
@@ -55,27 +46,35 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-});
+})
 
-const emit = defineEmits(['remove', 'quantity-change']);
+const emit = defineEmits(['remove', 'quantity-change'])
 
-const formatQty = (val) => {
-  const num = Number(val);
-  return Number.isNaN(num) ? 0 : num;
-};
+const toNum = (val) => {
+  const num = Number(val)
+  return Number.isFinite(num) ? num : 0
+}
 
-const resolveMax = (item) => {
-  if (!item) return undefined;
-  const max = Number(item.maxValue ?? item.productQty ?? item.qty);
-  return Number.isNaN(max) ? undefined : max;
-};
+/**
+ * ✅ 最大可出库数量：drawQty - fullQty
+ * - 负数按 0 处理
+ * - 兼容 undefined / 字符串
+ * - 返回整数（因为 stepper integer）
+ */
+const resolveMaxDrawQty = (item) => {
+  if (!item) return 0
+  const drawQty = toNum(item.drawQty)
+  const fullQty = toNum(item.fullQty)
+  const max = drawQty - fullQty
+  return Math.max(0, Math.floor(max))
+}
 
 function emitRemove(index) {
-  emit('remove', index);
+  emit('remove', index)
 }
 
 function emitQuantityChange(index, value) {
-  emit('quantity-change', { index, value: formatQty(value) });
+  emit('quantity-change', { index, value: toNum(value) })
 }
 </script>
 

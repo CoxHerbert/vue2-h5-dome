@@ -45,7 +45,7 @@
         @click="previewAt(i)"
       >
         <template #icon>
-          <van-icon name="description" class="mr-6" />
+          <van-icon name="description" class="mr-6 file-icon" />
         </template>
 
         <template #right-icon>
@@ -57,6 +57,7 @@
               @click.stop="removeAt(i)"
             />
             <van-icon name="eye-o" class="op" @click.stop="previewAt(i)" />
+            <!-- <van-icon name="down" class="op" @click.stop="downloadAt(i)" /> -->
             <!-- <van-icon name="down" class="op" @click.stop="downloadAt(i)" /> -->
           </div>
         </template>
@@ -148,7 +149,7 @@
               <div class="preview-section">
                 <div class="preview-title">预览效果</div>
                 <div class="preview-box">
-                  <canvas ref="previewCanvas" width="180" height="180"></canvas>
+                  <canvas ref="previewCanvas" width="200" height="200"></canvas>
                 </div>
                 <div class="preview-desc">1:1 正方形</div>
               </div>
@@ -265,7 +266,7 @@ export default {
         ? this.accept
         : this.params.accept !== undefined
           ? this.params.accept
-          : ['image/*'];
+          : ['*/*'];
     },
     actualMaxSizeMB() {
       return this.maxSizeMB !== undefined
@@ -513,6 +514,7 @@ export default {
         attachId: String(o.attachId || ''),
       }));
       this.$emit('change', list);
+      this.$emit('label-change', list);
       if (this.actualChange && typeof this.actualChange === 'function') {
         this.actualChange({ value: list });
       }
@@ -1094,13 +1096,13 @@ export default {
       if (!this.currentFile || !this.$refs.cropCanvas) return;
 
       try {
-        const { x, y, width, height, scale } = this.cropData;
+        const { x, y, width, height, scale, offsetX, offsetY } = this.cropData;
 
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
 
-        const actualX = x / scale;
-        const actualY = y / scale;
+        const actualX = (x - offsetX) / scale;
+        const actualY = (y - offsetY) / scale;
         const actualWidth = width / scale;
         const actualHeight = height / scale;
 
@@ -1265,7 +1267,11 @@ export default {
 
 .list-card {
   overflow: hidden;
-
+  .file-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
   .ops {
     display: inline-flex;
     align-items: center;
@@ -1279,6 +1285,14 @@ export default {
       color: #ee0a24;
     }
   }
+}
+
+.list-card :deep(.van-cell__title) {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 8px;
 }
 
 .mr-6 {
@@ -1343,14 +1357,15 @@ export default {
 
 /* ================= 裁剪区域美化 ================= */
 
-/* 裁剪整体容器 - 优化为上下布局 */
+/* 裁剪整体容器 - 优化为左右布局 */
 .crop-container {
   padding: 16px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 16px;
   background: #f7f8fa;
   min-height: 100%;
+  align-items: flex-start;
 }
 
 /* 主裁剪区域 */
@@ -1358,7 +1373,8 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  // flex: 1;
+  flex: 1;
+  min-width: 0;
 }
 
 /* 图片区域 - 优化显示效果 */
@@ -1485,11 +1501,35 @@ export default {
 .crop-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-width: 200px;
+  gap: 12px;
+  min-width: 220px;
+  flex-shrink: 0;
+  align-items: center;
 }
 
 /* 预览区域 - 优化样式 */
+.preview-header {
+  flex: 0 0 auto;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fff;
+  z-index: 10;
+
+  .title {
+    font-size: 16px;
+    width: calc(100% - 44px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .close {
+    font-size: 20px;
+  }
+}
 .preview-section {
   display: flex;
   flex-direction: column;
@@ -1509,8 +1549,8 @@ export default {
 }
 
 .preview-box {
-  width: 180px;
-  height: 180px;
+  width: 200px;
+  height: 200px;
   border-radius: 12px;
   overflow: hidden;
   background: #f7f8fa;

@@ -81,9 +81,9 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+// import { ref } from 'vue';
 import { showToast } from 'vant';
-import cacheApi from '@/components/dc-ui/api/index';
+// import cacheApi from '@/components/dc-ui/api/index';
 import cacheData from '@/components/dc-ui/constant/cacheData';
 // import selectProps from './../../mixins/select-props';
 import Props from '@/components/wf-ui/mixins/props.js';
@@ -401,7 +401,7 @@ export default {
       if (typeof obj === 'object') {
         const clonedObj = {};
         for (const key in obj) {
-          if (obj.hasOwnProperty(key)) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
             clonedObj[key] = this.deepClone(obj[key]);
           }
         }
@@ -418,6 +418,7 @@ export default {
       // 初始化值，可以根据需要实现
     },
     handleChange(val) {
+      console.log('handleChange:', val);
       // 处理值变化，可以根据需要实现
     },
 

@@ -20,7 +20,11 @@
       </template>
 
       <template #notice>
-        <van-notice-bar left-icon="volume-o" text="归还人 发起 > 仓管 通过或者驳回 > 完成" />
+        <van-notice-bar
+          left-icon="volume-o"
+          mode="closeable"
+          text="归还人 发起 > 仓管 通过或者驳回 > 完成"
+        />
       </template>
 
       <template #search-extra>

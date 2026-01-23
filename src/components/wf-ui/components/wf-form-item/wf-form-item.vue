@@ -84,6 +84,7 @@
         :dynamic-index="dynamicIndex"
         @change="handleLabelChange"
       />
+      <!-- <span v-else-if="column.type === 'upload'">{{ column }}</span> -->
       <wf-upload
         v-else-if="column.type === 'upload'"
         v-model="text"
@@ -124,18 +125,7 @@
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
       />
-      <!-- <component
-        :is="'wf-select-dialog'"
-        v-else-if="
-          !column.type && column.component && ['wf-prdmo-select'].includes(column.component)
-        "
-        v-model="text"
-        v-bind="{ ...column }"
-        :column="Object.assign(column, column.params || {})"
-        :dic="dic"
-        :disabled="disabled"
-        :dynamic-index="dynamicIndex"
-      /> -->
+
       <wf-user-select
         v-else-if="'wf-user-select' == column.component"
         v-model="text"
@@ -160,14 +150,15 @@
       <span v-else-if="'wf-select-dialog' == column.component || 'wf-select-dialog' == column.type">
         <!-- {{ column.params.objectName }}
         {{ column.params }} -->
-        {{ text }}
+        <!-- {{ text }} -->
         <wf-select-dialog
           v-model="text"
           :column="column"
           :disabled="disabled"
           :object-name="column.params.objectName"
+          :multiple="column.params.multiple"
           :dynamic-index="dynamicIndex"
-          @change="handleLabelChange"
+          @change="handleCursurChange"
         />
       </span>
       <wf-upload-v2
@@ -176,7 +167,7 @@
         :column="column"
         :disabled="disabled"
         :dynamic-index="dynamicIndex"
-        @change="handleLabelChange"
+        @change="handleUploadChange"
       />
       <wf-form-single
         v-else-if="'wf-select-single' == column.component"
@@ -185,13 +176,41 @@
         :disabled="disabled"
         :object-name="column.params.objectName"
         :dynamic-index="dynamicIndex"
-        @change="handleLabelChange"
+        @change="handleCursurChange"
       >
         <!-- {{ column.component }} -->
       </wf-form-single>
-      <!-- {{ column.component }}---
-      {{ column }} -->
-      <!-- {{ column.component }} -->
+
+      <component
+        :is="'wf-WithdrawnSelect'"
+        v-else-if="['wf-withdrawn-select'].includes(column.component)"
+        v-model="text"
+        v-bind="{ ...column }"
+        :column="Object.assign(column, column.params || {})"
+        :dic="dic"
+        :disabled="disabled"
+        :dynamic-index="dynamicIndex"
+      />
+      <component
+        :is="'wf-WlSelect'"
+        v-else-if="['wf-wl-select'].includes(column.component)"
+        v-model="text"
+        v-bind="{ ...column }"
+        :column="Object.assign(column, column.params || {})"
+        :dic="dic"
+        :disabled="disabled"
+        :dynamic-index="dynamicIndex"
+      />
+      <component
+        :is="'wf-PrdmoSelect'"
+        v-else-if="['wf-prdmo-select'].includes(column.component)"
+        v-model="text"
+        v-bind="{ ...column }"
+        :column="Object.assign(column, column.params || {})"
+        :dic="dic"
+        :disabled="disabled"
+        :dynamic-index="dynamicIndex"
+      />
     </div>
   </div>
 </template>
@@ -292,12 +311,41 @@ export default {
     isUser(column) {
       return column?.children?.props?.url === '/blade-system/search/user';
     },
+    // 默认组件处理
     handleLabelChange(val) {
-      // console.log(this.column.change);
-      this.text = val;
+      let value = val;
+
+      this.text = value;
       this.$emit('label-change', {
         prop: this.column.prop,
-        value: val,
+        value: value,
+        index: this.dynamicIndex,
+        change: this.column.change,
+      });
+    },
+    //自定义组件带ID的处理
+    handleCursurChange(val) {
+      let value = val;
+      if (Array.isArray(val)) {
+        value = val.map((item) => item.id).join(',');
+      } else if (typeof val === 'object' && val !== null && val.id) {
+        value = val.id;
+      }
+      this.text = value;
+      this.$emit('label-change', {
+        prop: this.column.prop,
+        value: value,
+        index: this.dynamicIndex,
+        change: this.column.change,
+      });
+    },
+    //上传组件的处理
+    handleUploadChange(val) {
+      let value = val;
+      this.text = value;
+      this.$emit('label-change', {
+        prop: this.column.prop,
+        value: value,
         index: this.dynamicIndex,
         change: this.column.change,
       });
