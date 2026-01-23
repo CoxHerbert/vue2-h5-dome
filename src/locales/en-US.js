@@ -87,6 +87,7 @@ export default {
         success: 'Redirecting to the destination shortly',
         error: 'Please return and try again or contact the administrator',
       },
+      goAccountLogin: 'Go to account sign-in',
       errors: {
         missingTicket: 'urlTicketId is required',
         server: 'Server returned an error',
@@ -127,6 +128,7 @@ export default {
         error: 'Failed to fetch information, please try again later',
       },
       footerNote: 'This is a transition page, please do not operate',
+      goAccountLogin: 'Go to account sign-in',
       errors: {
         missingTicket: 'Route is missing {key}',
         server: 'Server returned an error',

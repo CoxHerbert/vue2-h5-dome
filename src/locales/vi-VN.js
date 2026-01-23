@@ -88,6 +88,7 @@ export default {
         success: 'Sắp chuyển đến trang đích',
         error: 'Vui lòng quay lại thử lại hoặc liên hệ quản trị viên',
       },
+      goAccountLogin: 'Đến trang đăng nhập tài khoản',
       errors: {
         missingTicket: 'Thiếu urlTicketId',
         server: 'Máy chủ trả về lỗi',
@@ -128,6 +129,7 @@ export default {
         error: 'Lấy thông tin thất bại, vui lòng thử lại sau',
       },
       footerNote: 'Đây là trang chuyển tiếp, vui lòng không thao tác',
+      goAccountLogin: 'Đến trang đăng nhập tài khoản',
       errors: {
         missingTicket: 'Tuyến đường thiếu {key}',
         server: 'Máy chủ trả về lỗi',
