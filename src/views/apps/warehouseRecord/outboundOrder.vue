@@ -22,6 +22,7 @@
       <template #notice>
         <van-notice-bar
           left-icon="volume-o"
+          mode="closeable"
           text="领料人 发起 > 仓管 通过或者驳回 > 领料人 通过或者驳回 > 领料完成"
         />
       </template>

@@ -14,7 +14,7 @@
     <wkf-user-select
       ref="user-select"
       :check-type="checkType"
-      :default-checked="value"
+      :default-checked="modelValue"
       @on-confirm="handleUserSelectConfirm"
     />
   </div>
@@ -29,7 +29,7 @@ export default defineComponent({
   name: 'UserSelect',
   components: { WkfUserSelect },
   props: {
-    value: [String, Number],
+    modelValue: [String, Number],
     checkType: {
       type: String,
       default: 'radio',
@@ -55,13 +55,15 @@ export default defineComponent({
     };
   },
   watch: {
-    value: {
+    modelValue: {
       handler(val) {
         if (val) {
           const checks = String(val).split(',');
           Promise.all(checks.map((c) => Api.user.getUser(c))).then((res) => {
             const names = res
-              .map((r) => r.data && r.data.realName)
+              .map((r) => {
+                return r.data && r.data?.data && r.data.data.realName;
+              })
               .filter((realName) => !!realName);
             this.name = names.join(',');
           });
@@ -70,6 +72,7 @@ export default defineComponent({
         }
       },
       immediate: true,
+      deep: true,
     },
   },
   methods: {

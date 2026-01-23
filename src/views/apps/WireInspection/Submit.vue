@@ -9,10 +9,10 @@
             v-model="form.locatorNo"
             name="locatorNo"
             label="库位编码"
-            disabled="true"
             required="true"
             placeholder="请输入库位编码"
             :rules="[{ required: true, message: '请输入库位编码' }]"
+            @keydown.enter="handleKeydownEnter"
           >
             <template #button>
               <dc-scan-code
@@ -369,6 +369,21 @@ async function handleLocatorScanSuccess(code) {
     if (status !== 200 || !data) throw new Error(msg || '未获取到库位信息');
     form.warehouseId = data?.warehouseId || '';
     form.locatorNo = code;
+    form.warehouseLocationId = data?.id || '';
+  } catch (err) {
+    handleScanError(err);
+  }
+}
+
+async function handleKeydownEnter() {
+  if (!form.locatorNo) return;
+  // 查询库位信息
+  try {
+    const res = await Api.application.wireInspection.searchByQrcode({ qrcode: form.locatorNo });
+    const payload = res?.data || {};
+    const { code: status, data, msg } = payload;
+    if (status !== 200 || !data) throw new Error(msg || '未获取到库位信息');
+    form.warehouseId = data?.warehouseId || '';
     form.warehouseLocationId = data?.id || '';
   } catch (err) {
     handleScanError(err);

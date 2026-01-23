@@ -10,6 +10,7 @@
           :value="outTypeOptions.find((item) => item.value === form.outType)?.label || '未知'"
         />
       </van-cell-group>
+
       <van-form ref="formRef" :model="form" scroll-to-error>
         <div class="section__header">
           <div class="section__title">明细信息</div>
@@ -35,6 +36,7 @@
             </dc-scan-code>
           </div>
         </div>
+
         <ProductList
           v-if="form.data.length"
           :list="form.data"
@@ -61,7 +63,7 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, reactive, ref, unref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { showConfirmDialog, showToast } from 'vant';
 import ProductList from './components/ProductList.vue';
@@ -71,9 +73,8 @@ import { goBackOrHome } from '@/utils/navigation';
 
 defineOptions({ name: 'WireInspectionSubmit' });
 
-const { proxy } = getCurrentInstance();
 const router = useRouter();
-// const route = useRoute();
+const route = useRoute();
 const dictStore = useDictStore();
 
 const formRef = ref(null);
@@ -83,22 +84,22 @@ let uid = 0;
 
 const form = reactive({
   locatorNo: '',
+  outType: '',
+  warehouseId: '',
+  warehouseLocationId: '',
+  warehouseCountId: '',
   data: [],
 });
-const route = useRoute();
+
 const { locatorNo = '', outType = '', warehouseId = '', warehouseLocationId = '' } = route.query;
+const inStockData = ref([]);
 
 // 初始化表单值
 form.locatorNo = locatorNo;
 form.outType = outType;
 form.warehouseId = warehouseId;
 form.warehouseLocationId = warehouseLocationId;
-const dictRefs = proxy?.dicts ? proxy.dicts(['QualifiedEnum', 'DC_WIRE_EXCEPTION_TYPE']) : {};
 
-const defaultQualified = [
-  { label: '合格', value: '1' },
-  { label: '不合格', value: '0' },
-];
 const outTypeOptions = ref([]);
 
 async function initOutTypeDict() {
@@ -123,16 +124,7 @@ async function initOutTypeDict() {
 }
 
 initOutTypeDict();
-const qualifiedOptions = computed(() => {
-  const resolved = unref(dictRefs?.QualifiedEnum);
-  if (Array.isArray(resolved) && resolved.length) return resolved;
-  return defaultQualified;
-});
 
-const exceptionOptions = computed(() => {
-  const resolved = unref(dictRefs?.DC_WIRE_EXCEPTION_TYPE);
-  return Array.isArray(resolved) ? resolved : [];
-});
 function syncOutTypeName(value = form.outType) {
   const target = value != null ? String(value) : '';
   if (!target) {
@@ -142,32 +134,75 @@ function syncOutTypeName(value = form.outType) {
   const option = outTypeOptions.value.find((item) => String(item?.value ?? '') === target);
   form.outStockTypeName = option?.text ?? option?.label ?? '';
 }
-function handleOutTypeChange(value) {
-  syncOutTypeName(value);
-}
 
 const picker = reactive({
   show: false,
   rowIndex: null,
   columns: [],
 });
+
 function removeProduct(index) {
   form.data.splice(index, 1);
-}
-function resolveDictLabel(key, value) {
-  const source = key === 'QualifiedEnum' ? qualifiedOptions.value : exceptionOptions.value;
-  const hit = source?.find?.((item) => item?.value === value || item?.dictValue === value);
-  return hit?.label || hit?.dictLabel || '';
 }
 
 function goBack() {
   goBackOrHome(router);
 }
 
+/** ✅ 工具：从“扫码返回的明细 data”里尽可能取到产品编码（你说的 productCode） */
+function getPayloadProductCode(payload = {}) {
+  // 兼容多种字段命名：productCode / itemMaterialNumber / materialNumber / code 等
+  return (
+    payload.productCode ??
+    payload.itemMaterialNumber ??
+    payload.materialNumber ??
+    payload.productNo ??
+    payload.code ??
+    ''
+  );
+}
+
+/** ✅ 工具：判断库存里是否存在该 productCode */
+function hasStockByProductCode(productCode) {
+  const code = productCode != null ? String(productCode).trim() : '';
+  if (!code) return false;
+  return (inStockData.value || []).some((row) => String(row?.productCode ?? '').trim() === code);
+}
+
+/**
+ * ✅ 新增一行：新增前校验 productCode 是否存在于 inStockData
+ * - 存在：正常新增
+ * - 不存在：弹提示并阻止新增
+ */
 function addRow(payload = {}) {
+  const productCode = getPayloadProductCode(payload);
+
+  // 只有当库存数据已拉到时才做严格校验（否则避免“还没查库存就误判”）
+  if (Array.isArray(inStockData.value) && inStockData.value.length) {
+    const ok = hasStockByProductCode(productCode);
+    if (!ok) {
+      showToast({
+        type: 'fail',
+        message: `未找到产品库存：${productCode || '未知编码'}`,
+      });
+      return;
+    }
+  } else {
+    // 兜底：库存还没回来/为空时给出更友好的提示（不强制阻止，避免卡死业务）
+    // 如果你希望“必须有库存数据才能新增”，把下面两行改成 return 即可
+    if (!productCode) {
+      showToast({ type: 'fail', message: '扫码数据缺少产品编码，无法校验库存' });
+      return;
+    }
+  }
+
   form.data.unshift({
     _uid: ++uid,
-    executeId: payload.itemId ?? '',
+
+    // ✅ 把 productCode 写进行数据（便于后续显示/提交/排查）
+    productCode,
+
+    executeId: payload.itemId ?? payload.executeId ?? '',
     specification: payload.specification ?? '',
     drawQty: payload.drawQty ?? '1',
     maxDrawQty: payload.drawQty ?? '999',
@@ -185,29 +220,6 @@ function addRow(payload = {}) {
     finishMaterialNumber: payload.finishMaterialNumber ?? '',
     finishMaterialName: payload.finishMaterialName ?? '',
   });
-}
-
-function removeRow(index) {
-  showConfirmDialog({ title: '提示', message: '确定删除该条明细吗？' })
-    .then(() => {
-      form.data.splice(index, 1);
-    })
-    .catch(() => {});
-}
-
-function handleQualifiedChange(row) {
-  if (row.isQualified !== '0') {
-    row.execeptionType = '';
-  }
-}
-
-function openExceptionPicker(index) {
-  picker.rowIndex = index;
-  picker.columns = exceptionOptions.value.map((item) => ({
-    text: item.label ?? item.dictLabel,
-    value: item.value ?? item.dictValue,
-  }));
-  picker.show = true;
 }
 
 function onPickerConfirm({ selectedOptions, selectedValues }) {
@@ -229,22 +241,6 @@ function handleScanError(err) {
   showToast({ message: err?.message || '扫码失败', type: 'fail' });
 }
 
-async function handleLocatorScanSuccess(code) {
-  if (!code) return;
-  // 查询库位信息
-  try {
-    const res = await Api.application.wireInspection.searchByQrcode({ qrcode: code });
-    const payload = res?.data || {};
-    const { code: status, data, msg } = payload;
-    if (status !== 200 || !data) throw new Error(msg || '未获取到库位信息');
-    form.warehouseId = data?.warehouseId || '';
-    form.locatorNo = code;
-    form.warehouseLocationId = data?.id || '';
-  } catch (err) {
-    handleScanError(err);
-  }
-}
-
 async function handleRowScanConfirm(code) {
   if (!code) return;
   try {
@@ -252,7 +248,10 @@ async function handleRowScanConfirm(code) {
     const payload = res?.data || {};
     const { code: status, data, msg } = payload;
     if (status !== 200 || !data) throw new Error(msg || '未获取到明细信息');
+
+    // ✅ 这里 addRow 内部会校验 productCode 是否存在库存
     addRow({ ...data, drawQty: String(data?.drawQty ?? '') });
+
     showToast({ type: 'success', message: '扫码成功' });
     rowScanCode.value = '';
   } catch (err) {
@@ -261,8 +260,6 @@ async function handleRowScanConfirm(code) {
 }
 
 async function handleSubmit() {
-  //   console.log(payload);
-  // return;
   try {
     await formRef.value?.validate();
   } catch (_err) {
@@ -276,55 +273,35 @@ async function handleSubmit() {
   }
 
   try {
-    await showConfirmDialog({ title: '提示', message: '确认提交质检记录吗？' });
+    await showConfirmDialog({ title: '提示', message: '确认提交质检出库记录吗？' });
   } catch (_err) {
     return;
   }
-  // console.log(form.data);
-  // const payload = form.data.map((item) => ({
-  //   executeId: item.executeId,
-  //   materialNumber: item.itemMaterialNumber,
-  //   materialName: item.itemMaterialName,
-  //   specification: item.specification,
-  //   inQty: Number(item.drawQty),
-  //   unit: item.unit,
-  //   remark: item.remark,
-  //   warehouseLocationId: form.warehouseLocationId,
-  //   noQty: Number(item.noQty),
-  // }));
-  // let params = {
-  //   warehouseId: form.locatorNo,
-  //   executeVoList: payload,
-  // };
+
   const payload = {
-    // warehouseId: form.warehouseId,
-    // outType: form.outType,
     executeVoList: form.data.map((item) => ({
       executeDetailId: item.executeId,
-      // materialNumber: item.itemMaterialNumber,
-      // materialName: item.itemMaterialName,
-      // specification: item.specification,
       outQty: Number(item.drawQty) || 0,
-      // unit: item.unit,
       warehouseLocationId: form.warehouseLocationId,
       warehouseCountId: form.warehouseCountId,
     })),
   };
-  // const res = await Api.application.wireInspection.outChangExecute(payload);
-  // console.log(payload);
-  // return;
+
   try {
+    // 你当前接口是 outChangExecute(payload.executeVoList)
     const res = await Api.application.wireInspection.outChangExecute(payload.executeVoList);
     const { code, msg } = res?.data || {};
     if (code !== 200) throw new Error(msg || '提交失败');
+
     showToast({ type: 'success', message: '提交成功' });
+
     // 清空当前数据
     form.locatorNo = '';
     form.outType = '';
     form.data = [];
     router.go(-1);
   } catch (err) {
-    showToast({ type: 'fail', message: err.message || '提交失败' });
+    showToast({ type: 'fail', message: err?.message || '提交失败' });
   }
 }
 
@@ -341,13 +318,18 @@ async function handleSearch() {
     const payload = res?.data || {};
     const { code, msg, data } = payload;
     if (code !== 200 || !data) throw new Error(msg || '未获取到库存信息');
-    // productList.value = data || [];
+
     form.warehouseCountId = data.records?.[0]?.id || '';
+    inStockData.value = data.records || [];
   } catch (err) {
-    showToast({ type: 'fail', message: err.message || '查询失败' });
+    showToast({ type: 'fail', message: err?.message || '查询失败' });
   }
 }
+
 handleSearch();
+
+/** 你 template 里有用到但没贴出来的事件，这里留个空实现避免报错（如果你本来就有，可删掉） */
+function handleQuantityChange() {}
 </script>
 
 <style scoped>
@@ -451,14 +433,12 @@ handleSearch();
   word-break: break-all;
   line-height: 1.4;
 }
+
 .detail-card__content {
   width: 100%;
   margin-left: 20px;
-  /* margin: 0 auto; */
-  /* display: flex;
-  flex-direction: column;
-  align-items: center; */
 }
+
 .detail-empty {
   margin: 24px 0;
 }
