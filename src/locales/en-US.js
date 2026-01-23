@@ -67,8 +67,12 @@ export default {
         missingRedirect: 'Authorize response missing redirect url',
         missingToken: 'Login failed: access token is missing',
         initAccount: 'Failed to initialize the account, please try again later',
+        generic: 'Sign-in failed, please use account and password',
       },
-      goAccountLogin: 'go account login',
+      fallbackTitle: 'Sign-in failed',
+      fallbackDesc: 'Unable to complete third-party sign-in. Please use account and password.',
+      goAccountLogin: 'Go to account sign-in',
+      retry: 'Retry',
     },
     ticketTransfer: {
       title: 'Preparing your workspace',
