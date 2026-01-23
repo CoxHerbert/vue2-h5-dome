@@ -59,7 +59,7 @@ async function bootstrap() {
   const user = useUserStore();
   if (auth.isLogin && !user.userInfo) {
     try {
-      await user.fetchUserInfo();
+      await user.fetchUserInfo({type: 'normal'});
     } catch {
       // 忽略启动期拉取失败，交由页面或拦截器兜底
     }

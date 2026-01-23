@@ -8,8 +8,8 @@ export const KEYS = {
   REFRESH_TOKEN: withPrefix('saber3-refresh-token'),
   SESSION_ID: withPrefix('JSESSIONID'),
   USER_ID: withPrefix('b-user-id'),
-  USER_INFO: withPrefix('app:auth:user_info'), // 加密存储的用户信息
-  DEBUG_VCONSOLE_ENABLED: withPrefix('debug:vconsole-enabled'),
+  USER_INFO: withPrefix('user_info'), // 加密存储的用户信息
+  DEBUG_VCONSOLE_ENABLED: withPrefix('vconsole-enabled'),
   LAST_USERNAME: withPrefix('LAST_USERNAME'),
   LOGIN_INFO: withPrefix('loginInfo'),
   LOCALE_PREFERENCE: withPrefix('app-locale'),

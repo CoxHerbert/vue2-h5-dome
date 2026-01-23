@@ -14,14 +14,8 @@
       <van-form ref="formRef" validate-first @submit="onSubmit">
         <van-cell-group inset class="group">
           <!-- 用户名 -->
-          <van-field
-            v-model="formData.username"
-            name="username"
-            :placeholder="t('login.form.username.placeholder')"
-            :rules="[{ required: true, message: t('login.form.username.required') }]"
-            :border="false"
-            class="field"
-          >
+          <van-field v-model="formData.username" name="username" :placeholder="t('login.form.username.placeholder')"
+            :rules="[{ required: true, message: t('login.form.username.required') }]" :border="false" class="field">
             <template #left-icon>
               <div class="ico">
                 <van-icon name="user-o" />
@@ -30,15 +24,9 @@
           </van-field>
 
           <!-- 密码 -->
-          <van-field
-            v-model="formData.password"
-            :type="showPwd ? 'text' : 'password'"
-            name="password"
+          <van-field v-model="formData.password" :type="showPwd ? 'text' : 'password'" name="password"
             :placeholder="t('login.form.password.placeholder')"
-            :rules="[{ required: true, message: t('login.form.password.required') }]"
-            :border="false"
-            class="field"
-          >
+            :rules="[{ required: true, message: t('login.form.password.required') }]" :border="false" class="field">
             <template #left-icon>
               <div class="ico">
                 <van-icon name="shield-o" />
@@ -50,26 +38,15 @@
           </van-field>
         </van-cell-group>
 
-        <van-button
-          class="login-btn"
-          block
-          round
-          native-type="submit"
-          :loading="loading"
-          :disabled="loading"
-          :loading-text="t('login.button.loading')"
-        >
+        <van-button class="login-btn" block round native-type="submit" :loading="loading" :disabled="loading"
+          :loading-text="t('login.button.loading')">
           {{ t('login.button.submit') }}
         </van-button>
       </van-form>
 
       <div class="lang-actions">
-        <LanguageSelector
-          variant="compact"
-          trigger-class="login-lang-trigger"
-          :title="t('login.language.title')"
-          :cancel-text="t('login.language.cancel')"
-        />
+        <LanguageSelector variant="compact" trigger-class="login-lang-trigger" :title="t('login.language.title')"
+          :cancel-text="t('login.language.cancel')" />
       </div>
     </div>
   </div>
@@ -159,7 +136,7 @@ async function onSubmit() {
     const loginPayload = await auth.loginByUsername({ ...formData });
 
     try {
-      await user.fetchUserInfo();
+      await user.fetchUserInfo({ type: 'normal' });
     } catch (e) {
       console.warn('[account-login] fetchUserInfo failed:', e);
     }
@@ -206,6 +183,7 @@ async function onSubmit() {
   place-items: center;
   margin: 8px 0 18px;
 }
+
 .logo {
   width: 84px;
   height: 84px;
@@ -214,6 +192,7 @@ async function onSubmit() {
   object-fit: contain;
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
 }
+
 .slogan {
   margin-top: 12px;
   color: #1f2a44;
@@ -225,6 +204,7 @@ async function onSubmit() {
   padding: 0 16px;
   word-break: break-word;
 }
+
 .slogan .bold {
   font-weight: 800;
 }
@@ -239,12 +219,15 @@ async function onSubmit() {
 /* 单个输入的样式：圆角浅蓝背景、带左侧虚线图标框 */
 .field {
   margin: 10px 0;
+
   :deep(.van-field__left-icon) {
     margin-right: 10px;
   }
+
   :deep(.van-field__control) {
     font-size: 14px;
   }
+
   :deep(.van-cell) {
     padding: 10px 12px;
     border-radius: 10px;
