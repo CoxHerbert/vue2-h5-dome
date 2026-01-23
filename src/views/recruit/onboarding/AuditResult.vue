@@ -1,10 +1,6 @@
 <template>
   <div class="recruit-onboarding-audit">
-    <van-nav-bar
-      :title="t('recruit.onboarding.auditResult.title')"
-      left-arrow
-      @click-left="handleBack"
-    />
+    <van-nav-bar :title="t('recruit.onboarding.auditResult.title')" left-arrow @click-left="handleBack" />
 
     <div class="recruit-onboarding-audit__body">
       <section v-if="detail" class="personal-card">
@@ -12,23 +8,13 @@
           <div class="personal-card__title">
             {{ t('recruit.onboarding.auditResult.sections.personalInfo') }}
           </div>
-          <LanguageSelector
-            variant="compact"
-            trigger-class="personal-card__language-trigger"
-            :title="t('login.language.title')"
-            :cancel-text="t('login.language.cancel')"
-          />
+          <LanguageSelector variant="compact" trigger-class="personal-card__language-trigger"
+            :title="t('login.language.title')" :cancel-text="t('login.language.cancel')" />
         </header>
 
         <div class="personal-card__banner">
           <div class="personal-card__badge">
-            <van-image
-              v-if="detail.avatarId"
-              :src="detail.avatarId"
-              class="personal-card__avatar"
-              fit="cover"
-              round
-            />
+            <van-image v-if="detail.avatarId" :src="detail.avatarId" class="personal-card__avatar" fit="cover" round />
             <div v-else class="personal-card__avatar personal-card__avatar--placeholder">
               {{ initials(detail.name) }}
             </div>
@@ -97,12 +83,8 @@
         </div>
         <template v-else>
           <ul class="progress-card__list">
-            <li
-              v-for="(step, index) in stepItems"
-              :key="step.status"
-              class="progress-card__item"
-              :class="`progress-card__item--${stepState(index)}`"
-            >
+            <li v-for="(step, index) in stepItems" :key="step.status" class="progress-card__item"
+              :class="`progress-card__item--${stepState(index)}`">
               <div class="progress-card__indicator">
                 <span class="progress-card__dot"></span>
                 <span v-if="index !== stepItems.length - 1" class="progress-card__line"></span>
@@ -197,7 +179,7 @@ const statusKeyMap = {
 const ensureUserInfo = async () => {
   if (!userStore.userInfo) {
     try {
-      await userStore.fetchUserInfo();
+      await userStore.fetchUserInfo({ type: 'normal' });
     } catch (err) {
       console.error('Failed to fetch user info', err);
     }
@@ -592,7 +574,8 @@ onMounted(async () => {
   align-items: flex-start;
   position: relative;
   padding-left: 4px;
-  & + & {
+
+  &+& {
     margin-top: 16px;
   }
 }

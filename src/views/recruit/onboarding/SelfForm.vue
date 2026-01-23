@@ -13,201 +13,111 @@
             <header class="section__title">
               {{ t('recruit.onboarding.selfForm.sections.personal') }}
             </header>
-            <LanguageSelector
-              variant="compact"
-              trigger-class="section__language-trigger"
-              :title="t('recruit.onboarding.selfForm.fields.language')"
-              :cancel-text="t('login.language.cancel')"
-            />
+            <LanguageSelector variant="compact" trigger-class="section__language-trigger"
+              :title="t('recruit.onboarding.selfForm.fields.language')" :cancel-text="t('login.language.cancel')" />
           </div>
           <van-cell-group inset>
-            <van-field
-              name="avatarId"
-              :label="t('recruit.onboarding.selfForm.fields.avatarId')"
-              :rules="[
-                {
-                  validator: () => !!form.avatarId,
-                  message: t('recruit.onboarding.selfForm.validation.avatarId'),
-                },
-              ]"
-            >
+            <van-field name="avatarId" :label="t('recruit.onboarding.selfForm.fields.avatarId')" :rules="[
+              {
+                validator: () => !!form.avatarId,
+                message: t('recruit.onboarding.selfForm.validation.avatarId'),
+              },
+            ]">
               <template #input>
                 <div class="uploader-inline" :class="{ 'is-readonly': isReadonly }">
-                  <DcUploader
-                    v-model="avatarModel"
-                    :multiple="false"
-                    :deletable="!isReadonly"
-                    :disabled="isReadonly"
-                    :show-type-hint="false"
-                    :placeholder="t('recruit.onboarding.selfForm.placeholders.avatarId')"
-                    accept="image/*"
-                    @change="onUploaderChange('avatarId', $event)"
-                  />
+                  <DcUploader v-model="avatarModel" :multiple="false" :deletable="!isReadonly" :disabled="isReadonly"
+                    :show-type-hint="false" :placeholder="t('recruit.onboarding.selfForm.placeholders.avatarId')"
+                    accept="image/*" @change="onUploaderChange('avatarId', $event)" />
                 </div>
               </template>
             </van-field>
 
-            <van-field
-              v-model="form.name"
-              name="name"
-              :label="t('recruit.onboarding.selfForm.fields.name')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
-              :readonly="isReadonly"
-              :rules="[
+            <van-field v-model="form.name" name="name" :label="t('recruit.onboarding.selfForm.fields.name')"
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')" :readonly="isReadonly" :rules="[
                 { required: true, message: t('recruit.onboarding.selfForm.validation.name') },
-              ]"
-            />
-            <van-field
-              v-model="form.age"
-              name="age"
-              type="number"
-              :label="t('recruit.onboarding.selfForm.fields.age')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
-              :readonly="isReadonly"
-              :rules="[
+              ]" />
+            <van-field v-model="form.age" name="age" type="number" :label="t('recruit.onboarding.selfForm.fields.age')"
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')" :readonly="isReadonly" :rules="[
                 { required: true, message: t('recruit.onboarding.selfForm.validation.age') },
-              ]"
-            />
-            <van-field
-              v-model="form.cardNo"
-              name="cardNo"
-              :label="t('recruit.onboarding.selfForm.fields.cardNo')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
-              :readonly="isReadonly"
-              :rules="[
+              ]" />
+            <van-field v-model="form.cardNo" name="cardNo" :label="t('recruit.onboarding.selfForm.fields.cardNo')"
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')" :readonly="isReadonly" :rules="[
                 { required: true, message: t('recruit.onboarding.selfForm.validation.cardNo') },
-              ]"
-            />
+              ]" />
 
-            <van-field
-              name="idCardFront"
-              :label="t('recruit.onboarding.selfForm.fields.idCardFront')"
-              :rules="[
-                {
-                  validator: () => !!form.idCardFront,
-                  message: t('recruit.onboarding.selfForm.validation.idCardFront'),
-                },
-              ]"
-            >
+            <van-field name="idCardFront" :label="t('recruit.onboarding.selfForm.fields.idCardFront')" :rules="[
+              {
+                validator: () => !!form.idCardFront,
+                message: t('recruit.onboarding.selfForm.validation.idCardFront'),
+              },
+            ]">
               <template #input>
                 <div class="uploader-inline" :class="{ 'is-readonly': isReadonly }">
-                  <DcUploader
-                    v-model="idCardFrontModel"
-                    :multiple="false"
-                    :deletable="!isReadonly"
-                    :disabled="isReadonly"
-                    :show-type-hint="false"
-                    accept="image/*"
+                  <DcUploader v-model="idCardFrontModel" :multiple="false" :deletable="!isReadonly"
+                    :disabled="isReadonly" :show-type-hint="false" accept="image/*"
                     :placeholder="t('recruit.onboarding.selfForm.placeholders.idCardFront')"
-                    @change="onUploaderChange('idCardFront', $event)"
-                  />
+                    @change="onUploaderChange('idCardFront', $event)" />
                 </div>
               </template>
             </van-field>
 
-            <van-field
-              name="idCardBack"
-              :label="t('recruit.onboarding.selfForm.fields.idCardBack')"
-              :rules="[
-                {
-                  validator: () => !!form.idCardBack,
-                  message: t('recruit.onboarding.selfForm.validation.idCardBack'),
-                },
-              ]"
-            >
+            <van-field name="idCardBack" :label="t('recruit.onboarding.selfForm.fields.idCardBack')" :rules="[
+              {
+                validator: () => !!form.idCardBack,
+                message: t('recruit.onboarding.selfForm.validation.idCardBack'),
+              },
+            ]">
               <template #input>
                 <div class="uploader-inline" :class="{ 'is-readonly': isReadonly }">
-                  <DcUploader
-                    v-model="idCardBackModel"
-                    :multiple="false"
-                    :deletable="!isReadonly"
-                    :disabled="isReadonly"
-                    :show-type-hint="false"
-                    accept="image/*"
+                  <DcUploader v-model="idCardBackModel" :multiple="false" :deletable="!isReadonly"
+                    :disabled="isReadonly" :show-type-hint="false" accept="image/*"
                     :placeholder="t('recruit.onboarding.selfForm.placeholders.idCardBack')"
-                    @change="onUploaderChange('idCardBack', $event)"
-                  />
+                    @change="onUploaderChange('idCardBack', $event)" />
                 </div>
               </template>
             </van-field>
 
-            <van-field
-              v-model="form.mobile"
-              name="mobile"
-              type="tel"
+            <van-field v-model="form.mobile" name="mobile" type="tel"
               :label="t('recruit.onboarding.selfForm.fields.mobile')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
-              :readonly="isReadonly"
-              :rules="[
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')" :readonly="isReadonly" :rules="[
                 { required: true, message: t('recruit.onboarding.selfForm.validation.mobile') },
-              ]"
-            />
-            <van-field
-              v-model="form.passportNumber"
-              name="passportNumber"
+              ]" />
+            <van-field v-model="form.passportNumber" name="passportNumber"
               :label="t('recruit.onboarding.selfForm.fields.passportNumber')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
-              :readonly="isReadonly"
-              :rules="[
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')" :readonly="isReadonly" :rules="[
                 {
                   required: true,
                   message: t('recruit.onboarding.selfForm.validation.passportNumber'),
                 },
-              ]"
-            />
-            <van-field
-              name="nation"
-              :model-value="displayLabel(form.nation, nationalityColumns)"
+              ]" />
+            <van-field name="nation" :model-value="displayLabel(form.nation, nationalityColumns)"
               :label="t('recruit.onboarding.selfForm.fields.nation')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
-              is-link
-              readonly
-              :rules="[
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')" is-link readonly :rules="[
                 {
                   validator: () => !!form.nation,
                   message: t('recruit.onboarding.selfForm.validation.nation'),
                 },
-              ]"
-              @click="openPicker('nation')"
-            />
-            <van-field
-              v-model="form.address"
-              name="address"
-              :label="t('recruit.onboarding.selfForm.fields.address')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
-              :readonly="isReadonly"
-              :rules="[
+              ]" @click="openPicker('nation')" />
+            <van-field v-model="form.address" name="address" :label="t('recruit.onboarding.selfForm.fields.address')"
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')" :readonly="isReadonly" :rules="[
                 { required: true, message: t('recruit.onboarding.selfForm.validation.address') },
-              ]"
-            />
-            <van-field
-              name="education"
-              :model-value="displayLabel(form.education, educationColumns)"
+              ]" />
+            <van-field name="education" :model-value="displayLabel(form.education, educationColumns)"
               :label="t('recruit.onboarding.selfForm.fields.education')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
-              is-link
-              readonly
-              :rules="[
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')" is-link readonly :rules="[
                 {
                   validator: () => !!form.education,
                   message: t('recruit.onboarding.selfForm.validation.education'),
                 },
-              ]"
-              @click="openPicker('education')"
-            />
-            <van-field
-              v-model="form.graduateSchool"
-              name="graduateSchool"
+              ]" @click="openPicker('education')" />
+            <van-field v-model="form.graduateSchool" name="graduateSchool"
               :label="t('recruit.onboarding.selfForm.fields.graduateSchool')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')"
-              :readonly="isReadonly"
-              :rules="[
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.input')" :readonly="isReadonly" :rules="[
                 {
                   required: true,
                   message: t('recruit.onboarding.selfForm.validation.graduateSchool'),
                 },
-              ]"
-            />
+              ]" />
           </van-cell-group>
         </section>
 
@@ -216,66 +126,38 @@
             {{ t('recruit.onboarding.selfForm.sections.work') }}
           </header>
           <van-cell-group inset>
-            <van-field
-              name="companyId"
-              :model-value="form.companyDict"
+            <van-field name="companyId" :model-value="form.companyDict"
               :label="t('recruit.onboarding.selfForm.fields.company')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
-              is-link
-              readonly
-              :rules="[
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')" is-link readonly :rules="[
                 {
                   validator: () => !!form.companyId,
                   message: t('recruit.onboarding.selfForm.validation.company'),
                 },
-              ]"
-              @click="openPicker('company')"
-            />
-            <van-field
-              name="jobGradeDictCode"
-              :model-value="form.positionDict"
+              ]" @click="openPicker('company')" />
+            <van-field name="jobGradeDictCode" :model-value="form.positionDict"
               :label="t('recruit.onboarding.selfForm.fields.position')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
-              is-link
-              readonly
-              :rules="[
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')" is-link readonly :rules="[
                 {
                   validator: () => !!form.jobGradeDictCode,
                   message: t('recruit.onboarding.selfForm.validation.position'),
                 },
-              ]"
-              @click="openPicker('position')"
-            />
-            <van-field
-              name="workYear"
-              :model-value="displayLabel(form.workYear, workYearColumns)"
+              ]" @click="openPicker('position')" />
+            <van-field name="workYear" :model-value="displayLabel(form.workYear, workYearColumns)"
               :label="t('recruit.onboarding.selfForm.fields.workYear')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
-              is-link
-              readonly
-              :rules="[
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')" is-link readonly :rules="[
                 {
                   validator: () => !!form.workYear,
                   message: t('recruit.onboarding.selfForm.validation.workYear'),
                 },
-              ]"
-              @click="openPicker('workYear')"
-            />
-            <van-field
-              name="isAccommodation"
-              :model-value="displayLabel(form.isAccommodation, accommodationColumns)"
+              ]" @click="openPicker('workYear')" />
+            <van-field name="isAccommodation" :model-value="displayLabel(form.isAccommodation, accommodationColumns)"
               :label="t('recruit.onboarding.selfForm.fields.isAccommodation')"
-              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')"
-              is-link
-              readonly
-              :rules="[
+              :placeholder="t('recruit.onboarding.selfForm.placeholders.select')" is-link readonly :rules="[
                 {
                   validator: () => !!form.isAccommodation,
                   message: t('recruit.onboarding.selfForm.validation.isAccommodation'),
                 },
-              ]"
-              @click="openPicker('accommodation')"
-            />
+              ]" @click="openPicker('accommodation')" />
           </van-cell-group>
         </section>
 
@@ -290,46 +172,28 @@
     </footer>
 
     <van-popup v-model:show="showPicker.nation" position="bottom">
-      <van-picker
-        :columns="nationPickerColumns"
-        @cancel="showPicker.nation = false"
-        @confirm="({ selectedOptions }) => onPickerConfirm('nation', selectedOptions)"
-      />
+      <van-picker :columns="nationPickerColumns" @cancel="showPicker.nation = false"
+        @confirm="({ selectedOptions }) => onPickerConfirm('nation', selectedOptions)" />
     </van-popup>
     <van-popup v-model:show="showPicker.education" position="bottom">
-      <van-picker
-        :columns="educationColumns"
-        @cancel="showPicker.education = false"
-        @confirm="({ selectedOptions }) => onPickerConfirm('education', selectedOptions)"
-      />
+      <van-picker :columns="educationColumns" @cancel="showPicker.education = false"
+        @confirm="({ selectedOptions }) => onPickerConfirm('education', selectedOptions)" />
     </van-popup>
     <van-popup v-model:show="showPicker.workYear" position="bottom">
-      <van-picker
-        :columns="workYearColumns"
-        @cancel="showPicker.workYear = false"
-        @confirm="({ selectedOptions }) => onPickerConfirm('workYear', selectedOptions)"
-      />
+      <van-picker :columns="workYearColumns" @cancel="showPicker.workYear = false"
+        @confirm="({ selectedOptions }) => onPickerConfirm('workYear', selectedOptions)" />
     </van-popup>
     <van-popup v-model:show="showPicker.accommodation" position="bottom">
-      <van-picker
-        :columns="accommodationColumns"
-        @cancel="showPicker.accommodation = false"
-        @confirm="({ selectedOptions }) => onPickerConfirm('accommodation', selectedOptions)"
-      />
+      <van-picker :columns="accommodationColumns" @cancel="showPicker.accommodation = false"
+        @confirm="({ selectedOptions }) => onPickerConfirm('accommodation', selectedOptions)" />
     </van-popup>
     <van-popup v-model:show="showPicker.company" position="bottom">
-      <van-picker
-        :columns="companyColumns"
-        @cancel="showPicker.company = false"
-        @confirm="({ selectedOptions }) => onPickerConfirm('company', selectedOptions)"
-      />
+      <van-picker :columns="companyColumns" @cancel="showPicker.company = false"
+        @confirm="({ selectedOptions }) => onPickerConfirm('company', selectedOptions)" />
     </van-popup>
     <van-popup v-model:show="showPicker.position" position="bottom">
-      <van-picker
-        :columns="positionColumns"
-        @cancel="showPicker.position = false"
-        @confirm="({ selectedOptions }) => onPickerConfirm('position', selectedOptions)"
-      />
+      <van-picker :columns="positionColumns" @cancel="showPicker.position = false"
+        @confirm="({ selectedOptions }) => onPickerConfirm('position', selectedOptions)" />
     </van-popup>
   </div>
 </template>
@@ -434,7 +298,7 @@ const positionColumns = computed(() =>
 const ensureUserInfo = async () => {
   if (!userStore.userInfo) {
     try {
-      await userStore.fetchUserInfo();
+      await userStore.fetchUserInfo({ type: 'normal' });
     } catch (err) {
       console.error('Failed to fetch user info', err);
     }
@@ -638,9 +502,11 @@ onMounted(async () => {
     overflow-y: auto;
     padding: 16px 12px 80px;
     box-sizing: border-box;
+
     .mb8 {
       margin-bottom: 8px;
     }
+
     :deep(.van-cell-group) {
       margin: 0;
     }
@@ -688,6 +554,7 @@ onMounted(async () => {
 
 .uploader-inline {
   width: 100%;
+
   &.is-readonly {
     pointer-events: none;
   }
