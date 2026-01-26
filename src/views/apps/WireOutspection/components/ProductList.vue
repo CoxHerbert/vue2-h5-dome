@@ -16,7 +16,7 @@
 
           <div class="self-outbound-product-list__row">
             <span class="self-outbound-product-list__label">出库数量</span>
-            <van-stepper v-model="item.drawQty" :min="0" :max="resolveMaxDrawQty(item)" integer
+            <van-stepper v-model="item.drawQty" :min="0" :max="item.maxOutQty" integer
               @change="(value) => emitQuantityChange(index, value)" />
           </div>
 

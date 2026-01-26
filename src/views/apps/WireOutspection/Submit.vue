@@ -5,10 +5,7 @@
     <div class="wire-inspection-submit__body">
       <van-cell-group>
         <van-cell title="库位编码" :value="form.locatorNo" />
-        <van-cell
-          title="出库类型"
-          :value="outTypeOptions.find((item) => item.value === form.outType)?.label || '未知'"
-        />
+        <van-cell title="出库类型" :value="outTypeOptions.find((item) => item.value === form.outType)?.label || '未知'" />
       </van-cell-group>
 
       <van-form ref="formRef" :model="form" scroll-to-error>
@@ -16,20 +13,9 @@
           <div class="section__title">明细信息</div>
           <div class="section__actions">
             <!-- <van-button size="small" type="primary" plain @click="addRow()">新增行</van-button> -->
-            <dc-scan-code
-              v-model="rowScanCode"
-              @confirm="handleRowScanConfirm"
-              @error="handleScanError"
-            >
+            <dc-scan-code v-model="rowScanCode" @confirm="handleRowScanConfirm" @error="handleScanError">
               <template #default="{ open, disabled, loading }">
-                <van-button
-                  size="mini"
-                  type="success"
-                  plain
-                  :loading="loading"
-                  :disabled="disabled"
-                  @click="open"
-                >
+                <van-button size="mini" type="success" plain :loading="loading" :disabled="disabled" @click="open">
                   扫码录入
                 </van-button>
               </template>
@@ -37,12 +23,8 @@
           </div>
         </div>
 
-        <ProductList
-          v-if="form.data.length"
-          :list="form.data"
-          @remove="removeProduct"
-          @quantity-change="handleQuantityChange"
-        />
+        <ProductList v-if="form.data.length" :list="form.data" @remove="removeProduct"
+          @quantity-change="handleQuantityChange" />
 
         <van-empty v-else class="detail-empty" description="请新增或扫码录入质检明细" />
       </van-form>
@@ -53,11 +35,7 @@
     </div>
 
     <van-popup v-model:show="picker.show" position="bottom" round>
-      <van-picker
-        :columns="picker.columns"
-        @confirm="onPickerConfirm"
-        @cancel="picker.show = false"
-      />
+      <van-picker :columns="picker.columns" @confirm="onPickerConfirm" @cancel="picker.show = false" />
     </van-popup>
   </div>
 </template>
@@ -107,15 +85,15 @@ async function initOutTypeDict() {
     const list = await dictStore.get('DC_WMS_OUT_TYPE_WMS');
     outTypeOptions.value = Array.isArray(list)
       ? list.map((item) => {
-          const text = item?.label ?? item?.text ?? item?.raw?.dictLabel ?? '';
-          const value = item?.value ?? item?.dictValue ?? item?.raw?.dictValue ?? '';
-          return {
-            text,
-            label: text,
-            value,
-            raw: item?.raw ?? item,
-          };
-        })
+        const text = item?.label ?? item?.text ?? item?.raw?.dictLabel ?? '';
+        const value = item?.value ?? item?.dictValue ?? item?.raw?.dictValue ?? '';
+        return {
+          text,
+          label: text,
+          value,
+          raw: item?.raw ?? item,
+        };
+      })
       : [];
     syncOutTypeName();
   } catch (error) {
@@ -219,6 +197,7 @@ function addRow(payload = {}) {
     unit: payload.unit ?? '',
     finishMaterialNumber: payload.finishMaterialNumber ?? '',
     finishMaterialName: payload.finishMaterialName ?? '',
+    maxOutQty: payload.maxOutQty ?? 0,
   });
 }
 
@@ -248,9 +227,8 @@ async function handleRowScanConfirm(code) {
     const payload = res?.data || {};
     const { code: status, data, msg } = payload;
     if (status !== 200 || !data) throw new Error(msg || '未获取到明细信息');
-
     // ✅ 这里 addRow 内部会校验 productCode 是否存在库存
-    addRow({ ...data, drawQty: String(data?.drawQty ?? '') });
+    addRow({ ...data, drawQty: String(data?.drawQty ?? ''), maxOutQty: resolveMaxDrawQty(data) });
 
     showToast({ type: 'success', message: '扫码成功' });
     rowScanCode.value = '';
@@ -329,7 +307,26 @@ async function handleSearch() {
 handleSearch();
 
 /** 你 template 里有用到但没贴出来的事件，这里留个空实现避免报错（如果你本来就有，可删掉） */
-function handleQuantityChange() {}
+function handleQuantityChange() { }
+
+/**
+ * ✅ 最大可出库数量：drawQty - fullQty
+ * - 负数按 0 处理
+ * - 兼容 undefined / 字符串
+ * - 返回整数（因为 stepper integer）
+ */
+const resolveMaxDrawQty = (item) => {
+  if (!item) return 0
+  const drawQty = toNum(item.drawQty)
+  const fullQty = toNum(item.fullQty)
+  const max = drawQty - fullQty;
+  return Math.max(0, Math.floor(max))
+}
+
+const toNum = (val) => {
+  const num = Number(val)
+  return Number.isFinite(num) ? num : 0
+}
 </script>
 
 <style scoped>
