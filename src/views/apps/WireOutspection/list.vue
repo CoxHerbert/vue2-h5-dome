@@ -5,43 +5,20 @@
     <div class="wire-inspection-submit__body">
       <van-form ref="formRef" :model="form" scroll-to-error>
         <van-cell-group inset class="section">
-          <van-field
-            v-model="form.locatorNo"
-            name="locatorNo"
-            label="库位编码"
-            disabled="true"
-            required="true"
-            placeholder="请输入库位编码"
-            :rules="[{ required: true, message: '请输入库位编码' }]"
-          >
+          <van-field v-model="form.locatorNo" name="locatorNo" label="库位编码" disabled="true" required="true"
+            placeholder="请输入库位编码" :rules="[{ required: true, message: '请输入库位编码' }]">
             <template #button>
-              <dc-scan-code
-                v-model="form.locatorNo"
-                @confirm="handleLocatorScanSuccess"
-                @error="handleScanError"
-              >
+              <dc-scan-code v-model="form.locatorNo" @confirm="handleLocatorScanSuccess" @error="handleScanError">
                 <template #default="{ open, disabled, loading }">
-                  <van-button
-                    size="small"
-                    type="primary"
-                    :loading="loading"
-                    :disabled="disabled"
-                    @click="open"
-                  >
+                  <van-button size="small" type="primary" :loading="loading" :disabled="disabled" @click="open">
                     扫码
                   </van-button>
                 </template>
               </dc-scan-code>
             </template>
           </van-field>
-          <dc-selector
-            v-model="form.outType"
-            label="出库类型"
-            :options="outTypeOptions"
-            :disabled="isDisabled"
-            placeholder="请选择出库类型"
-            @change="handleOutTypeChange"
-          />
+          <dc-selector v-model="form.outType" label="出库类型" :options="outTypeOptions" :disabled="isDisabled"
+            placeholder="请选择出库类型" @change="handleOutTypeChange" />
         </van-cell-group>
       </van-form>
       <div class="wire-inspection-submit__footer">
@@ -50,34 +27,26 @@
     </div>
 
     <van-popup v-model:show="picker.show" position="bottom" round>
-      <van-picker
-        :columns="picker.columns"
-        @confirm="onPickerConfirm"
-        @cancel="picker.show = false"
-      />
+      <van-picker :columns="picker.columns" @confirm="onPickerConfirm" @cancel="picker.show = false" />
     </van-popup>
   </div>
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, reactive, ref, unref } from 'vue';
+import { reactive, ref, } from 'vue';
 import { useRouter } from 'vue-router';
-import { showConfirmDialog, showToast } from 'vant';
-import ProductList from './components/ProductList.vue';
+import { showToast } from 'vant';
 import { useDictStore } from '@/store/dict';
 import Api from '@/api';
 import { goBackOrHome } from '@/utils/navigation';
 
 defineOptions({ name: 'WireInspectionSubmit' });
 
-const { proxy } = getCurrentInstance();
 const router = useRouter();
 const dictStore = useDictStore();
 
 const formRef = ref(null);
-const rowScanCode = ref('');
 const isDisabled = ref(true);
-let uid = 0;
 
 const form = reactive({
   locatorNo: '',
@@ -86,7 +55,6 @@ const form = reactive({
   data: [],
 });
 
-const dictRefs = proxy?.dicts ? proxy.dicts(['QualifiedEnum', 'DC_WIRE_EXCEPTION_TYPE']) : {};
 
 const outTypeOptions = ref([]);
 
@@ -95,15 +63,15 @@ async function initOutTypeDict() {
     const list = await dictStore.get('DC_WMS_OUT_TYPE_WMS');
     outTypeOptions.value = Array.isArray(list)
       ? list.map((item) => {
-          const text = item?.label ?? item?.text ?? item?.raw?.dictLabel ?? '';
-          const value = item?.value ?? item?.dictValue ?? item?.raw?.dictValue ?? '';
-          return {
-            text,
-            label: text,
-            value,
-            raw: item?.raw ?? item,
-          };
-        })
+        const text = item?.label ?? item?.text ?? item?.raw?.dictLabel ?? '';
+        const value = item?.value ?? item?.dictValue ?? item?.raw?.dictValue ?? '';
+        return {
+          text,
+          label: text,
+          value,
+          raw: item?.raw ?? item,
+        };
+      })
       : [];
     syncOutTypeName();
   } catch (error) {
@@ -291,6 +259,7 @@ async function handleSubmit() {
   word-break: break-all;
   line-height: 1.4;
 }
+
 .detail-card__content {
   width: 100%;
   margin-left: 20px;
@@ -299,6 +268,7 @@ async function handleSubmit() {
   flex-direction: column;
   align-items: center; */
 }
+
 .detail-empty {
   margin: 24px 0;
 }
