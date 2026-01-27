@@ -58,17 +58,22 @@ export default {
       subtitle: 'Mang đến trải nghiệm đăng nhập thống nhất, tiện lợi và an toàn',
       currentEntry: 'Cổng hiện tại: {type}',
       loading: 'Đang đăng nhập…',
+      fallbackTitle: 'Đăng nhập thất bại',
+      fallbackDesc:
+        'Không thể hoàn tất đăng nhập bên thứ ba. Bạn có thể dùng đăng nhập tài khoản.',
       typeLabels: {
         campusApplicant: 'Tuyển dụng sinh viên',
         internalReferral: 'Giới thiệu nội bộ',
         vendorHr: 'HR nhà cung cấp',
       },
       errors: {
+        generic: 'Đăng nhập thất bại. Vui lòng dùng đăng nhập tài khoản.',
         missingRedirect: 'Phản hồi ủy quyền thiếu địa chỉ chuyển hướng',
         missingToken: 'Đăng nhập thất bại: thiếu access_token',
         initAccount: 'Khởi tạo tài khoản thất bại, vui lòng thử lại sau',
       },
-      goAccountLogin: 'go account login',
+      goAccountLogin: 'Chuyển đến đăng nhập tài khoản',
+      retry: 'Thử lại',
     },
     ticketTransfer: {
       title: 'Đang chuẩn bị môi trường làm việc',

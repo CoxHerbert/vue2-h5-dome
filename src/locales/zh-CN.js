@@ -58,17 +58,21 @@ export default {
       subtitle: '为你提供统一、便捷、安全的登录体验',
       currentEntry: '当前入口：{type}',
       loading: '正在登录中…',
+      fallbackTitle: '登录失败',
+      fallbackDesc: '无法完成第三方登录，你可以使用账号密码登录。',
       typeLabels: {
         campusApplicant: '校园招聘',
         internalReferral: '内部内推',
         vendorHr: '供应商HR',
       },
       errors: {
+        generic: '登录失败，请使用账号密码登录',
         missingRedirect: '授权返回缺少跳转地址',
         missingToken: '登录失败：未获取到 access_token',
         initAccount: '初始化账号失败，请稍后重试',
       },
       goAccountLogin: '前往账号密码登录',
+      retry: '重试',
     },
     ticketTransfer: {
       title: '正在准备工作环境',

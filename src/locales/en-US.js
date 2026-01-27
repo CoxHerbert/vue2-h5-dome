@@ -58,17 +58,21 @@ export default {
       subtitle: 'Delivering a unified, convenient, and secure sign-in experience',
       currentEntry: 'Current entry: {type}',
       loading: 'Signing you in…',
+      fallbackTitle: 'Sign-in failed',
+      fallbackDesc: 'We could not complete the third-party sign-in. Use account login instead.',
       typeLabels: {
         campusApplicant: 'Campus recruitment',
         internalReferral: 'Internal referral',
         vendorHr: 'Vendor HR',
       },
       errors: {
+        generic: 'Sign-in failed. Please use account login.',
         missingRedirect: 'Authorize response missing redirect url',
         missingToken: 'Login failed: access token is missing',
         initAccount: 'Failed to initialize the account, please try again later',
       },
-      goAccountLogin: 'go account login',
+      goAccountLogin: 'Go to account login',
+      retry: 'Try again',
     },
     ticketTransfer: {
       title: 'Preparing your workspace',
