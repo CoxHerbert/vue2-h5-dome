@@ -71,6 +71,11 @@
       <div v-if="status === 'error'" class="m-userinfo__alert m-userinfo__alert--err">
         {{ errorMsg || t('login.userInfoTransition.alerts.error') }}
       </div>
+      <div v-if="status === 'error'" class="m-userinfo__actions">
+        <van-button type="primary" block @click="goAccountLogin">
+          {{ t('login.userInfoTransition.goAccountLogin') }}
+        </van-button>
+      </div>
     </main>
 
     <!-- 底部安全区 + 小注释 -->
@@ -122,7 +127,7 @@ const statusText = computed(() => {
 const subHint = computed(() => {
   if (status.value === 'loading') return t('login.userInfoTransition.hints.loading');
   if (status.value === 'success') return t('login.userInfoTransition.hints.success');
-  return t('login.userInfoTransition.hints.error');
+  return errorMsg.value || t('login.userInfoTransition.hints.error');
 });
 const pctStr = computed(() => `${pct.value}%`);
 const statusClass = computed(() => `m-userinfo--${status.value}`);
@@ -156,6 +161,34 @@ onMounted(async () => {
     await bootstrap();
   }
 });
+
+function goAccountLogin() {
+  const OUTER = new URL(window.location.href);
+  const outerRedirect = OUTER.searchParams.get('redirect') || '';
+
+  function sanitizeRedirect(p) {
+    if (!p) return '';
+    if (/^https?:\/\//i.test(p)) {
+      try {
+        const u = new URL(p);
+        if (u.origin !== window.location.origin) return '';
+        p = u.pathname + u.search + u.hash;
+      } catch {
+        return '';
+      }
+    }
+    if (!p.startsWith('/')) return '';
+    if (p === '/login/account' || p.startsWith('/login/')) return '';
+    return p || '';
+  }
+
+  const redirect = sanitizeRedirect(outerRedirect);
+  if (redirect) {
+    router.replace({ path: '/login/account', query: { redirect } });
+  } else {
+    router.replace({ path: '/login/account' });
+  }
+}
 async function bootstrap() {
   try {
     // step0: 取 uuid（params 优先，再 query）
@@ -576,6 +609,10 @@ $err: #ef4444;
       background: rgba($err, 0.14);
       border-color: rgba($err, 0.4);
     }
+  }
+
+  &__actions {
+    margin-top: 10px;
   }
 
   &__footer {

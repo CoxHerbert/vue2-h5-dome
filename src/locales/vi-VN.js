@@ -67,8 +67,13 @@ export default {
         missingRedirect: 'Phản hồi ủy quyền thiếu địa chỉ chuyển hướng',
         missingToken: 'Đăng nhập thất bại: thiếu access_token',
         initAccount: 'Khởi tạo tài khoản thất bại, vui lòng thử lại sau',
+        generic: 'Đăng nhập thất bại, vui lòng sử dụng tài khoản và mật khẩu',
       },
-      goAccountLogin: 'go account login',
+      fallbackTitle: 'Đăng nhập thất bại',
+      fallbackDesc:
+        'Không thể hoàn tất đăng nhập bên thứ ba. Vui lòng sử dụng tài khoản và mật khẩu.',
+      goAccountLogin: 'Đến trang đăng nhập tài khoản',
+      retry: 'Thử lại',
     },
     ticketTransfer: {
       title: 'Đang chuẩn bị môi trường làm việc',
@@ -83,6 +88,7 @@ export default {
         success: 'Sắp chuyển đến trang đích',
         error: 'Vui lòng quay lại thử lại hoặc liên hệ quản trị viên',
       },
+      goAccountLogin: 'Đến trang đăng nhập tài khoản',
       errors: {
         missingTicket: 'Thiếu urlTicketId',
         server: 'Máy chủ trả về lỗi',
@@ -123,6 +129,7 @@ export default {
         error: 'Lấy thông tin thất bại, vui lòng thử lại sau',
       },
       footerNote: 'Đây là trang chuyển tiếp, vui lòng không thao tác',
+      goAccountLogin: 'Đến trang đăng nhập tài khoản',
       errors: {
         missingTicket: 'Tuyến đường thiếu {key}',
         server: 'Máy chủ trả về lỗi',

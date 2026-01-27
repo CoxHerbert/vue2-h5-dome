@@ -67,8 +67,12 @@ export default {
         missingRedirect: '授权返回缺少跳转地址',
         missingToken: '登录失败：未获取到 access_token',
         initAccount: '初始化账号失败，请稍后重试',
+        generic: '登录失败，请使用账号密码登录',
       },
+      fallbackTitle: '登录失败',
+      fallbackDesc: '无法完成第三方登录，你可以使用账号密码登录。',
       goAccountLogin: '前往账号密码登录',
+      retry: '重试',
     },
     ticketTransfer: {
       title: '正在准备工作环境',
@@ -83,6 +87,7 @@ export default {
         success: '即将跳转到目标页面',
         error: '请返回重试或联系管理员',
       },
+      goAccountLogin: '前往账号密码登录',
       errors: {
         missingTicket: '缺少 urlTicketId',
         server: '服务端返回失败',
@@ -123,6 +128,7 @@ export default {
         error: '获取失败，请稍后重试',
       },
       footerNote: '该页面为过渡页，请勿操作',
+      goAccountLogin: '前往账号密码登录',
       errors: {
         missingTicket: '路由缺少 {key}',
         server: '服务端返回失败',

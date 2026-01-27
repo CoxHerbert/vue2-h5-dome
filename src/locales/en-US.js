@@ -67,8 +67,12 @@ export default {
         missingRedirect: 'Authorize response missing redirect url',
         missingToken: 'Login failed: access token is missing',
         initAccount: 'Failed to initialize the account, please try again later',
+        generic: 'Sign-in failed, please use account and password',
       },
-      goAccountLogin: 'go account login',
+      fallbackTitle: 'Sign-in failed',
+      fallbackDesc: 'Unable to complete third-party sign-in. Please use account and password.',
+      goAccountLogin: 'Go to account sign-in',
+      retry: 'Retry',
     },
     ticketTransfer: {
       title: 'Preparing your workspace',
@@ -83,6 +87,7 @@ export default {
         success: 'Redirecting to the destination shortly',
         error: 'Please return and try again or contact the administrator',
       },
+      goAccountLogin: 'Go to account sign-in',
       errors: {
         missingTicket: 'urlTicketId is required',
         server: 'Server returned an error',
@@ -123,6 +128,7 @@ export default {
         error: 'Failed to fetch information, please try again later',
       },
       footerNote: 'This is a transition page, please do not operate',
+      goAccountLogin: 'Go to account sign-in',
       errors: {
         missingTicket: 'Route is missing {key}',
         server: 'Server returned an error',

@@ -26,6 +26,11 @@
         </div>
         <div class="m-userinfo__hint">{{ subHint }}</div>
       </div>
+      <div v-if="status === 'error'" class="m-userinfo__actions">
+        <van-button type="primary" block @click="goAccountLogin">
+          {{ t('login.ticketTransfer.goAccountLogin') }}
+        </van-button>
+      </div>
     </div>
   </div>
 </template>
@@ -90,6 +95,34 @@ onMounted(async () => {
     errorMsg.value = (err && err.message) || t('login.ticketTransfer.errors.unknown');
   }
 });
+
+function goAccountLogin() {
+  const OUTER = new URL(window.location.href);
+  const outerRedirect = OUTER.searchParams.get('redirect') || '';
+
+  function sanitizeRedirect(p) {
+    if (!p) return '';
+    if (/^https?:\/\//i.test(p)) {
+      try {
+        const u = new URL(p);
+        if (u.origin !== window.location.origin) return '';
+        p = u.pathname + u.search + u.hash;
+      } catch {
+        return '';
+      }
+    }
+    if (!p.startsWith('/')) return '';
+    if (p === '/login/account' || p.startsWith('/login/')) return '';
+    return p || '';
+  }
+
+  const redirect = sanitizeRedirect(outerRedirect);
+  if (redirect) {
+    router.replace({ path: '/login/account', query: { redirect } });
+  } else {
+    router.replace({ path: '/login/account' });
+  }
+}
 
 function normalizeTarget(t) {
   let s = t;
@@ -311,6 +344,11 @@ $err: #ef4444;
   &__hint {
     font-size: 12px;
     color: $muted;
+  }
+
+  &__actions {
+    margin-top: 12px;
+    width: min(320px, 100%);
   }
 }
 
